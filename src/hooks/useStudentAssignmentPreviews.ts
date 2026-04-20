@@ -18,8 +18,7 @@ export function useStudentAssignmentPreviews(studentId: number, groupId: number)
          FROM assignments a
          LEFT JOIN assignment_scores s ON s.assignment_id = a.id AND s.student_id = ? AND s.is_deleted = 0
          WHERE a.group_id = ? AND a.is_deleted = 0
-         ORDER BY a.created_at DESC
-         LIMIT 3`,
+         ORDER BY a.created_at DESC`,
         [studentId, groupId]
       );
       setPreviews(rows);

@@ -109,10 +109,6 @@ function App() {
     setRoute({ page: "student-profile", group, student });
   const goToContacts = (group: Group, student: Student) =>
     setRoute({ page: "contacts", group, student });
-  const goToVisitations = (group: Group, student: Student) =>
-    setRoute({ page: "visitations", group, student });
-  const goToNotes = (group: Group, student: Student) =>
-    setRoute({ page: "notes", group, student });
   const goToSchedule = (group: Group) => setRoute({ page: "schedule", group });
   const goToAttendance = (group: Group) => setRoute({ page: "attendance", group });
   const goToAssignments = (group: Group) => setRoute({ page: "assignments", group });
@@ -164,8 +160,6 @@ function App() {
             onGoToGroups={goToGroups}
             onGoToStudents={() => goToStudents(route.group)}
             onGoToContacts={() => goToContacts(route.group, route.student)}
-            onGoToVisitations={() => goToVisitations(route.group, route.student)}
-            onGoToNotes={() => goToNotes(route.group, route.student)}
             onGoToAssignments={() => goToAssignments(route.group)}
           />
         );
