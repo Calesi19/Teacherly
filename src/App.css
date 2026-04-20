@@ -1,5 +1,53 @@
 @import "@heroui/styles";
 
+/* Ocean */
+[data-color-theme="ocean"].light, [data-color-theme="ocean"][data-theme="light"] {
+  --accent: oklch(0.65 0.17 195);
+  --accent-foreground: var(--snow);
+  --focus: var(--accent);
+}
+[data-color-theme="ocean"].dark, [data-color-theme="ocean"][data-theme="dark"] {
+  --accent: oklch(0.72 0.15 195);
+  --accent-foreground: var(--eclipse);
+  --focus: var(--accent);
+}
+
+/* Forest */
+[data-color-theme="forest"].light, [data-color-theme="forest"][data-theme="light"] {
+  --accent: oklch(0.65 0.17 145);
+  --accent-foreground: var(--snow);
+  --focus: var(--accent);
+}
+[data-color-theme="forest"].dark, [data-color-theme="forest"][data-theme="dark"] {
+  --accent: oklch(0.72 0.15 145);
+  --accent-foreground: var(--eclipse);
+  --focus: var(--accent);
+}
+
+/* Sunset */
+[data-color-theme="sunset"].light, [data-color-theme="sunset"][data-theme="light"] {
+  --accent: oklch(0.72 0.18 55);
+  --accent-foreground: var(--eclipse);
+  --focus: var(--accent);
+}
+[data-color-theme="sunset"].dark, [data-color-theme="sunset"][data-theme="dark"] {
+  --accent: oklch(0.78 0.16 55);
+  --accent-foreground: var(--eclipse);
+  --focus: var(--accent);
+}
+
+/* Rose */
+[data-color-theme="rose"].light, [data-color-theme="rose"][data-theme="light"] {
+  --accent: oklch(0.65 0.22 0);
+  --accent-foreground: var(--snow);
+  --focus: var(--accent);
+}
+[data-color-theme="rose"].dark, [data-color-theme="rose"][data-theme="dark"] {
+  --accent: oklch(0.72 0.18 0);
+  --accent-foreground: var(--snow);
+  --focus: var(--accent);
+}
+
 :root {
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;

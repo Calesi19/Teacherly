@@ -5,6 +5,35 @@ import { Button, Drawer, useOverlayState } from "@heroui/react";
 type ThemePreference = "light" | "dark" | "system";
 const THEME_KEY = "heroui-theme";
 
+type ColorTheme = "default" | "ocean" | "forest" | "sunset" | "rose";
+const COLOR_THEME_KEY = "tizara-color-theme";
+
+function useAppColorTheme() {
+  const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
+    const s = localStorage.getItem(COLOR_THEME_KEY);
+    if (s === "ocean" || s === "forest" || s === "sunset" || s === "rose") return s;
+    return "default";
+  });
+
+  const applyColorTheme = useCallback((t: ColorTheme) => {
+    if (t === "default") {
+      document.documentElement.removeAttribute("data-color-theme");
+    } else {
+      document.documentElement.setAttribute("data-color-theme", t);
+    }
+  }, []);
+
+  const setColorTheme = useCallback((t: ColorTheme) => {
+    localStorage.setItem(COLOR_THEME_KEY, t);
+    setColorThemeState(t);
+    applyColorTheme(t);
+  }, [applyColorTheme]);
+
+  useEffect(() => { applyColorTheme(colorTheme); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  return { colorTheme, setColorTheme };
+}
+
 function useAppTheme() {
   const [theme, setThemeState] = useState<ThemePreference>(() => {
     const s = localStorage.getItem(THEME_KEY);
@@ -64,6 +93,7 @@ type Route =
 function App() {
   const drawerState = useOverlayState();
   const { theme, setTheme } = useAppTheme();
+  const { colorTheme, setColorTheme } = useAppColorTheme();
   const [route, setRoute] = useState<Route>({ page: "groups" });
 
   const goToGroups = () => setRoute({ page: "groups" });
@@ -161,7 +191,7 @@ function App() {
           />
         );
       case "settings":
-        return <SettingsPage theme={theme} onThemeChange={setTheme} />;
+        return <SettingsPage theme={theme} onThemeChange={setTheme} colorTheme={colorTheme} onColorThemeChange={setColorTheme} />;
     }
   }
 
