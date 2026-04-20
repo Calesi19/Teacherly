@@ -49,6 +49,12 @@ pub fn run() {
                   ALTER TABLE students ADD COLUMN enrollment_date TEXT;",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 5,
+            description: "add_family_member_emergency_contact",
+            sql: "ALTER TABLE family_members ADD COLUMN is_emergency_contact INTEGER NOT NULL DEFAULT 0;",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import {
   Button,
+  Checkbox,
   Modal,
   Label,
   Input,
@@ -29,7 +30,37 @@ interface FamilyMembersPageProps {
   onGoToStudentProfile: () => void;
 }
 
-const emptyForm: NewFamilyMemberInput = { name: "", relationship: "", phone: "", email: "" };
+const emptyForm: NewFamilyMemberInput = { name: "", relationship: "", phone: "", email: "", is_emergency_contact: false };
+
+function CopyButton({ value }: { value: string }) {
+  const [copied, setCopied] = useState(false);
+
+  const handleCopy = useCallback(async () => {
+    await navigator.clipboard.writeText(value);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 1500);
+  }, [value]);
+
+  return (
+    <button
+      type="button"
+      onClick={handleCopy}
+      className="ml-1.5 inline-flex items-center text-foreground/30 hover:text-foreground/70 transition-colors"
+      aria-label="Copy to clipboard"
+    >
+      {copied ? (
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+          <polyline points="20 6 9 17 4 12" />
+        </svg>
+      ) : (
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
+          <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
+        </svg>
+      )}
+    </button>
+  );
+}
 
 export function FamilyMembersPage({
   student,
@@ -117,14 +148,24 @@ export function FamilyMembersPage({
                 <TableColumn>Relationship</TableColumn>
                 <TableColumn>Phone</TableColumn>
                 <TableColumn>Email</TableColumn>
+                <TableColumn>Emergency Contact</TableColumn>
               </TableHeader>
               <TableBody>
                 {familyMembers.map((fm) => (
                   <TableRow key={fm.id} id={fm.id}>
                     <TableCell className="font-medium">{fm.name}</TableCell>
                     <TableCell>{fm.relationship ?? <span className="text-foreground/30">—</span>}</TableCell>
-                    <TableCell>{fm.phone ?? <span className="text-foreground/30">—</span>}</TableCell>
-                    <TableCell>{fm.email ?? <span className="text-foreground/30">—</span>}</TableCell>
+                    <TableCell>
+                      {fm.phone
+                        ? <span className="inline-flex items-center">{fm.phone}<CopyButton value={fm.phone} /></span>
+                        : <span className="text-foreground/30">—</span>}
+                    </TableCell>
+                    <TableCell>
+                      {fm.email
+                        ? <span className="inline-flex items-center">{fm.email}<CopyButton value={fm.email} /></span>
+                        : <span className="text-foreground/30">—</span>}
+                    </TableCell>
+                    <TableCell>{fm.is_emergency_contact ? "Yes" : <span className="text-foreground/30">—</span>}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>
@@ -139,7 +180,7 @@ export function FamilyMembersPage({
             <Modal.Dialog>
               <form onSubmit={handleSubmit}>
                 <Modal.Header>Add Family Member</Modal.Header>
-                <Modal.Body className="flex flex-col gap-4">
+                <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="fm-name">Name *</Label>
                     <Input
@@ -178,6 +219,15 @@ export function FamilyMembersPage({
                       placeholder="e.g. maria@example.com"
                     />
                   </div>
+                  <Checkbox
+                    isSelected={form.is_emergency_contact}
+                    onChange={(isSelected) => setForm({ ...form, is_emergency_contact: isSelected })}
+                  >
+                    <Checkbox.Control>
+                      <Checkbox.Indicator />
+                    </Checkbox.Control>
+                    <Checkbox.Content>Primary Emergency Contact</Checkbox.Content>
+                  </Checkbox>
                   {addError && (
                     <p className="text-danger text-sm">{addError}</p>
                   )}

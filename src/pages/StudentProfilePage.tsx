@@ -1,4 +1,4 @@
-import { Avatar, Card, Chip } from "@heroui/react";
+import { Avatar, Card, Chip, Surface } from "@heroui/react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import type { Classroom } from "../types/classroom";
 import type { Student } from "../types/student";
@@ -9,6 +9,24 @@ interface StudentProfilePageProps {
   onGoToClassrooms: () => void;
   onGoToStudents: () => void;
   onGoToFamilyMembers: () => void;
+}
+
+function InfoField({ label, value }: { label: string; value: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-xs text-muted uppercase tracking-wide">{label}</span>
+      <span className="text-sm font-medium text-foreground">{value ?? <span className="text-foreground/30">—</span>}</span>
+    </div>
+  );
+}
+
+function getAge(birthdate: string): number {
+  const birth = new Date(birthdate);
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const m = today.getMonth() - birth.getMonth();
+  if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
 }
 
 export function StudentProfilePage({
@@ -42,6 +60,30 @@ export function StudentProfilePage({
         </div>
       </div>
 
+      <Surface variant="secondary" className="rounded-2xl p-5 mb-6">
+        <h3 className="text-sm font-semibold text-muted uppercase tracking-wide mb-4">Student Info</h3>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
+          <InfoField label="Student ID" value={student.student_number} />
+          <InfoField label="Gender" value={student.gender} />
+          <InfoField
+            label="Birthdate"
+            value={
+              student.birthdate
+                ? `${new Date(student.birthdate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} (${getAge(student.birthdate)})`
+                : null
+            }
+          />
+          <InfoField
+            label="Enrollment Date"
+            value={
+              student.enrollment_date
+                ? new Date(student.enrollment_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
+                : null
+            }
+          />
+        </div>
+      </Surface>
+
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card variant="secondary">
           <Card.Header>
@@ -57,15 +99,6 @@ export function StudentProfilePage({
                 <Chip variant="tertiary" size="sm">{classroom.grade}</Chip>
               )}
             </div>
-          </Card.Content>
-        </Card>
-
-        <Card variant="secondary">
-          <Card.Header>
-            <Card.Title className="text-base">Student ID</Card.Title>
-          </Card.Header>
-          <Card.Content>
-            <p className="font-mono text-foreground/60">#{student.id}</p>
           </Card.Content>
         </Card>
 

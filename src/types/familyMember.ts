@@ -5,6 +5,7 @@ export interface FamilyMember {
   relationship: string | null;
   phone: string | null;
   email: string | null;
+  is_emergency_contact: number;
   created_at: string;
 }
 
@@ -13,4 +14,5 @@ export interface NewFamilyMemberInput {
   relationship: string;
   phone: string;
   email: string;
+  is_emergency_contact: boolean;
 }

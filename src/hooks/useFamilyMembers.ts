@@ -14,7 +14,7 @@ export function useFamilyMembers(studentId: number) {
       setLoading(true);
       const db = await Database.load(DB_URL);
       const rows = await db.select<FamilyMember[]>(
-        "SELECT id, student_id, name, relationship, phone, email, created_at FROM family_members WHERE student_id = ? ORDER BY name ASC",
+        "SELECT id, student_id, name, relationship, phone, email, is_emergency_contact, created_at FROM family_members WHERE student_id = ? ORDER BY is_emergency_contact DESC, name ASC",
         [studentId]
       );
       setFamilyMembers(rows);
@@ -30,8 +30,8 @@ export function useFamilyMembers(studentId: number) {
     async (input: NewFamilyMemberInput) => {
       const db = await Database.load(DB_URL);
       await db.execute(
-        "INSERT INTO family_members (student_id, name, relationship, phone, email) VALUES (?, ?, ?, ?, ?)",
-        [studentId, input.name, input.relationship || null, input.phone || null, input.email || null]
+        "INSERT INTO family_members (student_id, name, relationship, phone, email, is_emergency_contact) VALUES (?, ?, ?, ?, ?, ?)",
+        [studentId, input.name, input.relationship || null, input.phone || null, input.email || null, input.is_emergency_contact ? 1 : 0]
       );
       await fetchFamilyMembers();
     },

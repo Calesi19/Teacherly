@@ -140,18 +140,27 @@ export function StudentsPage({ classroom, onGoToClassrooms, onSelectStudent }: S
                       }}
                     >
                       <TableHeader>
-                        <TableColumn isRowHeader>#</TableColumn>
-                        <TableColumn>Name</TableColumn>
-                        <TableColumn>Enrolled</TableColumn>
+                        <TableColumn isRowHeader>Name</TableColumn>
+                        <TableColumn>Gender</TableColumn>
+                        <TableColumn>Birthdate</TableColumn>
+                        <TableColumn>Student ID</TableColumn>
                       </TableHeader>
                       <TableBody>
-                        {filtered.map((s, i) => (
+                        {filtered.map((s) => (
                           <TableRow key={s.id} id={s.id} className="cursor-pointer">
-                            <TableCell className="text-foreground/40">{i + 1}</TableCell>
                             <TableCell className="font-medium">{s.name}</TableCell>
+                            <TableCell className="text-sm text-foreground/50">{s.gender || "—"}</TableCell>
                             <TableCell className="text-sm text-foreground/50">
-                              {new Date(s.created_at).toLocaleDateString()}
+                              {s.birthdate ? (() => {
+                                const birth = new Date(s.birthdate);
+                                const today = new Date();
+                                let age = today.getFullYear() - birth.getFullYear();
+                                const m = today.getMonth() - birth.getMonth();
+                                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
+                                return `${birth.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} (${age})`;
+                              })() : "—"}
                             </TableCell>
+                            <TableCell className="text-sm text-foreground/40">{s.student_number || "—"}</TableCell>
                           </TableRow>
                         ))}
                       </TableBody>

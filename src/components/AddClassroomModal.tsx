@@ -54,7 +54,7 @@ export function AddClassroomModal({ onAdd }: AddClassroomModalProps) {
             <Modal.Dialog>
               <form onSubmit={handleSubmit}>
                 <Modal.Header>New Classroom</Modal.Header>
-                <Modal.Body className="flex flex-col gap-4">
+                <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="add-classroom-name">Name *</Label>
                     <Input
