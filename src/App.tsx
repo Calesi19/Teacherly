@@ -7,6 +7,8 @@ import { StudentsPage } from "./pages/StudentsPage";
 import { StudentProfilePage } from "./pages/StudentProfilePage";
 import { FamilyMembersPage } from "./pages/FamilyMembersPage";
 import { NotesPage } from "./pages/NotesPage";
+import { SchedulePage } from "./pages/SchedulePage";
+import { AttendancePage } from "./pages/AttendancePage";
 import type { Classroom } from "./types/classroom";
 import type { Student } from "./types/student";
 
@@ -15,7 +17,9 @@ type Route =
   | { page: "students"; classroom: Classroom }
   | { page: "student-profile"; classroom: Classroom; student: Student }
   | { page: "family-members"; classroom: Classroom; student: Student }
-  | { page: "notes"; classroom: Classroom; student: Student };
+  | { page: "notes"; classroom: Classroom; student: Student }
+  | { page: "schedule"; classroom: Classroom }
+  | { page: "attendance"; classroom: Classroom };
 
 function App() {
   const drawerState = useOverlayState();
@@ -29,6 +33,8 @@ function App() {
     setRoute({ page: "family-members", classroom, student });
   const goToNotes = (classroom: Classroom, student: Student) =>
     setRoute({ page: "notes", classroom, student });
+  const goToSchedule = (classroom: Classroom) => setRoute({ page: "schedule", classroom });
+  const goToAttendance = (classroom: Classroom) => setRoute({ page: "attendance", classroom });
 
   function renderPage() {
     switch (route.page) {
@@ -40,6 +46,8 @@ function App() {
             classroom={route.classroom}
             onGoToClassrooms={goToClassrooms}
             onSelectStudent={(s) => goToStudentProfile(route.classroom, s)}
+            onGoToSchedule={() => goToSchedule(route.classroom)}
+            onGoToAttendance={() => goToAttendance(route.classroom)}
           />
         );
       case "student-profile":
@@ -71,6 +79,24 @@ function App() {
             onGoToClassrooms={goToClassrooms}
             onGoToStudents={() => goToStudents(route.classroom)}
             onGoToStudentProfile={() => goToStudentProfile(route.classroom, route.student)}
+          />
+        );
+      case "schedule":
+        return (
+          <SchedulePage
+            classroom={route.classroom}
+            onGoToClassrooms={goToClassrooms}
+            onGoToStudents={() => goToStudents(route.classroom)}
+            onGoToAttendance={() => goToAttendance(route.classroom)}
+          />
+        );
+      case "attendance":
+        return (
+          <AttendancePage
+            classroom={route.classroom}
+            onGoToClassrooms={goToClassrooms}
+            onGoToStudents={() => goToStudents(route.classroom)}
+            onGoToSchedule={() => goToSchedule(route.classroom)}
           />
         );
     }

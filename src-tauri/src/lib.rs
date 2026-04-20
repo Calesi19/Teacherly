@@ -66,6 +66,36 @@ pub fn run() {
             );",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 7,
+            description: "create_schedule_periods_table",
+            sql: "CREATE TABLE IF NOT EXISTS schedule_periods (
+                id           INTEGER PRIMARY KEY AUTOINCREMENT,
+                classroom_id INTEGER NOT NULL REFERENCES classrooms(id) ON DELETE CASCADE,
+                day_of_week  INTEGER NOT NULL,
+                name         TEXT NOT NULL,
+                start_time   TEXT NOT NULL,
+                end_time     TEXT NOT NULL,
+                sort_order   INTEGER NOT NULL DEFAULT 0,
+                created_at   DATETIME DEFAULT CURRENT_TIMESTAMP
+            );",
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 8,
+            description: "create_attendance_records_table",
+            sql: "CREATE TABLE IF NOT EXISTS attendance_records (
+                id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+                schedule_period_id INTEGER NOT NULL REFERENCES schedule_periods(id) ON DELETE CASCADE,
+                student_id         INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                date               TEXT NOT NULL,
+                status             TEXT NOT NULL DEFAULT 'present',
+                CONSTRAINT chk_status CHECK (status IN ('present','absent','late','early_pickup')),
+                CONSTRAINT uq_attendance UNIQUE (schedule_period_id, student_id, date),
+                created_at         DATETIME DEFAULT CURRENT_TIMESTAMP
+            );",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

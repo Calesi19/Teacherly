@@ -22,6 +22,7 @@ import {
 } from "@heroui/react";
 import { parseDate } from "@internationalized/date";
 import type { DateValue } from "@internationalized/date";
+import { CalendarDays, ClipboardCheck } from "lucide-react";
 import { useStudents } from "../hooks/useStudents";
 import { Breadcrumb } from "../components/Breadcrumb";
 import type { Classroom } from "../types/classroom";
@@ -31,9 +32,11 @@ interface StudentsPageProps {
   classroom: Classroom;
   onGoToClassrooms: () => void;
   onSelectStudent: (student: Student) => void;
+  onGoToSchedule: () => void;
+  onGoToAttendance: () => void;
 }
 
-export function StudentsPage({ classroom, onGoToClassrooms, onSelectStudent }: StudentsPageProps) {
+export function StudentsPage({ classroom, onGoToClassrooms, onSelectStudent, onGoToSchedule, onGoToAttendance }: StudentsPageProps) {
   const { students, loading, error, addStudent } = useStudents(classroom.id);
   const modalState = useOverlayState();
   const emptyForm = { name: "", gender: "", birthdate: "", student_number: "", enrollment_date: "" };
@@ -79,6 +82,17 @@ export function StudentsPage({ classroom, onGoToClassrooms, onSelectStudent }: S
           {classroom.subject && <span>{classroom.subject} · </span>}
           {classroom.grade && <span>{classroom.grade}</span>}
         </p>
+      </div>
+
+      <div className="flex items-center gap-2 mt-3">
+        <Button variant="ghost" size="sm" onPress={onGoToSchedule}>
+          <CalendarDays size={15} className="mr-1" />
+          Schedule
+        </Button>
+        <Button variant="ghost" size="sm" onPress={onGoToAttendance}>
+          <ClipboardCheck size={15} className="mr-1" />
+          Attendance
+        </Button>
       </div>
 
       <div className="flex items-center justify-between mt-6 mb-4">

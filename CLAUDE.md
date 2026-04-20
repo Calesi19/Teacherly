@@ -45,3 +45,9 @@ Schema migrations live in `src-tauri/src/lib.rs`. Three tables: `classrooms`, `s
 - `src/hooks/` — data-fetching hooks (the data layer)
 - `src/types/` — TypeScript interfaces matching DB schema
 - `src-tauri/src/lib.rs` — Tauri setup, DB migrations, plugin registration
+
+## UI Conventions
+
+### Modals
+
+`Modal.Body` always gets `className="flex flex-col gap-4 pb-px overflow-visible"`. The `pb-px` adds 1px bottom padding required for the modal content to render correctly.
