@@ -1,6 +1,44 @@
-import { useState } from "react";
+import { useState, useCallback, useEffect } from "react";
 import "./App.css";
 import { Button, Drawer, useOverlayState } from "@heroui/react";
+
+type ThemePreference = "light" | "dark" | "system";
+const THEME_KEY = "heroui-theme";
+
+function useAppTheme() {
+  const [theme, setThemeState] = useState<ThemePreference>(() => {
+    const s = localStorage.getItem(THEME_KEY);
+    if (s === "light" || s === "dark" || s === "system") return s;
+    return "system";
+  });
+
+  const apply = useCallback((pref: ThemePreference) => {
+    const resolved = pref === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light"
+      : pref;
+    document.documentElement.classList.remove("light", "dark");
+    document.documentElement.classList.add(resolved);
+    document.documentElement.setAttribute("data-theme", resolved);
+  }, []);
+
+  const setTheme = useCallback((pref: ThemePreference) => {
+    localStorage.setItem(THEME_KEY, pref);
+    setThemeState(pref);
+    apply(pref);
+  }, [apply]);
+
+  useEffect(() => { apply(theme); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  useEffect(() => {
+    if (theme !== "system") return;
+    const media = window.matchMedia("(prefers-color-scheme: dark)");
+    const handler = () => apply("system");
+    media.addEventListener("change", handler);
+    return () => media.removeEventListener("change", handler);
+  }, [theme, apply]);
+
+  return { theme, setTheme };
+}
 import { Sidebar } from "./components/Sidebar";
 import { GroupsPage } from "./pages/GroupsPage";
 import { StudentsPage } from "./pages/StudentsPage";
@@ -25,6 +63,7 @@ type Route =
 
 function App() {
   const drawerState = useOverlayState();
+  const { theme, setTheme } = useAppTheme();
   const [route, setRoute] = useState<Route>({ page: "groups" });
 
   const goToGroups = () => setRoute({ page: "groups" });
@@ -122,7 +161,7 @@ function App() {
           />
         );
       case "settings":
-        return <SettingsPage />;
+        return <SettingsPage theme={theme} onThemeChange={setTheme} />;
     }
   }
 
