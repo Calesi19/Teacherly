@@ -19,6 +19,7 @@ import {
 import { Pencil } from "lucide-react";
 import { useContacts } from "../hooks/useContacts";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 import type { Contact, NewContactInput } from "../types/contact";
@@ -71,6 +72,7 @@ export function ContactsPage({
   onGoToStudentProfile,
 }: ContactsPageProps) {
   const { contacts, loading, error, addContact, updateContact } = useContacts(student.id);
+  const { t } = useTranslation();
   const modalState = useOverlayState();
   const editModalState = useOverlayState();
   const [form, setForm] = useState<NewContactInput>(emptyForm);
@@ -141,20 +143,20 @@ export function ContactsPage({
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name, onClick: onGoToStudents },
           { label: student.name, onClick: onGoToStudentProfile },
-          { label: "Contacts" },
+          { label: t("contacts.breadcrumb") },
         ]}
       />
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Contacts</h2>
+          <h2 className="text-2xl font-bold">{t("contacts.title")}</h2>
           <p className="text-sm text-muted">{student.name}</p>
         </div>
         <Button variant="primary" size="sm" onPress={modalState.open}>
-          + Add Contact
+          {t("contacts.addContact")}
         </Button>
       </div>
 
@@ -173,23 +175,21 @@ export function ContactsPage({
       <div className="flex-1 flex flex-col min-h-0">
         {!loading && !error && contacts.length === 0 && (
           <div className="flex flex-col items-center justify-center flex-1 text-center">
-            <p className="text-lg font-semibold text-muted">No contacts yet</p>
-            <p className="text-sm text-foreground/40 mt-1">
-              Click "+ Add Contact" to add one.
-            </p>
+            <p className="text-lg font-semibold text-muted">{t("contacts.noContactsYet")}</p>
+            <p className="text-sm text-foreground/40 mt-1">{t("contacts.noContactsHint")}</p>
           </div>
         )}
 
         {!loading && contacts.length > 0 && (
           <TableRoot variant="primary" className="flex-1 h-full">
             <TableScrollContainer className="h-full">
-            <TableContent aria-label="Contacts" selectionMode="none">
+            <TableContent aria-label={t("contacts.title")} selectionMode="none">
               <TableHeader>
-                <TableColumn isRowHeader>Name</TableColumn>
-                <TableColumn>Relationship</TableColumn>
-                <TableColumn>Phone</TableColumn>
-                <TableColumn>Email</TableColumn>
-                <TableColumn>Emergency Contact</TableColumn>
+                <TableColumn isRowHeader>{t("contacts.columns.name")}</TableColumn>
+                <TableColumn>{t("contacts.columns.relationship")}</TableColumn>
+                <TableColumn>{t("contacts.columns.phone")}</TableColumn>
+                <TableColumn>{t("contacts.columns.email")}</TableColumn>
+                <TableColumn>{t("contacts.columns.emergencyContact")}</TableColumn>
                 <TableColumn> </TableColumn>
               </TableHeader>
               <TableBody>
@@ -207,13 +207,13 @@ export function ContactsPage({
                         ? <span className="inline-flex items-center">{contact.email}<CopyButton value={contact.email} /></span>
                         : <span className="text-foreground/30">—</span>}
                     </TableCell>
-                    <TableCell>{contact.is_emergency_contact ? "Yes" : <span className="text-foreground/30">—</span>}</TableCell>
+                    <TableCell>{contact.is_emergency_contact ? t("contacts.yes") : <span className="text-foreground/30">—</span>}</TableCell>
                     <TableCell>
                       <button
                         type="button"
                         onClick={() => openEditModal(contact)}
                         className="inline-flex items-center text-foreground/30 hover:text-foreground/70 transition-colors"
-                        aria-label="Edit contact"
+                        aria-label={t("contacts.editModal.title")}
                       >
                         <Pencil size={14} />
                       </button>
@@ -232,44 +232,44 @@ export function ContactsPage({
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleEditSubmit}>
-                <Modal.Header>Edit Contact</Modal.Header>
+                <Modal.Header>{t("contacts.editModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-contact-name">Name *</Label>
+                    <Label htmlFor="edit-contact-name">{t("contacts.editModal.nameLabel")}</Label>
                     <Input
                       id="edit-contact-name"
                       value={editForm.name}
                       onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                      placeholder="e.g. Maria Doe"
+                      placeholder={t("contacts.editModal.namePlaceholder")}
                       required
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-contact-relationship">Relationship</Label>
+                    <Label htmlFor="edit-contact-relationship">{t("contacts.editModal.relationshipLabel")}</Label>
                     <Input
                       id="edit-contact-relationship"
                       value={editForm.relationship}
                       onChange={(e) => setEditForm({ ...editForm, relationship: e.target.value })}
-                      placeholder="e.g. Mother, Counselor, Mentor"
+                      placeholder={t("contacts.editModal.relationshipPlaceholder")}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-contact-phone">Phone</Label>
+                    <Label htmlFor="edit-contact-phone">{t("contacts.editModal.phoneLabel")}</Label>
                     <Input
                       id="edit-contact-phone"
                       value={editForm.phone}
                       onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                      placeholder="e.g. +1 555 000 0000"
+                      placeholder={t("contacts.editModal.phonePlaceholder")}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-contact-email">Email</Label>
+                    <Label htmlFor="edit-contact-email">{t("contacts.editModal.emailLabel")}</Label>
                     <Input
                       id="edit-contact-email"
                       type="email"
                       value={editForm.email}
                       onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                      placeholder="e.g. maria@example.com"
+                      placeholder={t("contacts.editModal.emailPlaceholder")}
                     />
                   </div>
                   <Checkbox
@@ -279,7 +279,7 @@ export function ContactsPage({
                     <Checkbox.Control>
                       <Checkbox.Indicator />
                     </Checkbox.Control>
-                    <Checkbox.Content>Primary Emergency Contact</Checkbox.Content>
+                    <Checkbox.Content>{t("contacts.editModal.primaryEmergency")}</Checkbox.Content>
                   </Checkbox>
                   {editError && (
                     <p className="text-danger text-sm">{editError}</p>
@@ -287,10 +287,10 @@ export function ContactsPage({
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeEditModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={submitting}>
-                    {submitting ? <Spinner size="sm" /> : "Save"}
+                    {submitting ? <Spinner size="sm" /> : t("common.save")}
                   </Button>
                 </Modal.Footer>
               </form>
@@ -304,44 +304,44 @@ export function ContactsPage({
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleSubmit}>
-                <Modal.Header>Add Contact</Modal.Header>
+                <Modal.Header>{t("contacts.addModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="contact-name">Name *</Label>
+                    <Label htmlFor="contact-name">{t("contacts.addModal.nameLabel")}</Label>
                     <Input
                       id="contact-name"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder="e.g. Maria Doe"
+                      placeholder={t("contacts.addModal.namePlaceholder")}
                       required
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="contact-relationship">Relationship</Label>
+                    <Label htmlFor="contact-relationship">{t("contacts.addModal.relationshipLabel")}</Label>
                     <Input
                       id="contact-relationship"
                       value={form.relationship}
                       onChange={(e) => setForm({ ...form, relationship: e.target.value })}
-                      placeholder="e.g. Mother, Counselor, Mentor"
+                      placeholder={t("contacts.addModal.relationshipPlaceholder")}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="contact-phone">Phone</Label>
+                    <Label htmlFor="contact-phone">{t("contacts.addModal.phoneLabel")}</Label>
                     <Input
                       id="contact-phone"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      placeholder="e.g. +1 555 000 0000"
+                      placeholder={t("contacts.addModal.phonePlaceholder")}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="contact-email">Email</Label>
+                    <Label htmlFor="contact-email">{t("contacts.addModal.emailLabel")}</Label>
                     <Input
                       id="contact-email"
                       type="email"
                       value={form.email}
                       onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder="e.g. maria@example.com"
+                      placeholder={t("contacts.addModal.emailPlaceholder")}
                     />
                   </div>
                   <Checkbox
@@ -351,7 +351,7 @@ export function ContactsPage({
                     <Checkbox.Control>
                       <Checkbox.Indicator />
                     </Checkbox.Control>
-                    <Checkbox.Content>Primary Emergency Contact</Checkbox.Content>
+                    <Checkbox.Content>{t("contacts.addModal.primaryEmergency")}</Checkbox.Content>
                   </Checkbox>
                   {addError && (
                     <p className="text-danger text-sm">{addError}</p>
@@ -359,10 +359,10 @@ export function ContactsPage({
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={submitting}>
-                    {submitting ? <Spinner size="sm" /> : "Add"}
+                    {submitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
               </form>

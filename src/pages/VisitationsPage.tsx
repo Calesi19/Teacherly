@@ -17,6 +17,7 @@ import type { DateValue } from "@internationalized/date";
 import { useVisitations } from "../hooks/useVisitations";
 import { useContacts } from "../hooks/useContacts";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 import type { NewVisitationInput } from "../types/visitation";
@@ -54,6 +55,7 @@ export function VisitationsPage({
 }: VisitationsPageProps) {
   const { visitations, loading, error, addVisitation } = useVisitations(student.id);
   const { contacts } = useContacts(student.id);
+  const { t } = useTranslation();
   const modalState = useOverlayState();
   const [selectedVisitorKey, setSelectedVisitorKey] = useState<string | null>(null);
   const [newVisitorName, setNewVisitorName] = useState("");
@@ -106,20 +108,20 @@ export function VisitationsPage({
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name, onClick: onGoToStudents },
           { label: student.name, onClick: onGoToStudentProfile },
-          { label: "Visitations" },
+          { label: t("visitations.breadcrumb") },
         ]}
       />
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Visitations</h2>
+          <h2 className="text-2xl font-bold">{t("visitations.title")}</h2>
           <p className="text-sm text-muted">{student.name}</p>
         </div>
         <Button variant="primary" size="sm" onPress={modalState.open}>
-          + Log Visitation
+          {t("visitations.logVisitation")}
         </Button>
       </div>
 
@@ -137,10 +139,8 @@ export function VisitationsPage({
 
       {!loading && !error && visitations.length === 0 && (
         <div className="flex flex-col items-center justify-center flex-1 text-center">
-          <p className="text-lg font-semibold text-muted">No visitations yet</p>
-          <p className="text-sm text-foreground/40 mt-1">
-            Click "+ Log Visitation" to record one.
-          </p>
+          <p className="text-lg font-semibold text-muted">{t("visitations.noVisitationsYet")}</p>
+          <p className="text-sm text-foreground/40 mt-1">{t("visitations.noVisitationsHint")}</p>
         </div>
       )}
 
@@ -165,13 +165,13 @@ export function VisitationsPage({
           <Modal.Container>
             <Modal.Dialog className="overflow-visible">
               <form onSubmit={handleSubmit}>
-                <Modal.Header>Log Visitation</Modal.Header>
+                <Modal.Header>{t("visitations.modal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>Visitor *</Label>
+                    <Label>{t("visitations.modal.visitorLabel")}</Label>
                     <Select
-                      aria-label="Visitor"
+                      aria-label={t("visitations.modal.visitorLabel")}
                       selectedKey={selectedVisitorKey}
                       onSelectionChange={(key) => {
                         setSelectedVisitorKey(key ? String(key) : null);
@@ -181,7 +181,7 @@ export function VisitationsPage({
                       <Select.Trigger>
                         <Select.Value>
                           {({ isPlaceholder }) =>
-                            isPlaceholder ? "Select or add a visitor…" : undefined
+                            isPlaceholder ? t("visitations.modal.selectVisitor") : undefined
                           }
                         </Select.Value>
                         <Select.Indicator />
@@ -198,8 +198,8 @@ export function VisitationsPage({
                               </div>
                             </ListBox.Item>
                           ))}
-                          <ListBox.Item id="new" textValue="New visitor…">
-                            <span className="text-accent text-sm">+ New visitor…</span>
+                          <ListBox.Item id="new" textValue={t("visitations.modal.newVisitor")}>
+                            <span className="text-accent text-sm">{t("visitations.modal.newVisitor")}</span>
                           </ListBox.Item>
                         </ListBox>
                       </Select.Popover>
@@ -208,23 +208,23 @@ export function VisitationsPage({
 
                   {isNewVisitor && (
                     <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="new-visitor-name">Visitor Name *</Label>
+                      <Label htmlFor="new-visitor-name">{t("visitations.modal.newVisitorNameLabel")}</Label>
                       <Input
                         id="new-visitor-name"
                         value={newVisitorName}
                         onChange={(e) => setNewVisitorName(e.target.value)}
-                        placeholder="e.g. John Smith"
+                        placeholder={t("visitations.modal.newVisitorNamePlaceholder")}
                         autoFocus
                       />
-                      <p className="text-xs text-accent">A new contact will be created automatically.</p>
+                      <p className="text-xs text-accent">{t("visitations.modal.newContactHint")}</p>
                     </div>
                   )}
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>Date *</Label>
+                    <Label>{t("visitations.modal.dateLabel")}</Label>
                     <DatePicker
                       className="w-full"
-                      aria-label="Visit date"
+                      aria-label={t("visitations.modal.dateLabel")}
                       value={visitedAt}
                       onChange={(date: DateValue | null) => setVisitedAt(date)}
                     >
@@ -239,7 +239,7 @@ export function VisitationsPage({
                         </DateField.Suffix>
                       </DateField.Group>
                       <DatePicker.Popover>
-                        <Calendar aria-label="Visit date">
+                        <Calendar aria-label={t("visitations.modal.dateLabel")}>
                           <Calendar.Header>
                             <Calendar.YearPickerTrigger>
                               <Calendar.YearPickerTriggerHeading />
@@ -267,12 +267,12 @@ export function VisitationsPage({
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="visit-notes">Notes</Label>
+                    <Label htmlFor="visit-notes">{t("visitations.modal.notesLabel")}</Label>
                     <textarea
                       id="visit-notes"
                       value={notes}
                       onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Teacher observations or notes about the visit…"
+                      placeholder={t("visitations.modal.notesPlaceholder")}
                       rows={4}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     />
@@ -284,10 +284,10 @@ export function VisitationsPage({
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={!canSubmit}>
-                    {submitting ? <Spinner size="sm" /> : "Log"}
+                    {submitting ? <Spinner size="sm" /> : t("common.log")}
                   </Button>
                 </Modal.Footer>
               </form>

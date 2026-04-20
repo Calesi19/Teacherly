@@ -12,6 +12,7 @@ import { useContacts } from "../hooks/useContacts";
 import { useNotes } from "../hooks/useNotes";
 import { useVisitations } from "../hooks/useVisitations";
 import { useStudentAssignmentPreviews } from "../hooks/useStudentAssignmentPreviews";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 
@@ -67,6 +68,8 @@ export function StudentProfilePage({
   onGoToStudents,
   onGoToContacts,
 }: StudentProfilePageProps) {
+  const { t } = useTranslation();
+
   const todayDateValue = (): DateValue => {
     const d = new Date();
     return parseDate(`${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`);
@@ -174,7 +177,7 @@ export function StudentProfilePage({
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name, onClick: onGoToStudents },
           { label: student.name },
         ]}
@@ -191,16 +194,16 @@ export function StudentProfilePage({
             <div>
               <h2 className="text-2xl font-bold">{student.name}</h2>
               <p className="text-sm text-muted">
-                Enrolled {new Date(student.created_at).toLocaleDateString()}
+                {t("studentProfile.enrolled")} {new Date(student.created_at).toLocaleDateString()}
               </p>
             </div>
           </div>
           <Tabs.ListContainer>
             <Tabs.List aria-label="Student sections">
-              <Tabs.Tab id="overview">Overview<Tabs.Indicator /></Tabs.Tab>
-              <Tabs.Tab id="assignments">Assignments<Tabs.Indicator /></Tabs.Tab>
-              <Tabs.Tab id="visitations">Visitations<Tabs.Indicator /></Tabs.Tab>
-              <Tabs.Tab id="notes">Notes<Tabs.Indicator /></Tabs.Tab>
+              <Tabs.Tab id="overview">{t("studentProfile.tabs.overview")}<Tabs.Indicator /></Tabs.Tab>
+              <Tabs.Tab id="assignments">{t("studentProfile.tabs.assignments")}<Tabs.Indicator /></Tabs.Tab>
+              <Tabs.Tab id="visitations">{t("studentProfile.tabs.visitations")}<Tabs.Indicator /></Tabs.Tab>
+              <Tabs.Tab id="notes">{t("studentProfile.tabs.notes")}<Tabs.Indicator /></Tabs.Tab>
             </Tabs.List>
           </Tabs.ListContainer>
         </div>
@@ -208,12 +211,12 @@ export function StudentProfilePage({
         <Tabs.Panel className="pt-4 flex-1 overflow-y-auto" id="overview">
           <div className="flex flex-col gap-4">
             <Surface variant="secondary" className="rounded-2xl p-5">
-              <h3 className="text-sm font-semibold text-muted uppercase tracking-wide mb-4">Student Info</h3>
+              <h3 className="text-sm font-semibold text-muted uppercase tracking-wide mb-4">{t("studentProfile.overview.studentInfo")}</h3>
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-4">
-                <InfoField label="Student ID" value={student.student_number} />
-                <InfoField label="Gender" value={student.gender} />
+                <InfoField label={t("studentProfile.overview.studentId")} value={student.student_number} />
+                <InfoField label={t("studentProfile.overview.gender")} value={student.gender} />
                 <InfoField
-                  label="Birthdate"
+                  label={t("studentProfile.overview.birthdate")}
                   value={
                     student.birthdate
                       ? new Date(student.birthdate).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
@@ -221,11 +224,11 @@ export function StudentProfilePage({
                   }
                 />
                 <InfoField
-                  label="Age"
-                  value={student.birthdate ? `${getAge(student.birthdate)} years old` : null}
+                  label={t("studentProfile.overview.age")}
+                  value={student.birthdate ? t("studentProfile.overview.ageYears", { age: getAge(student.birthdate) }) : null}
                 />
                 <InfoField
-                  label="Enrollment Date"
+                  label={t("studentProfile.overview.enrollmentDate")}
                   value={
                     student.enrollment_date
                       ? new Date(student.enrollment_date).toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })
@@ -238,7 +241,7 @@ export function StudentProfilePage({
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <Card variant="secondary">
                 <Card.Header>
-                  <Card.Title className="text-base">Group</Card.Title>
+                  <Card.Title className="text-base">{t("studentProfile.overview.group")}</Card.Title>
                 </Card.Header>
                 <Card.Content>
                   <p className="font-medium">{group.name}</p>
@@ -255,24 +258,24 @@ export function StudentProfilePage({
 
               <Surface variant="secondary" className="rounded-2xl p-5 flex flex-col gap-3">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-sm font-semibold text-muted uppercase tracking-wide">Contacts</h3>
+                  <h3 className="text-sm font-semibold text-muted uppercase tracking-wide">{t("studentProfile.overview.contacts")}</h3>
                   <button type="button" onClick={onGoToContacts} className="text-xs text-accent hover:underline">
-                    View all →
+                    {t("studentProfile.overview.viewAll")}
                   </button>
                 </div>
                 {loadingContacts ? (
                   <div className="flex justify-center py-4"><Spinner size="sm" color="accent" /></div>
                 ) : contacts.length === 0 ? (
-                  <p className="text-sm text-foreground/40">No contacts added yet.</p>
+                  <p className="text-sm text-foreground/40">{t("studentProfile.overview.noContacts")}</p>
                 ) : (
-                  <ListBox aria-label="Contacts" selectionMode="none">
+                  <ListBox aria-label={t("studentProfile.overview.contacts")} selectionMode="none">
                     {contacts.slice(0, 3).map((contact) => (
                       <ListBox.Item key={contact.id} id={contact.id} textValue={contact.name}>
                         <div className="flex flex-col py-0.5">
                           <span className="text-sm font-medium">
                             {contact.name}
                             {contact.is_emergency_contact ? (
-                              <span className="ml-2 text-xs text-accent font-normal">Emergency Contact</span>
+                              <span className="ml-2 text-xs text-accent font-normal">{t("studentProfile.overview.emergencyContact")}</span>
                             ) : null}
                           </span>
                           {contact.relationship && (
@@ -293,19 +296,19 @@ export function StudentProfilePage({
             <div className="flex justify-center py-12"><Spinner size="lg" color="accent" /></div>
           ) : assignments.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
-              <p className="text-lg font-semibold text-muted">No assignments yet</p>
+              <p className="text-lg font-semibold text-muted">{t("studentProfile.assignments.noAssignments")}</p>
             </div>
           ) : (
             <>
               <div className="flex items-center gap-3 mb-4">
                 <Input
-                  placeholder="Search assignments..."
+                  placeholder={t("studentProfile.assignments.searchPlaceholder")}
                   value={assignmentSearch}
                   onChange={(e) => setAssignmentSearch(e.target.value)}
                   className="max-w-xs"
                 />
                 <Select
-                  aria-label="Filter by period"
+                  aria-label={t("studentProfile.assignments.allPeriods")}
                   selectedKey={assignmentPeriodFilter}
                   onSelectionChange={(key) => setAssignmentPeriodFilter(String(key))}
                   className="w-44"
@@ -313,14 +316,14 @@ export function StudentProfilePage({
                   <Select.Trigger>
                     <Select.Value>
                       {({ selectedText, isPlaceholder }) =>
-                        isPlaceholder ? "All periods" : selectedText
+                        isPlaceholder ? t("studentProfile.assignments.allPeriods") : selectedText
                       }
                     </Select.Value>
                     <Select.Indicator />
                   </Select.Trigger>
                   <Select.Popover>
                     <ListBox>
-                      <ListBox.Item id="all" textValue="All">All</ListBox.Item>
+                      <ListBox.Item id="all" textValue={t("studentProfile.assignments.allPeriods")}>{t("studentProfile.assignments.allPeriods")}</ListBox.Item>
                       {assignmentPeriods.map((p) => (
                         <ListBox.Item key={p} id={p} textValue={p}>{p}</ListBox.Item>
                       ))}
@@ -330,18 +333,18 @@ export function StudentProfilePage({
               </div>
               {filteredAssignments.length === 0 ? (
                 <div className="flex flex-col items-center justify-center flex-1 text-center">
-                  <p className="text-lg font-semibold text-muted">No results</p>
-                  <p className="text-sm text-foreground/40 mt-1">No assignments match your filters.</p>
+                  <p className="text-lg font-semibold text-muted">{t("studentProfile.assignments.noResults")}</p>
+                  <p className="text-sm text-foreground/40 mt-1">{t("studentProfile.assignments.noResultsHint")}</p>
                 </div>
               ) : (
                 <TableRoot variant="primary" className="flex-1 min-h-0">
                   <TableScrollContainer className="h-full">
-                    <TableContent aria-label="Assignments">
+                    <TableContent aria-label={t("studentProfile.tabs.assignments")}>
                       <TableHeader>
-                        <TableColumn isRowHeader>Assignment</TableColumn>
-                        <TableColumn>Period</TableColumn>
-                        <TableColumn>Score</TableColumn>
-                        <TableColumn>Date</TableColumn>
+                        <TableColumn isRowHeader>{t("studentProfile.assignments.columns.assignment")}</TableColumn>
+                        <TableColumn>{t("studentProfile.assignments.columns.period")}</TableColumn>
+                        <TableColumn>{t("studentProfile.assignments.columns.score")}</TableColumn>
+                        <TableColumn>{t("studentProfile.assignments.columns.date")}</TableColumn>
                       </TableHeader>
                       <TableBody>
                         {filteredAssignments.map((a) => (
@@ -375,13 +378,13 @@ export function StudentProfilePage({
         <Tabs.Panel className="pt-4 flex-1 min-h-0 flex flex-col gap-4" id="visitations">
           <div className="flex items-center justify-between">
             <Input
-              placeholder="Search by visitor name..."
+              placeholder={t("studentProfile.visitations.searchPlaceholder")}
               value={visitationSearch}
               onChange={(e) => setVisitationSearch(e.target.value)}
               className="max-w-xs"
             />
             <Button variant="primary" size="sm" onPress={visitationModalState.open}>
-              + Log Visitation
+              {t("studentProfile.visitations.logVisitation")}
             </Button>
           </div>
 
@@ -389,23 +392,23 @@ export function StudentProfilePage({
             <div className="flex justify-center py-12"><Spinner size="lg" color="accent" /></div>
           ) : visitations.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
-              <p className="text-lg font-semibold text-muted">No visitations recorded yet</p>
-              <p className="text-sm text-foreground/40 mt-1">Click "+ Log Visitation" to record one.</p>
+              <p className="text-lg font-semibold text-muted">{t("studentProfile.visitations.noVisitations")}</p>
+              <p className="text-sm text-foreground/40 mt-1">{t("studentProfile.visitations.noVisitationsHint")}</p>
             </div>
           ) : filteredVisitations.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
-              <p className="text-lg font-semibold text-muted">No results</p>
-              <p className="text-sm text-foreground/40 mt-1">No visitors match "{visitationSearch}".</p>
+              <p className="text-lg font-semibold text-muted">{t("studentProfile.visitations.noResults")}</p>
+              <p className="text-sm text-foreground/40 mt-1">{t("studentProfile.visitations.noResultsHint", { search: visitationSearch })}</p>
             </div>
           ) : (
             <TableRoot variant="primary" className="flex-1 min-h-0">
               <TableScrollContainer className="h-full">
-                <TableContent aria-label="Visitations">
+                <TableContent aria-label={t("studentProfile.tabs.visitations")}>
                   <TableHeader>
-                    <TableColumn isRowHeader>Notes</TableColumn>
-                    <TableColumn>Visitor</TableColumn>
-                    <TableColumn>Relationship</TableColumn>
-                    <TableColumn>Date</TableColumn>
+                    <TableColumn isRowHeader>{t("studentProfile.visitations.columns.notes")}</TableColumn>
+                    <TableColumn>{t("studentProfile.visitations.columns.visitor")}</TableColumn>
+                    <TableColumn>{t("studentProfile.visitations.columns.relationship")}</TableColumn>
+                    <TableColumn>{t("studentProfile.visitations.columns.date")}</TableColumn>
                   </TableHeader>
                   <TableBody>
                     {filteredVisitations.map((v) => (
@@ -426,13 +429,13 @@ export function StudentProfilePage({
         <Tabs.Panel className="pt-4 flex-1 min-h-0 flex flex-col gap-4" id="notes">
           <div className="flex items-center justify-between">
             <Input
-              placeholder="Search notes..."
+              placeholder={t("studentProfile.notes.searchPlaceholder")}
               value={noteSearch}
               onChange={(e) => setNoteSearch(e.target.value)}
               className="max-w-xs"
             />
             <Button variant="primary" size="sm" onPress={noteModalState.open}>
-              + Add Note
+              {t("studentProfile.notes.addNote")}
             </Button>
           </div>
 
@@ -442,21 +445,21 @@ export function StudentProfilePage({
             </div>
           ) : notes.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
-              <p className="text-lg font-semibold text-muted">No notes yet</p>
-              <p className="text-sm text-foreground/40 mt-1">Click "+ Add Note" to record your first note.</p>
+              <p className="text-lg font-semibold text-muted">{t("studentProfile.notes.noNotes")}</p>
+              <p className="text-sm text-foreground/40 mt-1">{t("studentProfile.notes.noNotesHint")}</p>
             </div>
           ) : filteredNotes.length === 0 ? (
             <div className="flex flex-col items-center justify-center flex-1 text-center">
-              <p className="text-lg font-semibold text-muted">No results</p>
-              <p className="text-sm text-foreground/40 mt-1">No notes match "{noteSearch}".</p>
+              <p className="text-lg font-semibold text-muted">{t("studentProfile.notes.noResults")}</p>
+              <p className="text-sm text-foreground/40 mt-1">{t("studentProfile.notes.noResultsHint", { search: noteSearch })}</p>
             </div>
           ) : (
             <TableRoot variant="primary" className="flex-1 min-h-0">
               <TableScrollContainer className="h-full">
-                <TableContent aria-label="Notes">
+                <TableContent aria-label={t("studentProfile.tabs.notes")}>
                   <TableHeader>
-                    <TableColumn isRowHeader>Note</TableColumn>
-                    <TableColumn>Date</TableColumn>
+                    <TableColumn isRowHeader>{t("studentProfile.notes.columns.note")}</TableColumn>
+                    <TableColumn>{t("studentProfile.notes.columns.date")}</TableColumn>
                   </TableHeader>
                   <TableBody>
                     {filteredNotes.map((note) => (
@@ -479,15 +482,15 @@ export function StudentProfilePage({
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleAddNote}>
-                <Modal.Header>Add Note</Modal.Header>
+                <Modal.Header>{t("studentProfile.addNoteModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="note-content">Note *</Label>
+                    <Label htmlFor="note-content">{t("studentProfile.addNoteModal.noteLabel")}</Label>
                     <textarea
                       id="note-content"
                       value={noteContent}
                       onChange={(e) => setNoteContent(e.target.value)}
-                      placeholder="Write your note here..."
+                      placeholder={t("studentProfile.addNoteModal.notePlaceholder")}
                       rows={4}
                       required
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
@@ -497,10 +500,10 @@ export function StudentProfilePage({
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeNoteModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={noteSubmitting || !noteContent.trim()}>
-                    {noteSubmitting ? <Spinner size="sm" /> : "Add"}
+                    {noteSubmitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
               </form>
@@ -514,12 +517,12 @@ export function StudentProfilePage({
           <Modal.Container>
             <Modal.Dialog className="overflow-visible">
               <form onSubmit={handleAddVisitation}>
-                <Modal.Header>Log Visitation</Modal.Header>
+                <Modal.Header>{t("studentProfile.logVisitationModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label>Visitor *</Label>
+                    <Label>{t("studentProfile.logVisitationModal.visitorLabel")}</Label>
                     <Select
-                      aria-label="Visitor"
+                      aria-label={t("studentProfile.logVisitationModal.visitorLabel")}
                       selectedKey={selectedVisitorKey}
                       onSelectionChange={(key) => {
                         setSelectedVisitorKey(key ? String(key) : null);
@@ -529,7 +532,7 @@ export function StudentProfilePage({
                       <Select.Trigger>
                         <Select.Value>
                           {({ isPlaceholder }) =>
-                            isPlaceholder ? "Select or add a visitor…" : undefined
+                            isPlaceholder ? t("studentProfile.logVisitationModal.selectVisitor") : undefined
                           }
                         </Select.Value>
                         <Select.Indicator />
@@ -546,8 +549,8 @@ export function StudentProfilePage({
                               </div>
                             </ListBox.Item>
                           ))}
-                          <ListBox.Item id="new" textValue="New visitor…">
-                            <span className="text-accent text-sm">+ New visitor…</span>
+                          <ListBox.Item id="new" textValue={t("studentProfile.logVisitationModal.newVisitor")}>
+                            <span className="text-accent text-sm">{t("studentProfile.logVisitationModal.newVisitor")}</span>
                           </ListBox.Item>
                         </ListBox>
                       </Select.Popover>
@@ -556,23 +559,23 @@ export function StudentProfilePage({
 
                   {isNewVisitor && (
                     <div className="flex flex-col gap-1.5">
-                      <Label htmlFor="visit-new-name">Visitor Name *</Label>
+                      <Label htmlFor="visit-new-name">{t("studentProfile.logVisitationModal.visitorNameLabel")}</Label>
                       <Input
                         id="visit-new-name"
                         value={newVisitorName}
                         onChange={(e) => setNewVisitorName(e.target.value)}
-                        placeholder="e.g. John Smith"
+                        placeholder={t("studentProfile.logVisitationModal.visitorNamePlaceholder")}
                         autoFocus
                       />
-                      <p className="text-xs text-accent">A new contact will be created automatically.</p>
+                      <p className="text-xs text-accent">{t("studentProfile.logVisitationModal.newContactHint")}</p>
                     </div>
                   )}
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>Date *</Label>
+                    <Label>{t("studentProfile.logVisitationModal.dateLabel")}</Label>
                     <DatePicker
                       className="w-full"
-                      aria-label="Visit date"
+                      aria-label={t("studentProfile.logVisitationModal.dateLabel")}
                       value={visitedAt}
                       onChange={(date: DateValue | null) => setVisitedAt(date)}
                     >
@@ -587,7 +590,7 @@ export function StudentProfilePage({
                         </DateField.Suffix>
                       </DateField.Group>
                       <DatePicker.Popover>
-                        <Calendar aria-label="Visit date">
+                        <Calendar aria-label={t("studentProfile.logVisitationModal.dateLabel")}>
                           <Calendar.Header>
                             <Calendar.YearPickerTrigger>
                               <Calendar.YearPickerTriggerHeading />
@@ -615,12 +618,12 @@ export function StudentProfilePage({
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="visit-notes">Notes</Label>
+                    <Label htmlFor="visit-notes">{t("studentProfile.logVisitationModal.notesLabel")}</Label>
                     <textarea
                       id="visit-notes"
                       value={visitNotes}
                       onChange={(e) => setVisitNotes(e.target.value)}
-                      placeholder="Teacher observations or notes about the visit…"
+                      placeholder={t("studentProfile.logVisitationModal.notesPlaceholder")}
                       rows={4}
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     />
@@ -630,10 +633,10 @@ export function StudentProfilePage({
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeVisitationModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={!canSubmitVisitation}>
-                    {visitSubmitting ? <Spinner size="sm" /> : "Log"}
+                    {visitSubmitting ? <Spinner size="sm" /> : t("common.log")}
                   </Button>
                 </Modal.Footer>
               </form>

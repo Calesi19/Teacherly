@@ -7,6 +7,7 @@ import {
   Spinner,
   useOverlayState,
 } from "@heroui/react";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { NewSchedulePeriodInput, DayOfWeek } from "../types/schedule";
 
 interface AddPeriodModalProps {
@@ -15,14 +16,12 @@ interface AddPeriodModalProps {
 
 const ORDERED_DAYS: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
 const WEEKDAYS = new Set<DayOfWeek>([1, 2, 3, 4, 5]);
-const DAY_SHORT: Record<DayOfWeek, string> = {
-  0: "Su", 1: "M", 2: "T", 3: "W", 4: "Th", 5: "F", 6: "Sa",
-};
 
 const emptyForm = { name: "", start_time: "08:00", end_time: "09:00" };
 
 export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
   const modalState = useOverlayState();
+  const { t } = useTranslation();
   const [form, setForm] = useState(emptyForm);
   const [selectedDays, setSelectedDays] = useState<Set<DayOfWeek>>(new Set(WEEKDAYS));
   const [submitting, setSubmitting] = useState(false);
@@ -52,7 +51,7 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
     if (!form.name.trim()) return;
     if (!form.start_time || !form.end_time) return;
     if (selectedDays.size === 0) {
-      setAddError("Select at least one day.");
+      setAddError(t("schedule.addPeriodModal.selectAtLeastOneDay"));
       return;
     }
     setSubmitting(true);
@@ -73,10 +72,14 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
     }
   };
 
+  const addLabel = selectedDays.size > 1
+    ? t("schedule.addPeriodModal.addButtonDays", { count: selectedDays.size })
+    : t("schedule.addPeriodModal.addButton");
+
   return (
     <>
       <Button variant="primary" size="sm" onPress={modalState.open}>
-        + Add Period
+        {t("schedule.addPeriodModal.triggerLabel")}
       </Button>
 
       <Modal state={modalState}>
@@ -84,22 +87,22 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleSubmit}>
-                <Modal.Header>Add Period</Modal.Header>
+                <Modal.Header>{t("schedule.addPeriodModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="period-name">Period Name *</Label>
+                    <Label htmlFor="period-name">{t("schedule.addPeriodModal.periodNameLabel")}</Label>
                     <Input
                       id="period-name"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder="e.g. Math Block"
+                      placeholder={t("schedule.addPeriodModal.periodNamePlaceholder")}
                       required
                     />
                   </div>
 
                   <div className="flex gap-4">
                     <div className="flex flex-col gap-1.5 flex-1">
-                      <Label htmlFor="period-start">Start Time *</Label>
+                      <Label htmlFor="period-start">{t("schedule.addPeriodModal.startTimeLabel")}</Label>
                       <input
                         id="period-start"
                         type="time"
@@ -110,7 +113,7 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
                       />
                     </div>
                     <div className="flex flex-col gap-1.5 flex-1">
-                      <Label htmlFor="period-end">End Time *</Label>
+                      <Label htmlFor="period-end">{t("schedule.addPeriodModal.endTimeLabel")}</Label>
                       <input
                         id="period-end"
                         type="time"
@@ -124,14 +127,14 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
 
                   <div className="flex flex-col gap-2">
                     <div className="flex items-center justify-between">
-                      <Label>Days *</Label>
+                      <Label>{t("schedule.addPeriodModal.daysLabel")}</Label>
                       <div className="flex gap-1">
                         <button
                           type="button"
                           onClick={applyWeekdays}
                           className="text-xs text-foreground/50 hover:text-foreground transition-colors px-1"
                         >
-                          Weekdays
+                          {t("schedule.addPeriodModal.weekdays")}
                         </button>
                         <span className="text-foreground/20 text-xs">·</span>
                         <button
@@ -139,7 +142,7 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
                           onClick={applyAllDays}
                           className="text-xs text-foreground/50 hover:text-foreground transition-colors px-1"
                         >
-                          Every day
+                          {t("schedule.addPeriodModal.everyDay")}
                         </button>
                       </div>
                     </div>
@@ -157,7 +160,7 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
                                 : "bg-foreground/5 text-foreground/50 hover:bg-foreground/10"
                             }`}
                           >
-                            {DAY_SHORT[day]}
+                            {t(`schedule.dayShort.${day}`)}
                           </button>
                         );
                       })}
@@ -168,10 +171,10 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={submitting || selectedDays.size === 0}>
-                    {submitting ? <Spinner size="sm" /> : `Add${selectedDays.size > 1 ? ` (${selectedDays.size} days)` : ""}`}
+                    {submitting ? <Spinner size="sm" /> : addLabel}
                   </Button>
                 </Modal.Footer>
               </form>

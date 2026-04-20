@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Button, Modal, Label, Spinner, useOverlayState } from "@heroui/react";
 import { Trash2, Pencil } from "lucide-react";
 import { ConfirmModal } from "./ConfirmModal";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { SchedulePeriod } from "../types/schedule";
 
 export function formatTime(t: string) {
@@ -19,6 +20,7 @@ interface PeriodCardProps {
 }
 
 export function PeriodCard({ period, onDelete, onEdit, compact = false }: PeriodCardProps) {
+  const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
   const editModalState = useOverlayState();
   const [editForm, setEditForm] = useState({ name: period.name, start_time: period.start_time, end_time: period.end_time });
@@ -53,10 +55,10 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleEditSubmit}>
-                <Modal.Header>Edit Period</Modal.Header>
+                <Modal.Header>{t("schedule.editPeriodModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-period-name">Period Name *</Label>
+                    <Label htmlFor="edit-period-name">{t("schedule.editPeriodModal.periodNameLabel")}</Label>
                     <input
                       id="edit-period-name"
                       value={editForm.name}
@@ -67,7 +69,7 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
                   </div>
                   <div className="flex gap-4">
                     <div className="flex flex-col gap-1.5 flex-1">
-                      <Label htmlFor="edit-period-start">Start Time *</Label>
+                      <Label htmlFor="edit-period-start">{t("schedule.editPeriodModal.startTimeLabel")}</Label>
                       <input
                         id="edit-period-start"
                         type="time"
@@ -78,7 +80,7 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
                       />
                     </div>
                     <div className="flex flex-col gap-1.5 flex-1">
-                      <Label htmlFor="edit-period-end">End Time *</Label>
+                      <Label htmlFor="edit-period-end">{t("schedule.editPeriodModal.endTimeLabel")}</Label>
                       <input
                         id="edit-period-end"
                         type="time"
@@ -92,9 +94,9 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
                   {editError && <p className="text-danger text-sm">{editError}</p>}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button type="button" variant="ghost" onPress={editModalState.close}>Cancel</Button>
+                  <Button type="button" variant="ghost" onPress={editModalState.close}>{t("common.cancel")}</Button>
                   <Button type="submit" variant="primary" isDisabled={saving}>
-                    {saving ? <Spinner size="sm" /> : "Save"}
+                    {saving ? <Spinner size="sm" /> : t("common.save")}
                   </Button>
                 </Modal.Footer>
               </form>
@@ -107,9 +109,9 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
         isOpen={confirming}
         onClose={() => setConfirming(false)}
         onConfirm={() => onDelete(period.id)}
-        title="Delete Period"
-        description={`Are you sure you want to delete "${period.name}"? This will also remove all attendance records for this period.`}
-        confirmLabel="Delete"
+        title={t("schedule.deletePeriodModal.title")}
+        description={t("schedule.deletePeriodModal.description", { name: period.name })}
+        confirmLabel={t("common.delete")}
       />
     </>
   );
@@ -127,7 +129,7 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
               type="button"
               onClick={openEdit}
               className="p-0.5 rounded text-foreground/40 hover:text-foreground transition-colors"
-              aria-label="Edit period"
+              aria-label={t("schedule.editPeriodModal.title")}
             >
               <Pencil size={11} />
             </button>
@@ -135,7 +137,7 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
               type="button"
               onClick={() => setConfirming(true)}
               className="p-0.5 rounded text-foreground/40 hover:text-danger transition-colors"
-              aria-label="Delete period"
+              aria-label={t("schedule.deletePeriodModal.title")}
             >
               <Trash2 size={11} />
             </button>
@@ -157,7 +159,7 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
           type="button"
           onClick={openEdit}
           className="p-1.5 rounded text-foreground/30 hover:text-foreground/70 transition-colors"
-          aria-label="Edit period"
+          aria-label={t("schedule.editPeriodModal.title")}
         >
           <Pencil size={14} />
         </button>
@@ -165,7 +167,7 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
           variant="ghost"
           isIconOnly
           size="sm"
-          aria-label="Delete period"
+          aria-label={t("schedule.deletePeriodModal.title")}
           onPress={() => setConfirming(true)}
         >
           <Trash2 size={14} />

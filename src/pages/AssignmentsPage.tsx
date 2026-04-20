@@ -5,6 +5,7 @@ import { Breadcrumb } from "../components/Breadcrumb";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { AddAssignmentModal } from "../components/AddAssignmentModal";
 import { useAssignments } from "../hooks/useAssignments";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Assignment } from "../types/assignment";
 
@@ -32,6 +33,7 @@ function AssignmentCard({
   onSelect: () => void;
   onDelete: () => Promise<void>;
 }) {
+  const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
 
   return (
@@ -47,14 +49,14 @@ function AssignmentCard({
             {assignment.period_name} · {formatDate(assignment.created_at)}
           </span>
         </div>
-        <span className="text-sm text-foreground/60 shrink-0">{assignment.max_score} pts</span>
+        <span className="text-sm text-foreground/60 shrink-0">{assignment.max_score} {t("assignments.pts")}</span>
       </button>
 
       <button
         type="button"
         onClick={() => setConfirming(true)}
         className="p-1.5 rounded text-foreground/30 hover:text-danger transition-colors shrink-0"
-        aria-label="Delete assignment"
+        aria-label={t("assignments.deleteModal.title")}
       >
         <Trash2 size={14} />
       </button>
@@ -63,9 +65,9 @@ function AssignmentCard({
         isOpen={confirming}
         onClose={() => setConfirming(false)}
         onConfirm={onDelete}
-        title="Delete Assignment"
-        description={`Are you sure you want to delete "${assignment.title}"? All scores will be removed.`}
-        confirmLabel="Delete"
+        title={t("assignments.deleteModal.title")}
+        description={t("assignments.deleteModal.description", { title: assignment.title })}
+        confirmLabel={t("common.delete")}
       />
     </div>
   );
@@ -78,20 +80,21 @@ export function AssignmentsPage({
   onSelectAssignment,
 }: AssignmentsPageProps) {
   const { assignments, loading, error, addAssignment, deleteAssignment } = useAssignments(group.id);
+  const { t } = useTranslation();
 
   return (
     <div className="p-6">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name, onClick: onGoToStudents },
-          { label: "Assignments" },
+          { label: t("assignments.breadcrumb") },
         ]}
       />
 
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Assignments</h2>
+          <h2 className="text-2xl font-bold">{t("assignments.title")}</h2>
           {(group.subject || group.grade) && (
             <p className="text-sm text-muted mt-0.5">
               {[group.subject, group.grade].filter(Boolean).join(" · ")}
@@ -112,8 +115,8 @@ export function AssignmentsPage({
       ) : assignments.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
           <BookOpen size={40} className="text-foreground/20" />
-          <p className="text-lg font-semibold text-muted">No assignments yet</p>
-          <p className="text-sm text-foreground/40">Click "+ Add Assignment" to get started.</p>
+          <p className="text-lg font-semibold text-muted">{t("assignments.noAssignmentsYet")}</p>
+          <p className="text-sm text-foreground/40">{t("assignments.noAssignmentsHint")}</p>
         </div>
       ) : (
         <div className="flex flex-col gap-3">

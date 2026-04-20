@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button, Modal, useOverlayState } from "@heroui/react";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { DayAttendanceStatus, StudentDayStatus } from "../types/attendance";
 
 const DAY_STATUSES: DayAttendanceStatus[] = [
@@ -9,14 +10,6 @@ const DAY_STATUSES: DayAttendanceStatus[] = [
   "early_pickup",
   "late_arrival",
 ];
-
-const STATUS_LABELS: Record<DayAttendanceStatus, string> = {
-  present: "Present",
-  absent: "Absent",
-  late: "Late",
-  early_pickup: "Early Pickup",
-  late_arrival: "Late Arrival",
-};
 
 function formatTime(t: string) {
   const [h, m] = t.split(":").map(Number);
@@ -56,19 +49,21 @@ function TimeModal({
   onConfirm: () => void;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <Modal state={modalState} onOpenChange={(open) => { if (!open) onClose(); }}>
       <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog>
             <Modal.Header>
-              {timeModal?.type === "early_pickup" ? "Early Pickup" : "Late Arrival"} —{" "}
+              {timeModal?.type === "early_pickup" ? t("attendance.timeModal.earlyPickup") : t("attendance.timeModal.lateArrival")} —{" "}
               {timeModal?.studentName}
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
               <div className="flex flex-col gap-1">
                 <label className="text-sm font-medium">
-                  {timeModal?.type === "early_pickup" ? "Pickup time" : "Arrival time"}
+                  {timeModal?.type === "early_pickup" ? t("attendance.timeModal.pickupTime") : t("attendance.timeModal.arrivalTime")}
                 </label>
                 <input
                   type="time"
@@ -81,10 +76,10 @@ function TimeModal({
             </Modal.Body>
             <Modal.Footer>
               <Button variant="ghost" onPress={onClose}>
-                Cancel
+                {t("common.cancel")}
               </Button>
               <Button variant="primary" onPress={onConfirm} isDisabled={!timeInput}>
-                Confirm
+                {t("attendance.timeModal.confirm")}
               </Button>
             </Modal.Footer>
           </Modal.Dialog>
@@ -103,10 +98,19 @@ export function AttendanceDaySection({
   onMarkLateArrival,
   onMarkBulk,
 }: AttendanceDaySectionProps) {
+  const { t } = useTranslation();
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [timeModal, setTimeModal] = useState<TimeModalState>(null);
   const [timeInput, setTimeInput] = useState("");
   const modalState = useOverlayState();
+
+  const statusLabels: Record<DayAttendanceStatus, string> = {
+    present: t("attendance.status.present"),
+    absent: t("attendance.status.absent"),
+    late: t("attendance.status.late"),
+    early_pickup: t("attendance.status.earlyPickup"),
+    late_arrival: t("attendance.status.lateArrival"),
+  };
 
   useEffect(() => {
     if (timeModal) modalState.open();
@@ -182,18 +186,18 @@ export function AttendanceDaySection({
             aria-label="Select all students"
             className="w-4 h-4 cursor-pointer"
           />
-          <span className="flex-1 font-semibold text-sm">Students</span>
+          <span className="flex-1 font-semibold text-sm">{t("attendance.studentsHeader")}</span>
           {someSelected && (
             <div className="flex items-center gap-1">
-              <span className="text-xs text-foreground/50 mr-1">{selected.size} selected:</span>
+              <span className="text-xs text-foreground/50 mr-1">{selected.size} {t("attendance.selected")}</span>
               <Button variant="ghost" size="sm" onPress={() => handleBulk("present")}>
-                Present
+                {t("attendance.status.present")}
               </Button>
               <Button variant="ghost" size="sm" onPress={() => handleBulk("absent")}>
-                Absent
+                {t("attendance.status.absent")}
               </Button>
               <Button variant="ghost" size="sm" onPress={() => handleBulk("late")}>
-                Late
+                {t("attendance.status.late")}
               </Button>
             </div>
           )}
@@ -235,7 +239,7 @@ export function AttendanceDaySection({
                     }`}
                     aria-pressed={row.status === status}
                   >
-                    {STATUS_LABELS[status]}
+                    {statusLabels[status]}
                   </button>
                 ))}
               </div>

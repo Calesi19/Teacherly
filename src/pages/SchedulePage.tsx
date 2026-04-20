@@ -4,7 +4,7 @@ import { useSchedule } from "../hooks/useSchedule";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { AddPeriodModal } from "../components/AddPeriodModal";
 import { PeriodCard } from "../components/PeriodCard";
-import { DAY_LABELS } from "../types/schedule";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { SchedulePeriod, DayOfWeek } from "../types/schedule";
 import type { Group } from "../types/group";
 
@@ -15,12 +15,9 @@ interface SchedulePageProps {
 }
 
 const ORDERED_DAYS: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
-const DAY_SHORT: Record<DayOfWeek, string> = {
-  1: "Mon", 2: "Tue", 3: "Wed", 4: "Thu", 5: "Fri", 6: "Sat", 0: "Sun",
-};
 
-const SLOT_HEIGHT = 16; // px per 15 minutes
-const HOUR_HEIGHT = SLOT_HEIGHT * 4; // 64px per hour
+const SLOT_HEIGHT = 16;
+const HOUR_HEIGHT = SLOT_HEIGHT * 4;
 
 function timeToMinutes(t: string): number {
   const [h, m] = t.split(":").map(Number);
@@ -33,7 +30,6 @@ function formatHourLabel(hour: number): string {
   return hour < 12 ? `${hour} AM` : `${hour - 12} PM`;
 }
 
-// Returns layout info (lane index + total lanes in the overlap cluster) for each period id.
 function computeDayLayout(periods: SchedulePeriod[]): Map<number, { lane: number; totalLanes: number }> {
   const result = new Map<number, { lane: number; totalLanes: number }>();
   if (periods.length === 0) return result;
@@ -49,13 +45,11 @@ function computeDayLayout(periods: SchedulePeriod[]): Map<number, { lane: number
     );
   }
 
-  // BFS to find connected overlap clusters
   const visited = new Set<number>();
 
   for (const seed of sorted) {
     if (visited.has(seed.id)) continue;
 
-    // Collect all periods reachable via overlaps (transitively)
     const cluster: SchedulePeriod[] = [];
     const queue = [seed];
     while (queue.length > 0) {
@@ -70,8 +64,7 @@ function computeDayLayout(periods: SchedulePeriod[]): Map<number, { lane: number
       }
     }
 
-    // Greedy lane assignment within cluster
-    const laneEnds: number[] = []; // laneEnds[i] = end-minute of last period in lane i
+    const laneEnds: number[] = [];
     const laneOf = new Map<number, number>();
 
     for (const p of cluster.sort(
@@ -103,6 +96,7 @@ export function SchedulePage({
 }: SchedulePageProps) {
   const { periods, loading, error, addPeriod, updatePeriod, deletePeriod, periodsByDay } =
     useSchedule(group.id);
+  const { t } = useTranslation();
 
   const { gridStartHour, gridStartMin, totalHeight, hours } = useMemo(() => {
     const startMins = periods.map((p) => timeToMinutes(p.start_time));
@@ -117,7 +111,6 @@ export function SchedulePage({
     };
   }, [periods]);
 
-  // Lane layout per day
   const dayLayouts = useMemo(() => {
     const map = new Map<DayOfWeek, Map<number, { lane: number; totalLanes: number }>>();
     for (const day of ORDERED_DAYS) {
@@ -130,15 +123,15 @@ export function SchedulePage({
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name, onClick: onGoToStudents },
-          { label: "Schedule" },
+          { label: t("schedule.breadcrumb") },
         ]}
       />
 
       <div className="flex items-start justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Schedule</h2>
+          <h2 className="text-2xl font-bold">{t("schedule.title")}</h2>
           <p className="text-sm text-muted">
             {group.subject && <span>{group.subject} · </span>}
             {group.grade && <span>{group.grade}</span>}
@@ -163,10 +156,8 @@ export function SchedulePage({
 
       {!loading && !error && periods.length === 0 && (
         <div className="flex flex-col items-center justify-center flex-1 text-center gap-3">
-          <p className="text-lg font-semibold text-muted">No schedule set up yet</p>
-          <p className="text-sm text-foreground/40">
-            Add periods to define when this class meets each week.
-          </p>
+          <p className="text-lg font-semibold text-muted">{t("schedule.noScheduleYet")}</p>
+          <p className="text-sm text-foreground/40">{t("schedule.noScheduleHint")}</p>
           <AddPeriodModal onAdd={addPeriod} />
         </div>
       )}
@@ -182,18 +173,21 @@ export function SchedulePage({
               style={{ gridTemplateColumns: "3.5rem repeat(7, 1fr)" }}
             >
               <div />
-              {ORDERED_DAYS.map((day) => (
-                <div key={day} className="text-center py-2 border-l border-border/30">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
-                    {DAY_SHORT[day]}
-                  </span>
-                  {(periodsByDay.get(day)?.length ?? 0) > 0 && (
-                    <span className="block text-foreground/30 text-xs leading-tight">
-                      {periodsByDay.get(day)!.length} period{periodsByDay.get(day)!.length !== 1 ? "s" : ""}
+              {ORDERED_DAYS.map((day) => {
+                const dayCount = periodsByDay.get(day)?.length ?? 0;
+                return (
+                  <div key={day} className="text-center py-2 border-l border-border/30">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-foreground/60">
+                      {t(`schedule.dayShort.${day}`)}
                     </span>
-                  )}
-                </div>
-              ))}
+                    {dayCount > 0 && (
+                      <span className="block text-foreground/30 text-xs leading-tight">
+                        {dayCount} {dayCount !== 1 ? t("schedule.periodPlural") : t("schedule.periodSingular")}
+                      </span>
+                    )}
+                  </div>
+                );
+              })}
             </div>
 
             {/* Scrollable time grid */}
@@ -276,29 +270,31 @@ export function SchedulePage({
 
           {/* ── List view (< lg) ── */}
           <div className="lg:hidden flex flex-col gap-6">
-            {ORDERED_DAYS.filter((day) => periodsByDay.has(day)).map((day) => (
-              <div key={day}>
-                <div className="flex items-center gap-2 mb-3">
-                  <h3 className="font-semibold text-sm uppercase tracking-wide text-foreground/60">
-                    {DAY_LABELS[day]}
-                  </h3>
-                  <span className="text-xs text-foreground/40">
-                    ({periodsByDay.get(day)!.length} period
-                    {periodsByDay.get(day)!.length !== 1 ? "s" : ""})
-                  </span>
+            {ORDERED_DAYS.filter((day) => periodsByDay.has(day)).map((day) => {
+              const dayCount = periodsByDay.get(day)!.length;
+              return (
+                <div key={day}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <h3 className="font-semibold text-sm uppercase tracking-wide text-foreground/60">
+                      {t(`schedule.dayFull.${day}`)}
+                    </h3>
+                    <span className="text-xs text-foreground/40">
+                      ({dayCount} {dayCount !== 1 ? t("schedule.periodPlural") : t("schedule.periodSingular")})
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-2">
+                    {periodsByDay.get(day)!.map((period) => (
+                      <PeriodCard
+                        key={period.id}
+                        period={period}
+                        onDelete={deletePeriod}
+                        onEdit={updatePeriod}
+                      />
+                    ))}
+                  </div>
                 </div>
-                <div className="flex flex-col gap-2">
-                  {periodsByDay.get(day)!.map((period) => (
-                    <PeriodCard
-                      key={period.id}
-                      period={period}
-                      onDelete={deletePeriod}
-                      onEdit={updatePeriod}
-                    />
-                  ))}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </>
       )}

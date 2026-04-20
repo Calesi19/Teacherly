@@ -27,6 +27,7 @@ import type { DateValue } from "@internationalized/date";
 import Database from "@tauri-apps/plugin-sql";
 import { useStudents } from "../hooks/useStudents";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 
@@ -40,6 +41,7 @@ interface StudentsPageProps {
 
 export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsPageProps) {
   const { students, loading, error, addStudent } = useStudents(group.id);
+  const { t } = useTranslation();
   const modalState = useOverlayState();
   const noteModalState = useOverlayState();
   const emptyForm = { name: "", gender: "", birthdate: "", student_number: "", enrollment_date: "" };
@@ -115,17 +117,21 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
     }
   };
 
+  const bulkNoteTitle = selectedStudents.length === 1
+    ? t("students.bulkNoteModal.titleSingular")
+    : t("students.bulkNoteModal.titlePlural", { count: selectedStudents.length });
+
   return (
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name },
         ]}
       />
 
       <div className="mb-1">
-        <h2 className="text-2xl font-bold">Students</h2>
+        <h2 className="text-2xl font-bold">{t("students.title")}</h2>
         <p className="text-sm text-muted">
           {group.subject && <span>{group.subject} · </span>}
           {group.grade && <span>{group.grade}</span>}
@@ -135,7 +141,7 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
       <div className="flex items-center justify-between mt-6 mb-4">
         {!loading && students.length > 0 && (
           <Input
-            placeholder="Search students..."
+            placeholder={t("students.searchPlaceholder")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="max-w-xs"
@@ -145,18 +151,18 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
           {hasSelection ? (
             <>
               <span className="text-sm text-muted">
-                {selectedStudents.length} selected
+                {selectedStudents.length} {t("students.selected")}
               </span>
               <Button variant="secondary" size="sm" onPress={noteModalState.open}>
-                + Add Note
+                {t("students.addNote")}
               </Button>
               <Button variant="ghost" size="sm" onPress={() => setSelectedKeys(new Set())}>
-                Clear
+                {t("students.clear")}
               </Button>
             </>
           ) : (
             <Button variant="primary" size="sm" onPress={modalState.open}>
-              + Add Student
+              {t("students.addStudent")}
             </Button>
           )}
         </div>
@@ -177,10 +183,8 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
       <div className="flex-1 flex flex-col min-h-0">
         {!loading && !error && students.length === 0 && (
           <div className="flex flex-col items-center justify-center flex-1 text-center">
-            <p className="text-lg font-semibold text-muted">No students yet</p>
-            <p className="text-sm text-foreground/40 mt-1">
-              Click "+ Add Student" to enroll someone.
-            </p>
+            <p className="text-lg font-semibold text-muted">{t("students.noStudentsYet")}</p>
+            <p className="text-sm text-foreground/40 mt-1">{t("students.noStudentsHint")}</p>
           </div>
         )}
 
@@ -188,14 +192,14 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
           <>
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center flex-1 text-center">
-                <p className="text-lg font-semibold text-muted">No results</p>
-                <p className="text-sm text-foreground/40 mt-1">No students match "{search}".</p>
+                <p className="text-lg font-semibold text-muted">{t("students.noResultsTitle")}</p>
+                <p className="text-sm text-foreground/40 mt-1">{t("students.noResultsHint", { search })}</p>
               </div>
             ) : (
               <TableRoot variant="primary" className="flex-1 h-full">
                 <TableScrollContainer className="h-full">
                   <TableContent
-                    aria-label="Students"
+                    aria-label={t("students.title")}
                     selectionMode="multiple"
                     selectedKeys={selectedKeys}
                     onSelectionChange={setSelectedKeys}
@@ -212,10 +216,10 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                           </Checkbox.Control>
                         </Checkbox>
                       </TableColumn>
-                      <TableColumn isRowHeader>Name</TableColumn>
-                      <TableColumn>Gender</TableColumn>
-                      <TableColumn>Birthdate</TableColumn>
-                      <TableColumn>Student ID</TableColumn>
+                      <TableColumn isRowHeader>{t("students.tableColumns.name")}</TableColumn>
+                      <TableColumn>{t("students.tableColumns.gender")}</TableColumn>
+                      <TableColumn>{t("students.tableColumns.birthdate")}</TableColumn>
+                      <TableColumn>{t("students.tableColumns.studentId")}</TableColumn>
                     </TableHeader>
                     <TableBody>
                       {filtered.map((s) => (
@@ -261,49 +265,49 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
           <Modal.Container>
             <Modal.Dialog className="overflow-visible">
               <form onSubmit={handleSubmit}>
-                <Modal.Header>Add Student</Modal.Header>
+                <Modal.Header>{t("students.addStudentModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-student-name">Student Name *</Label>
+                    <Label htmlFor="add-student-name">{t("students.addStudentModal.nameLabel")}</Label>
                     <Input
                       id="add-student-name"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder="e.g. Jane Doe"
+                      placeholder={t("students.addStudentModal.namePlaceholder")}
                       required
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>Gender</Label>
+                    <Label>{t("students.addStudentModal.genderLabel")}</Label>
                     <Select
-                      aria-label="Gender"
+                      aria-label={t("students.addStudentModal.genderLabel")}
                       selectedKey={form.gender || null}
                       onSelectionChange={(key) => setForm({ ...form, gender: String(key ?? "") })}
                     >
                       <Select.Trigger>
                         <Select.Value>
                           {({ selectedText, isPlaceholder }) =>
-                            isPlaceholder ? "Select gender..." : selectedText
+                            isPlaceholder ? t("students.addStudentModal.selectGender") : selectedText
                           }
                         </Select.Value>
                         <Select.Indicator />
                       </Select.Trigger>
                       <Select.Popover>
                         <ListBox>
-                          <ListBox.Item id="Male" textValue="Male">Male</ListBox.Item>
-                          <ListBox.Item id="Female" textValue="Female">Female</ListBox.Item>
-                          <ListBox.Item id="Other" textValue="Other">Other</ListBox.Item>
+                          <ListBox.Item id="Male" textValue={t("students.addStudentModal.male")}>{t("students.addStudentModal.male")}</ListBox.Item>
+                          <ListBox.Item id="Female" textValue={t("students.addStudentModal.female")}>{t("students.addStudentModal.female")}</ListBox.Item>
+                          <ListBox.Item id="Other" textValue={t("students.addStudentModal.other")}>{t("students.addStudentModal.other")}</ListBox.Item>
                         </ListBox>
                       </Select.Popover>
                     </Select>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>Birthdate</Label>
+                    <Label>{t("students.addStudentModal.birthdateLabel")}</Label>
                     <DatePicker
                       className="w-full"
-                      aria-label="Birthdate"
+                      aria-label={t("students.addStudentModal.birthdateLabel")}
                       value={form.birthdate ? parseDate(form.birthdate) : null}
                       onChange={(date: DateValue | null) =>
                         setForm({ ...form, birthdate: date ? date.toString() : "" })
@@ -320,7 +324,7 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                         </DateField.Suffix>
                       </DateField.Group>
                       <DatePicker.Popover>
-                        <Calendar aria-label="Birthdate">
+                        <Calendar aria-label={t("students.addStudentModal.birthdateLabel")}>
                           <Calendar.Header>
                             <Calendar.YearPickerTrigger>
                               <Calendar.YearPickerTriggerHeading />
@@ -348,20 +352,20 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-student-number">Student ID</Label>
+                    <Label htmlFor="add-student-number">{t("students.addStudentModal.studentIdLabel")}</Label>
                     <Input
                       id="add-student-number"
                       value={form.student_number}
                       onChange={(e) => setForm({ ...form, student_number: e.target.value })}
-                      placeholder="e.g. 2024-0001"
+                      placeholder={t("students.addStudentModal.studentIdPlaceholder")}
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>Enrollment Date</Label>
+                    <Label>{t("students.addStudentModal.enrollmentDateLabel")}</Label>
                     <DatePicker
                       className="w-full"
-                      aria-label="Enrollment Date"
+                      aria-label={t("students.addStudentModal.enrollmentDateLabel")}
                       value={form.enrollment_date ? parseDate(form.enrollment_date) : null}
                       onChange={(date: DateValue | null) =>
                         setForm({ ...form, enrollment_date: date ? date.toString() : "" })
@@ -378,7 +382,7 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                         </DateField.Suffix>
                       </DateField.Group>
                       <DatePicker.Popover>
-                        <Calendar aria-label="Enrollment Date">
+                        <Calendar aria-label={t("students.addStudentModal.enrollmentDateLabel")}>
                           <Calendar.Header>
                             <Calendar.YearPickerTrigger>
                               <Calendar.YearPickerTriggerHeading />
@@ -411,10 +415,10 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={submitting}>
-                    {submitting ? <Spinner size="sm" /> : "Add"}
+                    {submitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
               </form>
@@ -429,17 +433,15 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleBulkAddNote}>
-                <Modal.Header>
-                  Add Note to {selectedStudents.length} student{selectedStudents.length !== 1 ? "s" : ""}
-                </Modal.Header>
+                <Modal.Header>{bulkNoteTitle}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="bulk-note-content">Note *</Label>
+                    <Label htmlFor="bulk-note-content">{t("students.bulkNoteModal.noteLabel")}</Label>
                     <textarea
                       id="bulk-note-content"
                       value={noteContent}
                       onChange={(e) => setNoteContent(e.target.value)}
-                      placeholder="Write your note here..."
+                      placeholder={t("students.bulkNoteModal.notePlaceholder")}
                       rows={4}
                       required
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
@@ -449,10 +451,10 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeNoteModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={noteSubmitting || !noteContent.trim()}>
-                    {noteSubmitting ? <Spinner size="sm" /> : "Add"}
+                    {noteSubmitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
               </form>

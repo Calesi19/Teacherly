@@ -8,6 +8,7 @@ import {
 } from "@heroui/react";
 import { useNotes } from "../hooks/useNotes";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 import type { NewNoteInput } from "../types/note";
@@ -39,6 +40,7 @@ export function NotesPage({
   onGoToStudentProfile,
 }: NotesPageProps) {
   const { notes, loading, error, addNote } = useNotes(student.id);
+  const { t } = useTranslation();
   const modalState = useOverlayState();
   const [content, setContent] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -71,20 +73,20 @@ export function NotesPage({
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name, onClick: onGoToStudents },
           { label: student.name, onClick: onGoToStudentProfile },
-          { label: "Notes" },
+          { label: t("notes.breadcrumb") },
         ]}
       />
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Notes</h2>
+          <h2 className="text-2xl font-bold">{t("notes.title")}</h2>
           <p className="text-sm text-muted">{student.name}</p>
         </div>
         <Button variant="primary" size="sm" onPress={modalState.open}>
-          + Add Note
+          {t("notes.addNote")}
         </Button>
       </div>
 
@@ -102,10 +104,8 @@ export function NotesPage({
 
       {!loading && !error && notes.length === 0 && (
         <div className="flex flex-col items-center justify-center flex-1 text-center">
-          <p className="text-lg font-semibold text-muted">No notes yet</p>
-          <p className="text-sm text-foreground/40 mt-1">
-            Click "+ Add Note" to record your first note.
-          </p>
+          <p className="text-lg font-semibold text-muted">{t("notes.noNotesYet")}</p>
+          <p className="text-sm text-foreground/40 mt-1">{t("notes.noNotesHint")}</p>
         </div>
       )}
 
@@ -125,15 +125,15 @@ export function NotesPage({
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleSubmit}>
-                <Modal.Header>Add Note</Modal.Header>
+                <Modal.Header>{t("notes.modal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="note-content">Note *</Label>
+                    <Label htmlFor="note-content">{t("notes.modal.noteLabel")}</Label>
                     <textarea
                       id="note-content"
                       value={content}
                       onChange={(e) => setContent(e.target.value)}
-                      placeholder="Write your note here..."
+                      placeholder={t("notes.modal.notePlaceholder")}
                       rows={4}
                       required
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
@@ -145,10 +145,10 @@ export function NotesPage({
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={submitting || !content.trim()}>
-                    {submitting ? <Spinner size="sm" /> : "Add"}
+                    {submitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
               </form>

@@ -1,5 +1,7 @@
 import { Select, ListBox, Surface } from "@heroui/react";
 import { Sun, Moon, Monitor } from "lucide-react";
+import { useTranslation } from "../i18n/LanguageContext";
+import type { Language } from "../i18n/translations";
 
 type ThemePreference = "light" | "dark" | "system";
 type ColorTheme = "default" | "ocean" | "forest" | "sunset" | "rose";
@@ -20,62 +22,98 @@ const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string }[] = [
 ];
 
 export function SettingsPage({ theme, onThemeChange, colorTheme, onColorThemeChange }: SettingsPageProps) {
+  const { t, language, setLanguage } = useTranslation();
+
   return (
     <div className="p-6 flex flex-col h-full">
       <div className="mb-6">
-        <h2 className="text-2xl font-bold">Settings</h2>
-        <p className="text-sm text-muted mt-0.5">App preferences and configuration</p>
+        <h2 className="text-2xl font-bold">{t("settings.title")}</h2>
+        <p className="text-sm text-muted mt-0.5">{t("settings.description")}</p>
       </div>
 
-      <div className="flex flex-col gap-4">
-        <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium">Appearance</span>
-            <span className="text-xs text-foreground/50">Choose between light, dark, or your system default.</span>
-          </div>
-          <Select
-            aria-label="Theme"
-            selectedKey={theme}
-            onSelectionChange={(key) => onThemeChange(String(key) as ThemePreference)}
-            className="w-36 shrink-0"
-          >
-            <Select.Trigger>
-              <Select.Value />
-              <Select.Indicator />
-            </Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                <ListBox.Item id="light" textValue="Light"><span className="flex items-center gap-2"><Sun size={14} />Light</span></ListBox.Item>
-                <ListBox.Item id="dark" textValue="Dark"><span className="flex items-center gap-2"><Moon size={14} />Dark</span></ListBox.Item>
-                <ListBox.Item id="system" textValue="System"><span className="flex items-center gap-2"><Monitor size={14} />System</span></ListBox.Item>
-              </ListBox>
-            </Select.Popover>
-          </Select>
-        </Surface>
+      <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionPresentation")}</p>
+          <div className="flex flex-col gap-2">
+            <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">{t("settings.appearance")}</span>
+                <span className="text-xs text-foreground/50">{t("settings.appearanceDescription")}</span>
+              </div>
+              <Select
+                aria-label="Theme"
+                selectedKey={theme}
+                onSelectionChange={(key) => onThemeChange(String(key) as ThemePreference)}
+                className="w-36 shrink-0"
+              >
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    <ListBox.Item id="light" textValue={t("settings.light")}><span className="flex items-center gap-2"><Sun size={14} />{t("settings.light")}</span></ListBox.Item>
+                    <ListBox.Item id="dark" textValue={t("settings.dark")}><span className="flex items-center gap-2"><Moon size={14} />{t("settings.dark")}</span></ListBox.Item>
+                    <ListBox.Item id="system" textValue={t("settings.system")}><span className="flex items-center gap-2"><Monitor size={14} />{t("settings.system")}</span></ListBox.Item>
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+            </Surface>
 
-        <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg">
-          <div className="flex flex-col gap-0.5">
-            <span className="text-sm font-medium">Color Theme</span>
-            <span className="text-xs text-foreground/50">Pick an accent color for the app.</span>
+            <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">{t("settings.colorTheme")}</span>
+                <span className="text-xs text-foreground/50">{t("settings.colorThemeDescription")}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                {COLOR_THEMES.map((ct) => (
+                  <button
+                    key={ct.id}
+                    onClick={() => onColorThemeChange(ct.id)}
+                    aria-label={ct.label}
+                    title={ct.label}
+                    className="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none"
+                    style={{
+                      backgroundColor: ct.swatch,
+                      boxShadow: colorTheme === ct.id
+                        ? `0 0 0 2px var(--background), 0 0 0 4px ${ct.swatch}`
+                        : undefined,
+                    }}
+                  />
+                ))}
+              </div>
+            </Surface>
           </div>
-          <div className="flex items-center gap-2">
-            {COLOR_THEMES.map((t) => (
-              <button
-                key={t.id}
-                onClick={() => onColorThemeChange(t.id)}
-                aria-label={t.label}
-                title={t.label}
-                className="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none"
-                style={{
-                  backgroundColor: t.swatch,
-                  boxShadow: colorTheme === t.id
-                    ? `0 0 0 2px var(--background), 0 0 0 4px ${t.swatch}`
-                    : undefined,
-                }}
-              />
-            ))}
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionGeneral")}</p>
+          <div className="flex flex-col gap-2">
+            <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">{t("settings.language")}</span>
+                <span className="text-xs text-foreground/50">{t("settings.languageDescription")}</span>
+              </div>
+              <Select
+                aria-label="Language"
+                selectedKey={language}
+                onSelectionChange={(key) => setLanguage(String(key) as Language)}
+                className="w-36 shrink-0"
+              >
+                <Select.Trigger>
+                  <Select.Value />
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    <ListBox.Item id="en" textValue="English">English</ListBox.Item>
+                    <ListBox.Item id="es" textValue="Español">Español</ListBox.Item>
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+            </Surface>
           </div>
-        </Surface>
+        </div>
       </div>
     </div>
   );

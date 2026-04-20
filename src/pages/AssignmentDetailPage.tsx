@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Chip, Spinner, Surface } from "@heroui/react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { useAssignmentDetail } from "../hooks/useAssignmentDetail";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Assignment, GradeBand } from "../types/assignment";
 
@@ -33,6 +34,7 @@ export function AssignmentDetailPage({
     group.id,
     assignment.max_score
   );
+  const { t } = useTranslation();
 
   const [pendingScores, setPendingScores] = useState<Map<number, string>>(new Map());
 
@@ -64,9 +66,9 @@ export function AssignmentDetailPage({
     <div className="p-6">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name, onClick: onGoToStudents },
-          { label: "Assignments", onClick: onGoToAssignments },
+          { label: t("assignments.breadcrumb"), onClick: onGoToAssignments },
           { label: assignment.title },
         ]}
       />
@@ -74,7 +76,7 @@ export function AssignmentDetailPage({
       <div className="mb-6">
         <h2 className="text-2xl font-bold">{assignment.title}</h2>
         <p className="text-sm text-muted mt-0.5">
-          {assignment.period_name} · {assignment.max_score} pts max
+          {assignment.period_name} · {assignment.max_score} {t("assignmentDetail.ptsMax")}
         </p>
       </div>
 
@@ -98,7 +100,7 @@ export function AssignmentDetailPage({
             <Surface variant="secondary" className="rounded-2xl p-5 mb-6 flex flex-col gap-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-xs text-muted uppercase tracking-wide">Average</span>
+                  <span className="text-xs text-muted uppercase tracking-wide">{t("assignmentDetail.average")}</span>
                   <span className="text-2xl font-bold">
                     {stats.average !== null ? stats.average.toFixed(1) : "—"}
                     <span className="text-sm font-normal text-muted ml-1">
@@ -107,11 +109,11 @@ export function AssignmentDetailPage({
                   </span>
                 </div>
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-xs text-muted uppercase tracking-wide">Graded</span>
+                  <span className="text-xs text-muted uppercase tracking-wide">{t("assignmentDetail.graded")}</span>
                   <span className="text-2xl font-bold">
                     {stats.gradedCount}
                     <span className="text-sm font-normal text-muted ml-1">
-                      / {scores.length} students
+                      / {scores.length} {scores.length !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}
                     </span>
                   </span>
                 </div>
@@ -125,7 +127,7 @@ export function AssignmentDetailPage({
                         key={d.band}
                         className={`${BAND_COLORS[d.band].bar} h-full`}
                         style={{ width: `${d.percentage}%` }}
-                        title={`${d.band}: ${d.count} student${d.count !== 1 ? "s" : ""}`}
+                        title={`${d.band}: ${d.count} ${d.count !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}`}
                       />
                     ))}
                   </div>

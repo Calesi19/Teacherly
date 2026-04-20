@@ -1,6 +1,7 @@
 import { Button, Select, ListBox, Spinner, Label } from "@heroui/react";
 import { Users, CalendarDays, ClipboardCheck, BookOpen, Settings } from "lucide-react";
 import { useGroups } from "../hooks/useGroups";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
 interface SidebarProps {
@@ -35,6 +36,7 @@ export function Sidebar({
   onClose,
 }: SidebarProps) {
   const { groups, loading } = useGroups();
+  const { t } = useTranslation();
 
   const nav = (action: () => void) => () => {
     action();
@@ -44,28 +46,28 @@ export function Sidebar({
   const navItems = [
     {
       id: "students",
-      label: "Students",
+      label: t("sidebar.students"),
       icon: <Users size={16} />,
       active: STUDENTS_PAGES.has(currentPage),
       onPress: nav(onGoToStudents),
     },
     {
       id: "schedule",
-      label: "Schedule",
+      label: t("sidebar.schedule"),
       icon: <CalendarDays size={16} />,
       active: currentPage === "schedule",
       onPress: nav(onGoToSchedule),
     },
     {
       id: "attendance",
-      label: "Attendance",
+      label: t("sidebar.attendance"),
       icon: <ClipboardCheck size={16} />,
       active: currentPage === "attendance",
       onPress: nav(onGoToAttendance),
     },
     {
       id: "assignments",
-      label: "Assignments",
+      label: t("sidebar.assignments"),
       icon: <BookOpen size={16} />,
       active: currentPage === "assignments" || currentPage === "assignment-detail",
       onPress: nav(onGoToAssignments),
@@ -79,7 +81,7 @@ export function Sidebar({
         <img src="/icon-dark.webp" alt="Tizara" className="w-9 h-9 rounded-xl shrink-0 hidden dark:block" />
         <div>
           <h1 className="text-xl font-bold text-accent">Tizara</h1>
-          <p className="text-xs text-muted">Teacher's Helper</p>
+          <p className="text-xs text-muted">{t("sidebar.tagline")}</p>
         </div>
       </div>
 
@@ -89,12 +91,12 @@ export function Sidebar({
             <Spinner size="sm" />
           </div>
         ) : groups.length === 0 ? (
-          <p className="text-xs text-foreground/40 px-2 py-2">No groups yet.</p>
+          <p className="text-xs text-foreground/40 px-2 py-2">{t("sidebar.noGroups")}</p>
         ) : (
           <>
-          <Label id="group-select-label" className="text-xs font-semibold text-foreground/50 uppercase tracking-wide px-1 mb-1">Group</Label>
+          <Label id="group-select-label" className="text-xs font-semibold text-foreground/50 uppercase tracking-wide px-1 mb-1">{t("sidebar.group")}</Label>
           <Select
-            aria-label="Select group"
+            aria-label={t("sidebar.selectGroup")}
             selectedKey={currentGroup ? String(currentGroup.id) : null}
             onSelectionChange={(key) => {
               const group = groups.find((c) => String(c.id) === String(key));
@@ -105,7 +107,7 @@ export function Sidebar({
               <Select.Value>
                 {({ isPlaceholder }) =>
                   isPlaceholder ? (
-                    <span className="text-foreground/40">Select group…</span>
+                    <span className="text-foreground/40">{t("sidebar.selectGroup")}</span>
                   ) : (
                     <span className="font-medium truncate">
                       {currentGroup?.name}
@@ -163,7 +165,7 @@ export function Sidebar({
           onPress={nav(onGoToSettings)}
         >
           <Settings size={16} />
-          Settings
+          {t("sidebar.settings")}
         </Button>
       </div>
     </aside>

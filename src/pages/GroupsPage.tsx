@@ -3,6 +3,7 @@ import { useGroups } from "../hooks/useGroups";
 import { GroupCard } from "../components/GroupCard";
 import { AddGroupModal } from "../components/AddGroupModal";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
 interface GroupsPageProps {
@@ -12,13 +13,14 @@ interface GroupsPageProps {
 
 export function GroupsPage({ onSelectGroup, currentGroup }: GroupsPageProps) {
   const { groups, loading, error, addGroup } = useGroups();
+  const { t } = useTranslation();
 
   return (
     <div className="p-6">
-      <Breadcrumb items={[{ label: "Groups" }]} />
+      <Breadcrumb items={[{ label: t("groups.breadcrumb") }]} />
 
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold">Groups</h2>
+        <h2 className="text-2xl font-bold">{t("groups.title")}</h2>
         <AddGroupModal onAdd={addGroup} />
       </div>
 
@@ -36,10 +38,8 @@ export function GroupsPage({ onSelectGroup, currentGroup }: GroupsPageProps) {
 
       {!loading && !error && groups.length === 0 && (
         <div className="flex flex-col items-center justify-center py-20 text-center">
-          <p className="text-lg font-semibold text-muted">No groups yet</p>
-          <p className="text-sm text-foreground/40 mt-1">
-            Click "+ Add Group" to get started.
-          </p>
+          <p className="text-lg font-semibold text-muted">{t("groups.noGroupsYet")}</p>
+          <p className="text-sm text-foreground/40 mt-1">{t("groups.noGroupsHint")}</p>
         </div>
       )}
 

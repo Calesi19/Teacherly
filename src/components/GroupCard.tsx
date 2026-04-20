@@ -1,5 +1,6 @@
 import { Card, Chip } from "@heroui/react";
 import { Users } from "lucide-react";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
 interface GroupCardProps {
@@ -9,6 +10,8 @@ interface GroupCardProps {
 }
 
 export function GroupCard({ group, isSelected, onClick }: GroupCardProps) {
+  const { t } = useTranslation();
+
   return (
     <Card
       className={`cursor-pointer shadow-sm transition-all border-2 ${
@@ -33,10 +36,10 @@ export function GroupCard({ group, isSelected, onClick }: GroupCardProps) {
         <div className="flex items-center justify-between mt-3">
           <span className="flex items-center gap-1.5 text-xs text-foreground/50">
             <Users size={12} />
-            {group.student_count} student{group.student_count !== 1 ? "s" : ""}
+            {group.student_count} {group.student_count !== 1 ? t("groups.card.students") : t("groups.card.student")}
           </span>
           <p className="text-xs text-foreground/40">
-            Added {new Date(group.created_at).toLocaleDateString()}
+            {t("groups.card.added")} {new Date(group.created_at).toLocaleDateString()}
           </p>
         </div>
       </Card.Content>

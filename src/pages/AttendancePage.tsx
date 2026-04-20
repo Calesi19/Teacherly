@@ -6,6 +6,7 @@ import { useAttendance } from "../hooks/useAttendance";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { DateNavigator } from "../components/DateNavigator";
 import { AttendanceDaySection } from "../components/AttendanceDaySection";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
 interface AttendancePageProps {
@@ -26,6 +27,7 @@ export function AttendancePage({
   onGoToSchedule,
 }: AttendancePageProps) {
   const [date, setDate] = useState(todayStr);
+  const { t } = useTranslation();
   const {
     periodsForDay,
     allStudents,
@@ -44,15 +46,15 @@ export function AttendancePage({
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
-          { label: "Groups", onClick: onGoToGroups },
+          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
           { label: group.name, onClick: onGoToStudents },
-          { label: "Attendance" },
+          { label: t("attendance.breadcrumb") },
         ]}
       />
 
       <div className="flex items-start justify-between mb-2">
         <div>
-          <h2 className="text-2xl font-bold">Attendance</h2>
+          <h2 className="text-2xl font-bold">{t("attendance.title")}</h2>
           <p className="text-sm text-muted">
             {group.subject && <span>{group.subject} · </span>}
             {group.grade && <span>{group.grade}</span>}
@@ -77,22 +79,20 @@ export function AttendancePage({
       {!loading && !error && periodsForDay.length === 0 && (
         <div className="flex flex-col items-center justify-center flex-1 text-center gap-3 mt-8">
           <CalendarDays size={40} className="text-foreground/20" />
-          <p className="text-lg font-semibold text-muted">No periods scheduled for this day</p>
-          <p className="text-sm text-foreground/40">
-            Set up a schedule to define when this class meets.
-          </p>
+          <p className="text-lg font-semibold text-muted">{t("attendance.noPeriodsForDay")}</p>
+          <p className="text-sm text-foreground/40">{t("attendance.noPeriodsHint")}</p>
           <Button variant="primary" size="sm" onPress={onGoToSchedule}>
-            Set Up Schedule
+            {t("attendance.setUpSchedule")}
           </Button>
         </div>
       )}
 
       {!loading && !error && allStudents.length === 0 && periodsForDay.length > 0 && (
         <div className="flex flex-col items-center justify-center flex-1 text-center gap-2 mt-8">
-          <p className="text-lg font-semibold text-muted">No students enrolled</p>
-          <p className="text-sm text-foreground/40">Add students to start tracking attendance.</p>
+          <p className="text-lg font-semibold text-muted">{t("attendance.noStudents")}</p>
+          <p className="text-sm text-foreground/40">{t("attendance.noStudentsHint")}</p>
           <Button variant="ghost" size="sm" onPress={onGoToStudents}>
-            Go to Students
+            {t("attendance.goToStudents")}
           </Button>
         </div>
       )}

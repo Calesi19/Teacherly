@@ -1,5 +1,6 @@
 import { Button, Modal, Spinner, useOverlayState } from "@heroui/react";
 import { useEffect } from "react";
+import { useTranslation } from "../i18n/LanguageContext";
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -17,10 +18,11 @@ export function ConfirmModal({
   onConfirm,
   title,
   description,
-  confirmLabel = "Delete",
+  confirmLabel,
   loading = false,
 }: ConfirmModalProps) {
   const state = useOverlayState();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (isOpen) state.open();
@@ -45,10 +47,10 @@ export function ConfirmModal({
             )}
             <Modal.Footer>
               <Button type="button" variant="ghost" isDisabled={loading} onPress={onClose}>
-                Cancel
+                {t("confirmModal.cancel")}
               </Button>
               <Button type="button" variant="danger" isDisabled={loading} onPress={handleConfirm}>
-                {loading ? <Spinner size="sm" /> : confirmLabel}
+                {loading ? <Spinner size="sm" /> : (confirmLabel ?? t("common.delete"))}
               </Button>
             </Modal.Footer>
           </Modal.Dialog>

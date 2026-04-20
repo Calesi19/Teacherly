@@ -7,6 +7,7 @@ import {
   Spinner,
   useOverlayState,
 } from "@heroui/react";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { NewGroupInput } from "../types/group";
 
 interface AddGroupModalProps {
@@ -17,6 +18,7 @@ const emptyForm: NewGroupInput = { name: "", subject: "", grade: "" };
 
 export function AddGroupModal({ onAdd }: AddGroupModalProps) {
   const state = useOverlayState();
+  const { t } = useTranslation();
   const [form, setForm] = useState<NewGroupInput>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -45,7 +47,7 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
   return (
     <>
       <Button variant="primary" onPress={state.open}>
-        + Add Group
+        {t("groups.addGroup")}
       </Button>
 
       <Modal state={state}>
@@ -53,34 +55,34 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleSubmit}>
-                <Modal.Header>New Group</Modal.Header>
+                <Modal.Header>{t("groups.addGroupModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-name">Name *</Label>
+                    <Label htmlFor="add-group-name">{t("groups.addGroupModal.nameLabel")}</Label>
                     <Input
                       id="add-group-name"
                       value={form.name}
                       onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder="e.g. Room 101"
+                      placeholder={t("groups.addGroupModal.namePlaceholder")}
                       required
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-subject">Subject</Label>
+                    <Label htmlFor="add-group-subject">{t("groups.addGroupModal.subjectLabel")}</Label>
                     <Input
                       id="add-group-subject"
                       value={form.subject}
                       onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                      placeholder="e.g. Mathematics"
+                      placeholder={t("groups.addGroupModal.subjectPlaceholder")}
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-grade">Grade</Label>
+                    <Label htmlFor="add-group-grade">{t("groups.addGroupModal.gradeLabel")}</Label>
                     <Input
                       id="add-group-grade"
                       value={form.grade}
                       onChange={(e) => setForm({ ...form, grade: e.target.value })}
-                      placeholder="e.g. 10th"
+                      placeholder={t("groups.addGroupModal.gradePlaceholder")}
                     />
                   </div>
                   {error && (
@@ -89,10 +91,10 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={close}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button type="submit" variant="primary" isDisabled={submitting}>
-                    {submitting ? <Spinner size="sm" /> : "Add"}
+                    {submitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
               </form>

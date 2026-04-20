@@ -10,6 +10,7 @@ import {
   useOverlayState,
 } from "@heroui/react";
 import { useSchedule } from "../hooks/useSchedule";
+import { useTranslation } from "../i18n/LanguageContext";
 import type { NewAssignmentInput } from "../types/assignment";
 
 interface AddAssignmentModalProps {
@@ -21,6 +22,7 @@ const emptyForm = { title: "", description: "", max_score: "", period_name: "" }
 
 export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) {
   const modalState = useOverlayState();
+  const { t } = useTranslation();
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
@@ -69,7 +71,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
   return (
     <>
       <Button variant="primary" size="sm" onPress={modalState.open}>
-        + Add Assignment
+        {t("assignments.addModal.triggerLabel")}
       </Button>
 
       <Modal state={modalState}>
@@ -77,33 +79,33 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
           <Modal.Container>
             <Modal.Dialog>
               <form onSubmit={handleSubmit}>
-                <Modal.Header>New Assignment</Modal.Header>
+                <Modal.Header>{t("assignments.addModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="assignment-title">Title *</Label>
+                    <Label htmlFor="assignment-title">{t("assignments.addModal.titleLabel")}</Label>
                     <Input
                       id="assignment-title"
                       value={form.title}
                       onChange={(e) => setForm({ ...form, title: e.target.value })}
-                      placeholder="e.g. Chapter 5 Quiz"
+                      placeholder={t("assignments.addModal.titlePlaceholder")}
                       required
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="assignment-description">Description</Label>
+                    <Label htmlFor="assignment-description">{t("assignments.addModal.descriptionLabel")}</Label>
                     <textarea
                       id="assignment-description"
                       rows={3}
                       value={form.description}
                       onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      placeholder="Optional instructions or notes"
+                      placeholder={t("assignments.addModal.descriptionPlaceholder")}
                       className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="assignment-max-score">Max Score *</Label>
+                    <Label htmlFor="assignment-max-score">{t("assignments.addModal.maxScoreLabel")}</Label>
                     <input
                       id="assignment-max-score"
                       type="number"
@@ -111,24 +113,24 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
                       step="any"
                       value={form.max_score}
                       onChange={(e) => setForm({ ...form, max_score: e.target.value })}
-                      placeholder="e.g. 100"
+                      placeholder={t("assignments.addModal.maxScorePlaceholder")}
                       required
                       className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>Period *</Label>
+                    <Label>{t("assignments.addModal.periodLabel")}</Label>
                     {uniquePeriodNames.length === 0 ? (
                       <select
                         disabled
                         className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm opacity-50 cursor-not-allowed"
                       >
-                        <option>No periods — add a schedule first</option>
+                        <option>{t("assignments.addModal.noPeriods")}</option>
                       </select>
                     ) : (
                       <Select
-                        aria-label="Period"
+                        aria-label={t("assignments.addModal.periodLabel")}
                         selectedKey={form.period_name || null}
                         onSelectionChange={(key) =>
                           setForm({ ...form, period_name: String(key) })
@@ -138,7 +140,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
                           <Select.Value>
                             {({ isPlaceholder }) =>
                               isPlaceholder ? (
-                                <span className="text-foreground/40">Select a period…</span>
+                                <span className="text-foreground/40">{t("assignments.addModal.selectPeriod")}</span>
                               ) : (
                                 <span>{form.period_name}</span>
                               )
@@ -163,7 +165,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
                 </Modal.Body>
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={closeModal}>
-                    Cancel
+                    {t("common.cancel")}
                   </Button>
                   <Button
                     type="submit"
@@ -176,7 +178,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
                       uniquePeriodNames.length === 0
                     }
                   >
-                    {submitting ? <Spinner size="sm" /> : "Add Assignment"}
+                    {submitting ? <Spinner size="sm" /> : t("assignments.addModal.addButton")}
                   </Button>
                 </Modal.Footer>
               </form>

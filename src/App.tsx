@@ -68,6 +68,7 @@ function useAppTheme() {
 
   return { theme, setTheme };
 }
+import { LanguageProvider } from "./i18n/LanguageContext";
 import { Sidebar } from "./components/Sidebar";
 import { GroupsPage } from "./pages/GroupsPage";
 import { StudentsPage } from "./pages/StudentsPage";
@@ -234,6 +235,7 @@ function App() {
   }
 
   return (
+    <LanguageProvider>
     <div className="flex h-screen overflow-hidden">
       <Drawer state={drawerState}>
         <Drawer.Backdrop isDismissable>
@@ -261,6 +263,7 @@ function App() {
         <main className="flex-1 bg-background-secondary flex flex-col overflow-y-auto">{renderPage()}</main>
       </div>
     </div>
+    </LanguageProvider>
   );
 }
 
