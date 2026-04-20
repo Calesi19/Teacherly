@@ -5,8 +5,15 @@ import {
   Label,
   Input,
   Spinner,
+  Select,
+  ListBox,
+  DatePicker,
+  DateField,
+  Calendar,
   useOverlayState,
 } from "@heroui/react";
+import { parseDate } from "@internationalized/date";
+import type { DateValue } from "@internationalized/date";
 import { useVisitations } from "../hooks/useVisitations";
 import { useContacts } from "../hooks/useContacts";
 import { Breadcrumb } from "../components/Breadcrumb";
@@ -31,12 +38,11 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function todayString(): string {
+function todayDateValue(): DateValue {
   const d = new Date();
-  const yyyy = d.getFullYear();
-  const mm = String(d.getMonth() + 1).padStart(2, "0");
-  const dd = String(d.getDate()).padStart(2, "0");
-  return `${yyyy}-${mm}-${dd}`;
+  return parseDate(
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`
+  );
 }
 
 export function VisitationsPage({
@@ -49,36 +55,43 @@ export function VisitationsPage({
   const { visitations, loading, error, addVisitation } = useVisitations(student.id);
   const { contacts } = useContacts(student.id);
   const modalState = useOverlayState();
-  const [visitorName, setVisitorName] = useState("");
+  const [selectedVisitorKey, setSelectedVisitorKey] = useState<string | null>(null);
+  const [newVisitorName, setNewVisitorName] = useState("");
   const [notes, setNotes] = useState("");
-  const [visitedAt, setVisitedAt] = useState(todayString());
+  const [visitedAt, setVisitedAt] = useState<DateValue | null>(todayDateValue());
   const [submitting, setSubmitting] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
 
-  const matchedContact = contacts.find(
-    (c) => c.name.toLowerCase() === visitorName.trim().toLowerCase()
-  );
-  const isNewVisitor = visitorName.trim().length > 0 && !matchedContact;
+  const isNewVisitor = selectedVisitorKey === "new";
+  const matchedContact = selectedVisitorKey && selectedVisitorKey !== "new"
+    ? contacts.find((c) => String(c.id) === selectedVisitorKey) ?? null
+    : null;
+
+  const canSubmit =
+    !submitting &&
+    visitedAt !== null &&
+    (isNewVisitor ? newVisitorName.trim().length > 0 : matchedContact !== null);
 
   const closeModal = () => {
-    setVisitorName("");
+    setSelectedVisitorKey(null);
+    setNewVisitorName("");
     setNotes("");
-    setVisitedAt(todayString());
+    setVisitedAt(todayDateValue());
     setAddError(null);
     modalState.close();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!visitorName.trim()) return;
+    if (!canSubmit || !visitedAt) return;
     setSubmitting(true);
     setAddError(null);
     try {
       const input: NewVisitationInput = {
         contact_id: matchedContact ? matchedContact.id : null,
-        visitor_name: visitorName.trim(),
+        visitor_name: isNewVisitor ? newVisitorName.trim() : (matchedContact?.name ?? ""),
         notes,
-        visited_at: visitedAt,
+        visited_at: visitedAt.toString(),
       };
       await addVisitation(input);
       closeModal();
@@ -150,43 +163,109 @@ export function VisitationsPage({
       <Modal state={modalState}>
         <Modal.Backdrop isDismissable={!submitting}>
           <Modal.Container>
-            <Modal.Dialog>
+            <Modal.Dialog className="overflow-visible">
               <form onSubmit={handleSubmit}>
                 <Modal.Header>Log Visitation</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
+
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="visitor-name">Visitor *</Label>
-                    <input
-                      id="visitor-name"
-                      list="contacts-list"
-                      value={visitorName}
-                      onChange={(e) => setVisitorName(e.target.value)}
-                      placeholder="Type or select a contact…"
-                      required
-                      autoComplete="off"
-                      className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent"
-                    />
-                    <datalist id="contacts-list">
-                      {contacts.map((c) => (
-                        <option key={c.id} value={c.name} />
-                      ))}
-                    </datalist>
-                    {isNewVisitor && (
-                      <p className="text-xs text-accent">
-                        Will create new contact: <strong>{visitorName.trim()}</strong>
-                      </p>
-                    )}
+                    <Label>Visitor *</Label>
+                    <Select
+                      aria-label="Visitor"
+                      selectedKey={selectedVisitorKey}
+                      onSelectionChange={(key) => {
+                        setSelectedVisitorKey(key ? String(key) : null);
+                        setNewVisitorName("");
+                      }}
+                    >
+                      <Select.Trigger>
+                        <Select.Value>
+                          {({ isPlaceholder }) =>
+                            isPlaceholder ? "Select or add a visitor…" : undefined
+                          }
+                        </Select.Value>
+                        <Select.Indicator />
+                      </Select.Trigger>
+                      <Select.Popover>
+                        <ListBox>
+                          {contacts.map((c) => (
+                            <ListBox.Item key={c.id} id={String(c.id)} textValue={c.name}>
+                              <div className="flex flex-col">
+                                <span className="text-sm">{c.name}</span>
+                                {c.relationship && (
+                                  <span className="text-xs text-foreground/50">{c.relationship}</span>
+                                )}
+                              </div>
+                            </ListBox.Item>
+                          ))}
+                          <ListBox.Item id="new" textValue="New visitor…">
+                            <span className="text-accent text-sm">+ New visitor…</span>
+                          </ListBox.Item>
+                        </ListBox>
+                      </Select.Popover>
+                    </Select>
                   </div>
+
+                  {isNewVisitor && (
+                    <div className="flex flex-col gap-1.5">
+                      <Label htmlFor="new-visitor-name">Visitor Name *</Label>
+                      <Input
+                        id="new-visitor-name"
+                        value={newVisitorName}
+                        onChange={(e) => setNewVisitorName(e.target.value)}
+                        placeholder="e.g. John Smith"
+                        autoFocus
+                      />
+                      <p className="text-xs text-accent">A new contact will be created automatically.</p>
+                    </div>
+                  )}
+
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="visit-date">Date</Label>
-                    <Input
-                      id="visit-date"
-                      type="date"
+                    <Label>Date *</Label>
+                    <DatePicker
+                      className="w-full"
+                      aria-label="Visit date"
                       value={visitedAt}
-                      onChange={(e) => setVisitedAt(e.target.value)}
-                      required
-                    />
+                      onChange={(date: DateValue | null) => setVisitedAt(date)}
+                    >
+                      <DateField.Group fullWidth>
+                        <DateField.Input>
+                          {(segment) => <DateField.Segment segment={segment} />}
+                        </DateField.Input>
+                        <DateField.Suffix>
+                          <DatePicker.Trigger>
+                            <DatePicker.TriggerIndicator />
+                          </DatePicker.Trigger>
+                        </DateField.Suffix>
+                      </DateField.Group>
+                      <DatePicker.Popover>
+                        <Calendar aria-label="Visit date">
+                          <Calendar.Header>
+                            <Calendar.YearPickerTrigger>
+                              <Calendar.YearPickerTriggerHeading />
+                              <Calendar.YearPickerTriggerIndicator />
+                            </Calendar.YearPickerTrigger>
+                            <Calendar.NavButton slot="previous" />
+                            <Calendar.NavButton slot="next" />
+                          </Calendar.Header>
+                          <Calendar.Grid>
+                            <Calendar.GridHeader>
+                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                            </Calendar.GridHeader>
+                            <Calendar.GridBody>
+                              {(date) => <Calendar.Cell date={date} />}
+                            </Calendar.GridBody>
+                          </Calendar.Grid>
+                          <Calendar.YearPickerGrid>
+                            <Calendar.YearPickerGridBody>
+                              {({ year }) => <Calendar.YearPickerCell year={year} />}
+                            </Calendar.YearPickerGridBody>
+                          </Calendar.YearPickerGrid>
+                        </Calendar>
+                      </DatePicker.Popover>
+                    </DatePicker>
                   </div>
+
                   <div className="flex flex-col gap-1.5">
                     <Label htmlFor="visit-notes">Notes</Label>
                     <textarea
@@ -198,6 +277,7 @@ export function VisitationsPage({
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     />
                   </div>
+
                   {addError && (
                     <p className="text-danger text-sm">{addError}</p>
                   )}
@@ -206,7 +286,7 @@ export function VisitationsPage({
                   <Button type="button" variant="ghost" onPress={closeModal}>
                     Cancel
                   </Button>
-                  <Button type="submit" variant="primary" isDisabled={submitting || !visitorName.trim()}>
+                  <Button type="submit" variant="primary" isDisabled={!canSubmit}>
                     {submitting ? <Spinner size="sm" /> : "Log"}
                   </Button>
                 </Modal.Footer>
