@@ -78,8 +78,8 @@ export function StudentProfilePage({
       />
 
       <div className="flex items-center gap-4 mb-8">
-        <Avatar color="accent" size="lg">
-          <Avatar.Fallback color="accent">
+        <Avatar size="lg">
+          <Avatar.Fallback className="bg-accent text-white font-semibold">
             {student.name.charAt(0).toUpperCase()}
           </Avatar.Fallback>
         </Avatar>
