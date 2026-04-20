@@ -12,6 +12,8 @@ import { useContacts } from "../hooks/useContacts";
 import { useNotes } from "../hooks/useNotes";
 import { useVisitations } from "../hooks/useVisitations";
 import { useStudentAssignmentPreviews } from "../hooks/useStudentAssignmentPreviews";
+import { useStudentAttendance } from "../hooks/useStudentAttendance";
+import type { DayAttendanceStatus } from "../types/attendance";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
@@ -99,6 +101,7 @@ export function StudentProfilePage({
   const { notes, loading: loadingNotes, addNote } = useNotes(student.id);
   const { visitations, loading: loadingVisitations, addVisitation } = useVisitations(student.id);
   const { previews: assignments, loading: loadingAssignments } = useStudentAssignmentPreviews(student.id, group.id);
+  const { days: attendanceDays, summary: attendanceSummary, loading: loadingAttendance } = useStudentAttendance(student.id);
 
   const assignmentPeriods = Array.from(new Set(assignments.map((a) => a.period_name))).sort();
   const filteredAssignments = assignments.filter((a) => {
@@ -202,6 +205,7 @@ export function StudentProfilePage({
             <Tabs.List aria-label="Student sections">
               <Tabs.Tab id="overview">{t("studentProfile.tabs.overview")}<Tabs.Indicator /></Tabs.Tab>
               <Tabs.Tab id="assignments">{t("studentProfile.tabs.assignments")}<Tabs.Indicator /></Tabs.Tab>
+              <Tabs.Tab id="attendance">{t("studentProfile.tabs.attendance")}<Tabs.Indicator /></Tabs.Tab>
               <Tabs.Tab id="visitations">{t("studentProfile.tabs.visitations")}<Tabs.Indicator /></Tabs.Tab>
               <Tabs.Tab id="notes">{t("studentProfile.tabs.notes")}<Tabs.Indicator /></Tabs.Tab>
             </Tabs.List>
@@ -371,6 +375,76 @@ export function StudentProfilePage({
                   </TableScrollContainer>
                 </TableRoot>
               )}
+            </>
+          )}
+        </Tabs.Panel>
+
+        <Tabs.Panel className="pt-4 flex-1 min-h-0 flex flex-col gap-4" id="attendance">
+          {loadingAttendance ? (
+            <div className="flex justify-center py-12"><Spinner size="lg" color="accent" /></div>
+          ) : attendanceDays.length === 0 ? (
+            <div className="flex flex-col items-center justify-center flex-1 text-center">
+              <p className="text-lg font-semibold text-muted">{t("studentProfile.attendance.noAttendance")}</p>
+              <p className="text-sm text-foreground/40 mt-1">{t("studentProfile.attendance.noAttendanceHint")}</p>
+            </div>
+          ) : (
+            <>
+              <div className="grid grid-cols-3 sm:grid-cols-6 gap-3">
+                {([
+                  { key: "totalDays", value: attendanceSummary.totalDays, color: "text-foreground" },
+                  { key: "present", value: attendanceSummary.present, color: "text-success" },
+                  { key: "absent", value: attendanceSummary.absent, color: "text-danger" },
+                  { key: "late", value: attendanceSummary.late, color: "text-warning" },
+                  { key: "earlyPickup", value: attendanceSummary.earlyPickup, color: "text-foreground/60" },
+                  { key: "lateArrival", value: attendanceSummary.lateArrival, color: "text-accent" },
+                ] as { key: string; value: number; color: string }[]).map(({ key, value, color }) => (
+                  <Surface key={key} variant="secondary" className="rounded-xl p-3 flex flex-col gap-0.5 text-center">
+                    <span className={`text-xl font-bold ${color}`}>{value}</span>
+                    <span className="text-xs text-muted">{t(`studentProfile.attendance.summary.${key}`)}</span>
+                  </Surface>
+                ))}
+              </div>
+              <TableRoot variant="primary" className="flex-1 min-h-0">
+                <TableScrollContainer className="h-full">
+                  <TableContent aria-label={t("studentProfile.tabs.attendance")}>
+                    <TableHeader>
+                      <TableColumn isRowHeader>{t("studentProfile.attendance.columns.date")}</TableColumn>
+                      <TableColumn>{t("studentProfile.attendance.columns.status")}</TableColumn>
+                      <TableColumn>{t("studentProfile.attendance.columns.time")}</TableColumn>
+                      <TableColumn>{t("studentProfile.attendance.columns.periods")}</TableColumn>
+                    </TableHeader>
+                    <TableBody>
+                      {attendanceDays.map((day) => {
+                        const statusColors: Record<DayAttendanceStatus, string> = {
+                          present: "text-success",
+                          absent: "text-danger",
+                          late: "text-warning",
+                          early_pickup: "text-foreground/60",
+                          late_arrival: "text-accent",
+                        };
+                        return (
+                          <TableRow key={day.date} id={day.date}>
+                            <TableCell className="font-medium whitespace-nowrap">
+                              {new Date(day.date + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })}
+                            </TableCell>
+                            <TableCell>
+                              <span className={`text-sm font-medium ${statusColors[day.dayStatus]}`}>
+                                {t(`studentProfile.attendance.status.${day.dayStatus}`)}
+                              </span>
+                            </TableCell>
+                            <TableCell className="text-sm text-foreground/50">
+                              {day.time ?? "—"}
+                            </TableCell>
+                            <TableCell className="text-sm text-foreground/50">
+                              {day.records.map((r) => r.period_name).join(", ")}
+                            </TableCell>
+                          </TableRow>
+                        );
+                      })}
+                    </TableBody>
+                  </TableContent>
+                </TableScrollContainer>
+              </TableRoot>
             </>
           )}
         </Tabs.Panel>

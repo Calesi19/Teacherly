@@ -84,8 +84,34 @@ const en = {
     tabs: {
       overview: "Overview",
       assignments: "Assignments",
+      attendance: "Attendance",
       visitations: "Visitations",
       notes: "Notes",
+    },
+    attendance: {
+      noAttendance: "No attendance records yet",
+      noAttendanceHint: "Attendance will appear here once it's been recorded.",
+      summary: {
+        totalDays: "Days Tracked",
+        present: "Present",
+        absent: "Absent",
+        late: "Late",
+        earlyPickup: "Early Pickup",
+        lateArrival: "Late Arrival",
+      },
+      columns: {
+        date: "Date",
+        status: "Status",
+        time: "Time",
+        periods: "Periods",
+      },
+      status: {
+        present: "Present",
+        absent: "Absent",
+        late: "Late",
+        early_pickup: "Early Pickup",
+        late_arrival: "Late Arrival",
+      },
     },
     overview: {
       studentInfo: "Student Info",
@@ -425,8 +451,34 @@ const es: typeof en = {
     tabs: {
       overview: "Resumen",
       assignments: "Tareas",
+      attendance: "Asistencia",
       visitations: "Visitas",
       notes: "Notas",
+    },
+    attendance: {
+      noAttendance: "Sin registros de asistencia aún",
+      noAttendanceHint: "La asistencia aparecerá aquí una vez registrada.",
+      summary: {
+        totalDays: "Días registrados",
+        present: "Presente",
+        absent: "Ausente",
+        late: "Tarde",
+        earlyPickup: "Salida anticipada",
+        lateArrival: "Llegada tardía",
+      },
+      columns: {
+        date: "Fecha",
+        status: "Estado",
+        time: "Hora",
+        periods: "Períodos",
+      },
+      status: {
+        present: "Presente",
+        absent: "Ausente",
+        late: "Tarde",
+        early_pickup: "Salida anticipada",
+        late_arrival: "Llegada tardía",
+      },
     },
     overview: {
       studentInfo: "Información del estudiante",
