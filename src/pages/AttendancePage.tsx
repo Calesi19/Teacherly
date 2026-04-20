@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Button, Spinner } from "@heroui/react";
 import { CalendarDays } from "lucide-react";
+
 import { useAttendance } from "../hooks/useAttendance";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { DateNavigator } from "../components/DateNavigator";
@@ -57,10 +58,6 @@ export function AttendancePage({
             {group.grade && <span>{group.grade}</span>}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onPress={onGoToSchedule}>
-          <CalendarDays size={15} className="mr-1" />
-          Schedule
-        </Button>
       </div>
 
       <DateNavigator date={date} onChange={setDate} />

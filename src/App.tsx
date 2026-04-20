@@ -198,7 +198,6 @@ function App() {
             group={route.group}
             onGoToGroups={goToGroups}
             onGoToStudents={() => goToStudents(route.group)}
-            onGoToAttendance={() => goToAttendance(route.group)}
           />
         );
       case "attendance":

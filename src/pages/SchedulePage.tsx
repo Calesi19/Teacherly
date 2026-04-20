@@ -1,6 +1,5 @@
 import { useMemo } from "react";
-import { Button, Spinner } from "@heroui/react";
-import { CalendarCheck } from "lucide-react";
+import { Spinner } from "@heroui/react";
 import { useSchedule } from "../hooks/useSchedule";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { AddPeriodModal } from "../components/AddPeriodModal";
@@ -13,7 +12,6 @@ interface SchedulePageProps {
   group: Group;
   onGoToGroups: () => void;
   onGoToStudents: () => void;
-  onGoToAttendance: () => void;
 }
 
 const ORDERED_DAYS: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
@@ -102,7 +100,6 @@ export function SchedulePage({
   group,
   onGoToGroups,
   onGoToStudents,
-  onGoToAttendance,
 }: SchedulePageProps) {
   const { periods, loading, error, addPeriod, updatePeriod, deletePeriod, periodsByDay } =
     useSchedule(group.id);
@@ -148,10 +145,6 @@ export function SchedulePage({
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" onPress={onGoToAttendance}>
-            <CalendarCheck size={15} className="mr-1" />
-            Take Attendance
-          </Button>
           <AddPeriodModal onAdd={addPeriod} />
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Button, Select, ListBox, Spinner } from "@heroui/react";
+import { Button, Select, ListBox, Spinner, Label } from "@heroui/react";
 import { Users, CalendarDays, ClipboardCheck, BookOpen, Settings } from "lucide-react";
 import { useGroups } from "../hooks/useGroups";
 import type { Group } from "../types/group";
@@ -91,6 +91,8 @@ export function Sidebar({
         ) : groups.length === 0 ? (
           <p className="text-xs text-foreground/40 px-2 py-2">No groups yet.</p>
         ) : (
+          <>
+          <Label id="group-select-label" className="text-xs font-semibold text-foreground/50 uppercase tracking-wide px-1 mb-1">Group</Label>
           <Select
             aria-label="Select group"
             selectedKey={currentGroup ? String(currentGroup.id) : null}
@@ -130,6 +132,7 @@ export function Sidebar({
               </ListBox>
             </Select.Popover>
           </Select>
+          </>
         )}
       </div>
 
