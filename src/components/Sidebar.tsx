@@ -65,9 +65,13 @@ export function Sidebar({
 
   return (
     <aside className="bg-surface-secondary h-screen w-64 flex flex-col">
-      <div className="p-5 pb-4">
-        <h1 className="text-xl font-bold text-accent">Tizara</h1>
-        <p className="text-xs text-muted mt-0.5">Teacher's Helper</p>
+      <div className="p-5 pb-4 flex items-center gap-3">
+        <img src="/icon-light.webp" alt="Tizara" className="w-9 h-9 rounded-xl shrink-0 dark:hidden" />
+        <img src="/icon-dark.webp" alt="Tizara" className="w-9 h-9 rounded-xl shrink-0 hidden dark:block" />
+        <div>
+          <h1 className="text-xl font-bold text-accent">Tizara</h1>
+          <p className="text-xs text-muted">Teacher's Helper</p>
+        </div>
       </div>
 
       <div className="px-3 pb-3">
