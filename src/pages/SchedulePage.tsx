@@ -133,7 +133,6 @@ export function SchedulePage({
         <div>
           <h2 className="text-2xl font-bold">{t("schedule.title")}</h2>
           <p className="text-sm text-muted">
-            {group.subject && <span>{group.subject} · </span>}
             {group.grade && <span>{group.grade}</span>}
           </p>
         </div>

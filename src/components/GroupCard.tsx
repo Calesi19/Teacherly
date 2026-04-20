@@ -26,9 +26,6 @@ export function GroupCard({ group, isSelected, onClick }: GroupCardProps) {
       </Card.Header>
       <Card.Content>
         <div className="flex flex-wrap gap-2">
-          {group.subject && (
-            <Chip variant="secondary" color="accent">{group.subject}</Chip>
-          )}
           {group.grade && (
             <Chip variant="tertiary">{group.grade}</Chip>
           )}

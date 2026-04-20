@@ -167,6 +167,19 @@ pub fn run() {
             sql: "ALTER TABLE attendance_records ADD COLUMN notes TEXT;",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 13,
+            description: "add_school_year_dates_to_groups",
+            sql: "ALTER TABLE groups ADD COLUMN start_date TEXT;\
+                  ALTER TABLE groups ADD COLUMN end_date TEXT;",
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 14,
+            description: "drop_subject_from_groups",
+            sql: "ALTER TABLE groups DROP COLUMN subject;",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

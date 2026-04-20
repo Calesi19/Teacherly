@@ -95,10 +95,8 @@ export function AssignmentsPage({
       <div className="flex items-start justify-between mb-6">
         <div>
           <h2 className="text-2xl font-bold">{t("assignments.title")}</h2>
-          {(group.subject || group.grade) && (
-            <p className="text-sm text-muted mt-0.5">
-              {[group.subject, group.grade].filter(Boolean).join(" · ")}
-            </p>
+          {group.grade && (
+            <p className="text-sm text-muted mt-0.5">{group.grade}</p>
           )}
         </div>
         <AddAssignmentModal groupId={group.id} onAdd={addAssignment} />

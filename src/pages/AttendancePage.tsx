@@ -20,13 +20,21 @@ function todayStr() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function clampDate(date: string, min: string | null, max: string | null) {
+  if (min && date < min) return min;
+  if (max && date > max) return max;
+  return date;
+}
+
 export function AttendancePage({
   group,
   onGoToGroups,
   onGoToStudents,
   onGoToSchedule,
 }: AttendancePageProps) {
-  const [date, setDate] = useState(todayStr);
+  const [date, setDate] = useState(() =>
+    clampDate(todayStr(), group.start_date, group.end_date)
+  );
   const { t } = useTranslation();
   const {
     periodsForDay,
@@ -56,13 +64,12 @@ export function AttendancePage({
         <div>
           <h2 className="text-2xl font-bold">{t("attendance.title")}</h2>
           <p className="text-sm text-muted">
-            {group.subject && <span>{group.subject} · </span>}
             {group.grade && <span>{group.grade}</span>}
           </p>
         </div>
       </div>
 
-      <DateNavigator date={date} onChange={setDate} />
+      <DateNavigator date={date} onChange={setDate} minDate={group.start_date} maxDate={group.end_date} />
 
       {loading && (
         <div className="flex justify-center py-12">

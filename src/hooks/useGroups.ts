@@ -14,7 +14,7 @@ export function useGroups() {
       setLoading(true);
       const db = await Database.load(DB_URL);
       const rows = await db.select<Group[]>(
-        `SELECT c.id, c.name, c.subject, c.grade, c.created_at,
+        `SELECT c.id, c.name, c.grade, c.start_date, c.end_date, c.created_at,
                 COUNT(s.id) AS student_count
          FROM groups c
          LEFT JOIN students s ON s.group_id = c.id AND s.is_deleted = 0
@@ -35,8 +35,8 @@ export function useGroups() {
     async (input: NewGroupInput) => {
       const db = await Database.load(DB_URL);
       await db.execute(
-        "INSERT INTO groups (name, subject, grade) VALUES (?, ?, ?)",
-        [input.name, input.subject || null, input.grade || null]
+        "INSERT INTO groups (name, grade, start_date, end_date) VALUES (?, ?, ?, ?)",
+        [input.name, input.grade || null, input.start_date || null, input.end_date || null]
       );
       await fetchGroups();
     },

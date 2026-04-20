@@ -133,7 +133,6 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
       <div className="mb-1">
         <h2 className="text-2xl font-bold">{t("students.title")}</h2>
         <p className="text-sm text-muted">
-          {group.subject && <span>{group.subject} · </span>}
           {group.grade && <span>{group.grade}</span>}
         </p>
       </div>

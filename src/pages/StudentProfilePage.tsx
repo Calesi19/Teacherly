@@ -250,9 +250,6 @@ export function StudentProfilePage({
                 <Card.Content>
                   <p className="font-medium">{group.name}</p>
                   <div className="flex gap-2 mt-1">
-                    {group.subject && (
-                      <Chip variant="secondary" color="accent" size="sm">{group.subject}</Chip>
-                    )}
                     {group.grade && (
                       <Chip variant="tertiary" size="sm">{group.grade}</Chip>
                     )}

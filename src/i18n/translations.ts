@@ -28,11 +28,11 @@ const en = {
     addGroupModal: {
       title: "New Group",
       nameLabel: "Name *",
-      namePlaceholder: "e.g. Room 101",
-      subjectLabel: "Subject",
-      subjectPlaceholder: "e.g. Mathematics",
+      namePlaceholder: "e.g. Class A",
       gradeLabel: "Grade",
       gradePlaceholder: "e.g. 10th",
+      startDateLabel: "Start Date (first day of school)",
+      endDateLabel: "End Date (last day of school)",
     },
     card: {
       added: "Added",
@@ -283,10 +283,27 @@ const en = {
     },
     deletePeriodModal: {
       title: "Delete Period",
-      description: 'Are you sure you want to delete "{name}"? This will also remove all attendance records for this period.',
+      description:
+        'Are you sure you want to delete "{name}"? This will also remove all attendance records for this period.',
     },
-    dayShort: { "0": "Su", "1": "M", "2": "T", "3": "W", "4": "Th", "5": "F", "6": "Sa" } as Record<string, string>,
-    dayFull: { "0": "Sunday", "1": "Monday", "2": "Tuesday", "3": "Wednesday", "4": "Thursday", "5": "Friday", "6": "Saturday" } as Record<string, string>,
+    dayShort: {
+      "0": "Su",
+      "1": "M",
+      "2": "T",
+      "3": "W",
+      "4": "Th",
+      "5": "F",
+      "6": "Sa",
+    } as Record<string, string>,
+    dayFull: {
+      "0": "Sunday",
+      "1": "Monday",
+      "2": "Tuesday",
+      "3": "Wednesday",
+      "4": "Thursday",
+      "5": "Friday",
+      "6": "Saturday",
+    } as Record<string, string>,
   },
   attendance: {
     title: "Attendance",
@@ -323,7 +340,8 @@ const en = {
     noAssignmentsHint: 'Click "+ Add Assignment" to get started.',
     deleteModal: {
       title: "Delete Assignment",
-      description: 'Are you sure you want to delete "{title}"? All scores will be removed.',
+      description:
+        'Are you sure you want to delete "{title}"? All scores will be removed.',
     },
     addModal: {
       title: "New Assignment",
@@ -353,7 +371,8 @@ const en = {
     sectionPresentation: "Presentation",
     sectionGeneral: "General",
     appearance: "Appearance",
-    appearanceDescription: "Choose between light, dark, or your system default.",
+    appearanceDescription:
+      "Choose between light, dark, or your system default.",
     light: "Light",
     dark: "Dark",
     system: "System",
@@ -395,11 +414,11 @@ const es: typeof en = {
     addGroupModal: {
       title: "Nuevo grupo",
       nameLabel: "Nombre *",
-      namePlaceholder: "ej. Salón 101",
-      subjectLabel: "Materia",
-      subjectPlaceholder: "ej. Matemáticas",
+      namePlaceholder: "ej. Clase A",
       gradeLabel: "Grado",
       gradePlaceholder: "ej. 10°",
+      startDateLabel: "Fecha de inicio (primer día de clases)",
+      endDateLabel: "Fecha de fin (último día de clases)",
     },
     card: {
       added: "Agregado",
@@ -413,7 +432,8 @@ const es: typeof en = {
     addStudent: "+ Agregar estudiante",
     searchPlaceholder: "Buscar estudiantes...",
     noStudentsYet: "Sin estudiantes aún",
-    noStudentsHint: 'Haz clic en "+ Agregar estudiante" para inscribir a alguien.',
+    noStudentsHint:
+      'Haz clic en "+ Agregar estudiante" para inscribir a alguien.',
     noResultsTitle: "Sin resultados",
     noResultsHint: 'Ningún estudiante coincide con "{search}".',
     selected: "seleccionados",
@@ -525,7 +545,8 @@ const es: typeof en = {
       searchPlaceholder: "Buscar notas...",
       addNote: "+ Agregar nota",
       noNotes: "Sin notas aún",
-      noNotesHint: 'Haz clic en "+ Agregar nota" para registrar tu primera nota.',
+      noNotesHint:
+        'Haz clic en "+ Agregar nota" para registrar tu primera nota.',
       noResults: "Sin resultados",
       noResultsHint: 'Ninguna nota coincide con "{search}".',
       columns: {
@@ -625,7 +646,8 @@ const es: typeof en = {
     title: "Horario",
     breadcrumb: "Horario",
     noScheduleYet: "Sin horario configurado aún",
-    noScheduleHint: "Agrega períodos para definir cuándo se reúne esta clase cada semana.",
+    noScheduleHint:
+      "Agrega períodos para definir cuándo se reúne esta clase cada semana.",
     periodSingular: "período",
     periodPlural: "períodos",
     addPeriodModal: {
@@ -650,16 +672,34 @@ const es: typeof en = {
     },
     deletePeriodModal: {
       title: "Eliminar período",
-      description: '¿Seguro que deseas eliminar "{name}"? También se eliminarán todos los registros de asistencia de este período.',
+      description:
+        '¿Seguro que deseas eliminar "{name}"? También se eliminarán todos los registros de asistencia de este período.',
     },
-    dayShort: { "0": "Do", "1": "Lu", "2": "Ma", "3": "Mi", "4": "Ju", "5": "Vi", "6": "Sá" } as Record<string, string>,
-    dayFull: { "0": "Domingo", "1": "Lunes", "2": "Martes", "3": "Miércoles", "4": "Jueves", "5": "Viernes", "6": "Sábado" } as Record<string, string>,
+    dayShort: {
+      "0": "Do",
+      "1": "Lu",
+      "2": "Ma",
+      "3": "Mi",
+      "4": "Ju",
+      "5": "Vi",
+      "6": "Sá",
+    } as Record<string, string>,
+    dayFull: {
+      "0": "Domingo",
+      "1": "Lunes",
+      "2": "Martes",
+      "3": "Miércoles",
+      "4": "Jueves",
+      "5": "Viernes",
+      "6": "Sábado",
+    } as Record<string, string>,
   },
   attendance: {
     title: "Asistencia",
     breadcrumb: "Asistencia",
     noPeriodsForDay: "Sin períodos programados para este día",
-    noPeriodsHint: "Configura un horario para definir cuándo se reúne esta clase.",
+    noPeriodsHint:
+      "Configura un horario para definir cuándo se reúne esta clase.",
     setUpSchedule: "Configurar horario",
     noStudents: "Sin estudiantes inscritos",
     noStudentsHint: "Agrega estudiantes para comenzar a registrar asistencia.",
@@ -690,7 +730,8 @@ const es: typeof en = {
     noAssignmentsHint: 'Haz clic en "+ Agregar tarea" para comenzar.',
     deleteModal: {
       title: "Eliminar tarea",
-      description: '¿Seguro que deseas eliminar "{title}"? Se eliminarán todas las calificaciones.',
+      description:
+        '¿Seguro que deseas eliminar "{title}"? Se eliminarán todas las calificaciones.',
     },
     addModal: {
       title: "Nueva tarea",
@@ -720,7 +761,8 @@ const es: typeof en = {
     sectionPresentation: "Presentación",
     sectionGeneral: "General",
     appearance: "Apariencia",
-    appearanceDescription: "Elige entre claro, oscuro o el predeterminado del sistema.",
+    appearanceDescription:
+      "Elige entre claro, oscuro o el predeterminado del sistema.",
     light: "Claro",
     dark: "Oscuro",
     system: "Sistema",

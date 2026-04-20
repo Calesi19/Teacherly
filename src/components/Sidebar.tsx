@@ -123,10 +123,8 @@ export function Sidebar({
                   <ListBox.Item key={c.id} id={String(c.id)} textValue={c.name}>
                     <div className="flex flex-col">
                       <span className="font-medium text-sm">{c.name}</span>
-                      {(c.subject || c.grade) && (
-                        <span className="text-xs text-foreground/50">
-                          {[c.subject, c.grade].filter(Boolean).join(" · ")}
-                        </span>
+                      {c.grade && (
+                        <span className="text-xs text-foreground/50">{c.grade}</span>
                       )}
                     </div>
                   </ListBox.Item>

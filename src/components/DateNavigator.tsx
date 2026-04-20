@@ -7,6 +7,8 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface DateNavigatorProps {
   date: string;
   onChange: (date: string) => void;
+  minDate?: string | null;
+  maxDate?: string | null;
 }
 
 function formatDisplay(dateStr: string) {
@@ -29,13 +31,18 @@ function today() {
   return new Date().toISOString().slice(0, 10);
 }
 
-export function DateNavigator({ date, onChange }: DateNavigatorProps) {
+export function DateNavigator({ date, onChange, minDate, maxDate }: DateNavigatorProps) {
   const isToday = date === today();
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const canGoPrev = !minDate || addDays(date, -1) >= minDate;
+  const canGoNext = !maxDate || addDays(date, 1) <= maxDate;
+  const todayDate = today();
+  const isTodayInRange =
+    (!minDate || todayDate >= minDate) && (!maxDate || todayDate <= maxDate);
 
   return (
     <div className="flex items-center gap-2 py-3 px-1">
-      <Button variant="ghost" isIconOnly size="sm" onPress={() => onChange(addDays(date, -1))} aria-label="Previous day">
+      <Button variant="ghost" isIconOnly size="sm" onPress={() => onChange(addDays(date, -1))} isDisabled={!canGoPrev} aria-label="Previous day">
         <ChevronLeft size={16} />
       </Button>
 
@@ -43,6 +50,8 @@ export function DateNavigator({ date, onChange }: DateNavigatorProps) {
         className="flex-1"
         aria-label="Jump to date"
         value={parseDate(date)}
+        minValue={minDate ? parseDate(minDate) : undefined}
+        maxValue={maxDate ? parseDate(maxDate) : undefined}
         onChange={(val: DateValue | null) => {
           if (val) onChange(val.toString());
         }}
@@ -79,13 +88,13 @@ export function DateNavigator({ date, onChange }: DateNavigatorProps) {
         </DatePicker.Popover>
       </DatePicker>
 
-      {!isToday && (
+      {!isToday && isTodayInRange && (
         <Button variant="ghost" size="sm" onPress={() => onChange(today())}>
           Today
         </Button>
       )}
 
-      <Button variant="ghost" isIconOnly size="sm" onPress={() => onChange(addDays(date, 1))} aria-label="Next day">
+      <Button variant="ghost" isIconOnly size="sm" onPress={() => onChange(addDays(date, 1))} isDisabled={!canGoNext} aria-label="Next day">
         <ChevronRight size={16} />
       </Button>
     </div>

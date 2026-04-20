@@ -14,7 +14,7 @@ interface AddGroupModalProps {
   onAdd: (input: NewGroupInput) => Promise<void>;
 }
 
-const emptyForm: NewGroupInput = { name: "", subject: "", grade: "" };
+const emptyForm: NewGroupInput = { name: "", grade: "", start_date: "", end_date: "" };
 
 export function AddGroupModal({ onAdd }: AddGroupModalProps) {
   const state = useOverlayState();
@@ -68,21 +68,33 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-subject">{t("groups.addGroupModal.subjectLabel")}</Label>
-                    <Input
-                      id="add-group-subject"
-                      value={form.subject}
-                      onChange={(e) => setForm({ ...form, subject: e.target.value })}
-                      placeholder={t("groups.addGroupModal.subjectPlaceholder")}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
                     <Label htmlFor="add-group-grade">{t("groups.addGroupModal.gradeLabel")}</Label>
                     <Input
                       id="add-group-grade"
                       value={form.grade}
                       onChange={(e) => setForm({ ...form, grade: e.target.value })}
                       placeholder={t("groups.addGroupModal.gradePlaceholder")}
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="add-group-start-date">{t("groups.addGroupModal.startDateLabel")}</Label>
+                    <input
+                      id="add-group-start-date"
+                      type="date"
+                      value={form.start_date}
+                      onChange={(e) => setForm({ ...form, start_date: e.target.value })}
+                      className="w-full rounded-lg border border-foreground/20 bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent/50"
+                    />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <Label htmlFor="add-group-end-date">{t("groups.addGroupModal.endDateLabel")}</Label>
+                    <input
+                      id="add-group-end-date"
+                      type="date"
+                      value={form.end_date}
+                      min={form.start_date || undefined}
+                      onChange={(e) => setForm({ ...form, end_date: e.target.value })}
+                      className="w-full rounded-lg border border-foreground/20 bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent/50"
                     />
                   </div>
                   {error && (
