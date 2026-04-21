@@ -48,9 +48,9 @@ export function useAttendance(groupId: number, date: string) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const fetchData = useCallback(async () => {
+  const fetchData = useCallback(async (silent = false) => {
     try {
-      setLoading(true);
+      if (!silent) setLoading(true);
       const db = await Database.load(DB_URL);
       const dayOfWeek = new Date(date + "T12:00:00").getDay();
 
@@ -115,7 +115,7 @@ export function useAttendance(groupId: number, date: string) {
     async (studentId: number) => {
       const db = await Database.load(DB_URL);
       await Promise.all(periodsForDay.map((p) => upsert(db, studentId, p.id, "present")));
-      await fetchData();
+      await fetchData(true);
     },
     [periodsForDay, upsert, fetchData]
   );
@@ -124,7 +124,7 @@ export function useAttendance(groupId: number, date: string) {
     async (studentId: number) => {
       const db = await Database.load(DB_URL);
       await Promise.all(periodsForDay.map((p) => upsert(db, studentId, p.id, "absent")));
-      await fetchData();
+      await fetchData(true);
     },
     [periodsForDay, upsert, fetchData]
   );
@@ -135,7 +135,7 @@ export function useAttendance(groupId: number, date: string) {
       await Promise.all(
         periodsForDay.map((p, idx) => upsert(db, studentId, p.id, idx === 0 ? "late" : "present"))
       );
-      await fetchData();
+      await fetchData(true);
     },
     [periodsForDay, upsert, fetchData]
   );
@@ -146,7 +146,7 @@ export function useAttendance(groupId: number, date: string) {
       await Promise.all(
         periodStatuses.map(({ periodId, status }) => upsert(db, studentId, periodId, status))
       );
-      await fetchData();
+      await fetchData(true);
     },
     [upsert, fetchData]
   );
@@ -163,7 +163,7 @@ export function useAttendance(groupId: number, date: string) {
           })
         )
       );
-      await fetchData();
+      await fetchData(true);
     },
     [periodsForDay, upsert, fetchData]
   );
