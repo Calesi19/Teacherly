@@ -1,9 +1,10 @@
 import { useState, useCallback, useEffect } from "react";
 import "./App.css";
 import { Button, Drawer, useOverlayState } from "@heroui/react";
-import { getCurrentWindow } from "@tauri-apps/api/window";
+import { getCurrentWindow, Window } from "@tauri-apps/api/window";
 
-const appWindow = getCurrentWindow();
+// Explicitly type the constant so TS doesn't guess
+const appWindow: Window = getCurrentWindow();
 
 type ThemePreference = "light" | "dark" | "system";
 const THEME_KEY = "heroui-theme";
@@ -408,9 +409,16 @@ function App() {
             —
           </button>
           <button
-            onClick={() => appWindow.toggleMaximize()}
+            onClick={async () => {
+              try {
+                await appWindow.toggleMaximize();
+              } catch (e) {
+                console.error("Maximize failed:", e);
+              }
+            }}
             className="px-3 py-1 hover:bg-white/10"
           >
+            {" "}
             ▢
           </button>
           <button
