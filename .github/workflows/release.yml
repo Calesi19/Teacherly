@@ -2,7 +2,7 @@ name: Release
 on:
   push:
     tags:
-      - "v*" # Triggers when you push a tag like v1.0.0
+      - "v*"
 
 jobs:
   release:
@@ -11,7 +11,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # We use specific versions to ensure stability
         platform: [macos-latest, ubuntu-22.04, windows-latest]
     runs-on: ${{ matrix.platform }}
     steps:
@@ -21,24 +20,31 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-          cache: "npm" # Speeds up subsequent runs by caching node_modules
+          cache: "npm"
 
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
+          # This installs both Intel and Apple Silicon targets for the Mac runner
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
 
       - name: install dependencies (ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libgtk-3-dev libwebkit2gtk-4.0-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y \
+            libgtk-3-dev \
+            libwebkit2gtk-4.1-dev \
+            libjavascriptcoregtk-4.1-dev \
+            libsoup-3.0-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf
 
       - name: install frontend dependencies
         run: npm install
 
       - name: Build and Release
-        # Changed from @v1 to @v0 to resolve the "Unable to find version" error
         uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -46,5 +52,7 @@ jobs:
           tagName: v__VERSION__
           releaseName: "App v__VERSION__"
           releaseBody: "See the assets to download."
-          releaseDraft: true # Keeps the release as a draft so you can edit the notes before going public
+          releaseDraft: true
           prerelease: false
+          # CRITICAL: This tells Tauri to actually create the Universal macOS binary
+          args: ${{ matrix.platform == 'macos-latest' && '--target universal-apple-darwin' || '' }}
