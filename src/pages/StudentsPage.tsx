@@ -35,16 +35,28 @@ const DB_URL = "sqlite:tizara.db";
 
 interface StudentsPageProps {
   group: Group;
+  onGoToDashboard: () => void;
   onGoToGroups: () => void;
   onSelectStudent: (student: Student) => void;
 }
 
-export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsPageProps) {
+export function StudentsPage({
+  group,
+  onGoToDashboard,
+  onGoToGroups,
+  onSelectStudent,
+}: StudentsPageProps) {
   const { students, loading, error, addStudent } = useStudents(group.id);
   const { t } = useTranslation();
   const modalState = useOverlayState();
   const noteModalState = useOverlayState();
-  const emptyForm = { name: "", gender: "", birthdate: "", student_number: "", enrollment_date: "" };
+  const emptyForm = {
+    name: "",
+    gender: "",
+    birthdate: "",
+    student_number: "",
+    enrollment_date: "",
+  };
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
@@ -83,7 +95,7 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
   };
 
   const filtered = students.filter((s) =>
-    s.name.toLowerCase().includes(search.toLowerCase())
+    s.name.toLowerCase().includes(search.toLowerCase()),
   );
 
   const selectedStudents =
@@ -104,9 +116,9 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
         selectedStudents.map((s) =>
           db.execute(
             "INSERT INTO student_notes (student_id, content) VALUES (?, ?)",
-            [s.id, noteContent.trim()]
-          )
-        )
+            [s.id, noteContent.trim()],
+          ),
+        ),
       );
       setSelectedKeys(new Set());
       closeNoteModal();
@@ -117,16 +129,20 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
     }
   };
 
-  const bulkNoteTitle = selectedStudents.length === 1
-    ? t("students.bulkNoteModal.titleSingular")
-    : t("students.bulkNoteModal.titlePlural", { count: selectedStudents.length });
+  const bulkNoteTitle =
+    selectedStudents.length === 1
+      ? t("students.bulkNoteModal.titleSingular")
+      : t("students.bulkNoteModal.titlePlural", {
+          count: selectedStudents.length,
+        });
 
   return (
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
-          { label: group.name },
+          { label: group.name, onClick: onGoToDashboard },
+          { label: t("attendance.studentsHeader") },
         ]}
       />
 
@@ -152,10 +168,18 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
               <span className="text-sm text-muted">
                 {selectedStudents.length} {t("students.selected")}
               </span>
-              <Button variant="secondary" size="sm" onPress={noteModalState.open}>
+              <Button
+                variant="secondary"
+                size="sm"
+                onPress={noteModalState.open}
+              >
                 {t("students.addNote")}
               </Button>
-              <Button variant="ghost" size="sm" onPress={() => setSelectedKeys(new Set())}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => setSelectedKeys(new Set())}
+              >
                 {t("students.clear")}
               </Button>
             </>
@@ -174,7 +198,10 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
       )}
 
       {error && (
-        <div role="alert" className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm">
+        <div
+          role="alert"
+          className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm"
+        >
           {error}
         </div>
       )}
@@ -182,8 +209,12 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
       <div className="flex-1 flex flex-col min-h-0">
         {!loading && !error && students.length === 0 && (
           <div className="flex flex-col items-center justify-center flex-1 text-center">
-            <p className="text-lg font-semibold text-muted">{t("students.noStudentsYet")}</p>
-            <p className="text-sm text-foreground/40 mt-1">{t("students.noStudentsHint")}</p>
+            <p className="text-lg font-semibold text-muted">
+              {t("students.noStudentsYet")}
+            </p>
+            <p className="text-sm text-foreground/40 mt-1">
+              {t("students.noStudentsHint")}
+            </p>
           </div>
         )}
 
@@ -191,8 +222,12 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
           <>
             {filtered.length === 0 ? (
               <div className="flex flex-col items-center justify-center flex-1 text-center">
-                <p className="text-lg font-semibold text-muted">{t("students.noResultsTitle")}</p>
-                <p className="text-sm text-foreground/40 mt-1">{t("students.noResultsHint", { search })}</p>
+                <p className="text-lg font-semibold text-muted">
+                  {t("students.noResultsTitle")}
+                </p>
+                <p className="text-sm text-foreground/40 mt-1">
+                  {t("students.noResultsHint", { search })}
+                </p>
               </div>
             ) : (
               <TableRoot variant="primary" className="flex-1 h-full">
@@ -215,14 +250,26 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                           </Checkbox.Control>
                         </Checkbox>
                       </TableColumn>
-                      <TableColumn isRowHeader>{t("students.tableColumns.name")}</TableColumn>
-                      <TableColumn>{t("students.tableColumns.gender")}</TableColumn>
-                      <TableColumn>{t("students.tableColumns.birthdate")}</TableColumn>
-                      <TableColumn>{t("students.tableColumns.studentId")}</TableColumn>
+                      <TableColumn isRowHeader>
+                        {t("students.tableColumns.name")}
+                      </TableColumn>
+                      <TableColumn>
+                        {t("students.tableColumns.gender")}
+                      </TableColumn>
+                      <TableColumn>
+                        {t("students.tableColumns.birthdate")}
+                      </TableColumn>
+                      <TableColumn>
+                        {t("students.tableColumns.studentId")}
+                      </TableColumn>
                     </TableHeader>
                     <TableBody>
                       {filtered.map((s) => (
-                        <TableRow key={s.id} id={s.id} className="cursor-pointer">
+                        <TableRow
+                          key={s.id}
+                          id={s.id}
+                          className="cursor-pointer"
+                        >
                           <TableCell className="pr-0">
                             <Checkbox
                               aria-label={`Select ${s.name}`}
@@ -234,19 +281,33 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                               </Checkbox.Control>
                             </Checkbox>
                           </TableCell>
-                          <TableCell className="font-medium">{s.name}</TableCell>
-                          <TableCell className="text-sm text-foreground/50">{s.gender || "—"}</TableCell>
-                          <TableCell className="text-sm text-foreground/50">
-                            {s.birthdate ? (() => {
-                              const birth = new Date(s.birthdate);
-                              const today = new Date();
-                              let age = today.getFullYear() - birth.getFullYear();
-                              const m = today.getMonth() - birth.getMonth();
-                              if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) age--;
-                              return `${birth.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} (${age})`;
-                            })() : "—"}
+                          <TableCell className="font-medium">
+                            {s.name}
                           </TableCell>
-                          <TableCell className="text-sm text-foreground/40">{s.student_number || "—"}</TableCell>
+                          <TableCell className="text-sm text-foreground/50">
+                            {s.gender || "—"}
+                          </TableCell>
+                          <TableCell className="text-sm text-foreground/50">
+                            {s.birthdate
+                              ? (() => {
+                                  const birth = new Date(s.birthdate);
+                                  const today = new Date();
+                                  let age =
+                                    today.getFullYear() - birth.getFullYear();
+                                  const m = today.getMonth() - birth.getMonth();
+                                  if (
+                                    m < 0 ||
+                                    (m === 0 &&
+                                      today.getDate() < birth.getDate())
+                                  )
+                                    age--;
+                                  return `${birth.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} (${age})`;
+                                })()
+                              : "—"}
+                          </TableCell>
+                          <TableCell className="text-sm text-foreground/40">
+                            {s.student_number || "—"}
+                          </TableCell>
                         </TableRow>
                       ))}
                     </TableBody>
@@ -264,15 +325,23 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
           <Modal.Container>
             <Modal.Dialog className="overflow-visible">
               <form onSubmit={handleSubmit}>
-                <Modal.Header>{t("students.addStudentModal.title")}</Modal.Header>
+                <Modal.Header>
+                  {t("students.addStudentModal.title")}
+                </Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-student-name">{t("students.addStudentModal.nameLabel")}</Label>
+                    <Label htmlFor="add-student-name">
+                      {t("students.addStudentModal.nameLabel")}
+                    </Label>
                     <Input
                       id="add-student-name"
                       value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder={t("students.addStudentModal.namePlaceholder")}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
+                      placeholder={t(
+                        "students.addStudentModal.namePlaceholder",
+                      )}
                       required
                     />
                   </div>
@@ -282,34 +351,58 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                     <Select
                       aria-label={t("students.addStudentModal.genderLabel")}
                       selectedKey={form.gender || null}
-                      onSelectionChange={(key) => setForm({ ...form, gender: String(key ?? "") })}
+                      onSelectionChange={(key) =>
+                        setForm({ ...form, gender: String(key ?? "") })
+                      }
                     >
                       <Select.Trigger>
                         <Select.Value>
                           {({ selectedText, isPlaceholder }) =>
-                            isPlaceholder ? t("students.addStudentModal.selectGender") : selectedText
+                            isPlaceholder
+                              ? t("students.addStudentModal.selectGender")
+                              : selectedText
                           }
                         </Select.Value>
                         <Select.Indicator />
                       </Select.Trigger>
                       <Select.Popover>
                         <ListBox>
-                          <ListBox.Item id="Male" textValue={t("students.addStudentModal.male")}>{t("students.addStudentModal.male")}</ListBox.Item>
-                          <ListBox.Item id="Female" textValue={t("students.addStudentModal.female")}>{t("students.addStudentModal.female")}</ListBox.Item>
-                          <ListBox.Item id="Other" textValue={t("students.addStudentModal.other")}>{t("students.addStudentModal.other")}</ListBox.Item>
+                          <ListBox.Item
+                            id="Male"
+                            textValue={t("students.addStudentModal.male")}
+                          >
+                            {t("students.addStudentModal.male")}
+                          </ListBox.Item>
+                          <ListBox.Item
+                            id="Female"
+                            textValue={t("students.addStudentModal.female")}
+                          >
+                            {t("students.addStudentModal.female")}
+                          </ListBox.Item>
+                          <ListBox.Item
+                            id="Other"
+                            textValue={t("students.addStudentModal.other")}
+                          >
+                            {t("students.addStudentModal.other")}
+                          </ListBox.Item>
                         </ListBox>
                       </Select.Popover>
                     </Select>
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>{t("students.addStudentModal.birthdateLabel")}</Label>
+                    <Label>
+                      {t("students.addStudentModal.birthdateLabel")}
+                    </Label>
                     <DatePicker
                       className="w-full"
                       aria-label={t("students.addStudentModal.birthdateLabel")}
                       value={form.birthdate ? parseDate(form.birthdate) : null}
                       onChange={(date: DateValue | null) =>
-                        setForm({ ...form, birthdate: date ? date.toString() : "" })
+                        setForm({
+                          ...form,
+                          birthdate: date ? date.toString() : "",
+                        })
                       }
                     >
                       <DateField.Group fullWidth>
@@ -323,7 +416,11 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                         </DateField.Suffix>
                       </DateField.Group>
                       <DatePicker.Popover>
-                        <Calendar aria-label={t("students.addStudentModal.birthdateLabel")}>
+                        <Calendar
+                          aria-label={t(
+                            "students.addStudentModal.birthdateLabel",
+                          )}
+                        >
                           <Calendar.Header>
                             <Calendar.YearPickerTrigger>
                               <Calendar.YearPickerTriggerHeading />
@@ -334,7 +431,9 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                           </Calendar.Header>
                           <Calendar.Grid>
                             <Calendar.GridHeader>
-                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                              {(day) => (
+                                <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
+                              )}
                             </Calendar.GridHeader>
                             <Calendar.GridBody>
                               {(date) => <Calendar.Cell date={date} />}
@@ -342,7 +441,9 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                           </Calendar.Grid>
                           <Calendar.YearPickerGrid>
                             <Calendar.YearPickerGridBody>
-                              {({ year }) => <Calendar.YearPickerCell year={year} />}
+                              {({ year }) => (
+                                <Calendar.YearPickerCell year={year} />
+                              )}
                             </Calendar.YearPickerGridBody>
                           </Calendar.YearPickerGrid>
                         </Calendar>
@@ -351,23 +452,40 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-student-number">{t("students.addStudentModal.studentIdLabel")}</Label>
+                    <Label htmlFor="add-student-number">
+                      {t("students.addStudentModal.studentIdLabel")}
+                    </Label>
                     <Input
                       id="add-student-number"
                       value={form.student_number}
-                      onChange={(e) => setForm({ ...form, student_number: e.target.value })}
-                      placeholder={t("students.addStudentModal.studentIdPlaceholder")}
+                      onChange={(e) =>
+                        setForm({ ...form, student_number: e.target.value })
+                      }
+                      placeholder={t(
+                        "students.addStudentModal.studentIdPlaceholder",
+                      )}
                     />
                   </div>
 
                   <div className="flex flex-col gap-1.5">
-                    <Label>{t("students.addStudentModal.enrollmentDateLabel")}</Label>
+                    <Label>
+                      {t("students.addStudentModal.enrollmentDateLabel")}
+                    </Label>
                     <DatePicker
                       className="w-full"
-                      aria-label={t("students.addStudentModal.enrollmentDateLabel")}
-                      value={form.enrollment_date ? parseDate(form.enrollment_date) : null}
+                      aria-label={t(
+                        "students.addStudentModal.enrollmentDateLabel",
+                      )}
+                      value={
+                        form.enrollment_date
+                          ? parseDate(form.enrollment_date)
+                          : null
+                      }
                       onChange={(date: DateValue | null) =>
-                        setForm({ ...form, enrollment_date: date ? date.toString() : "" })
+                        setForm({
+                          ...form,
+                          enrollment_date: date ? date.toString() : "",
+                        })
                       }
                     >
                       <DateField.Group fullWidth>
@@ -381,7 +499,11 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                         </DateField.Suffix>
                       </DateField.Group>
                       <DatePicker.Popover>
-                        <Calendar aria-label={t("students.addStudentModal.enrollmentDateLabel")}>
+                        <Calendar
+                          aria-label={t(
+                            "students.addStudentModal.enrollmentDateLabel",
+                          )}
+                        >
                           <Calendar.Header>
                             <Calendar.YearPickerTrigger>
                               <Calendar.YearPickerTriggerHeading />
@@ -392,7 +514,9 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                           </Calendar.Header>
                           <Calendar.Grid>
                             <Calendar.GridHeader>
-                              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+                              {(day) => (
+                                <Calendar.HeaderCell>{day}</Calendar.HeaderCell>
+                              )}
                             </Calendar.GridHeader>
                             <Calendar.GridBody>
                               {(date) => <Calendar.Cell date={date} />}
@@ -400,7 +524,9 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                           </Calendar.Grid>
                           <Calendar.YearPickerGrid>
                             <Calendar.YearPickerGridBody>
-                              {({ year }) => <Calendar.YearPickerCell year={year} />}
+                              {({ year }) => (
+                                <Calendar.YearPickerCell year={year} />
+                              )}
                             </Calendar.YearPickerGridBody>
                           </Calendar.YearPickerGrid>
                         </Calendar>
@@ -416,7 +542,11 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                   <Button type="button" variant="ghost" onPress={closeModal}>
                     {t("common.cancel")}
                   </Button>
-                  <Button type="submit" variant="primary" isDisabled={submitting}>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    isDisabled={submitting}
+                  >
                     {submitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
@@ -435,7 +565,9 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                 <Modal.Header>{bulkNoteTitle}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="bulk-note-content">{t("students.bulkNoteModal.noteLabel")}</Label>
+                    <Label htmlFor="bulk-note-content">
+                      {t("students.bulkNoteModal.noteLabel")}
+                    </Label>
                     <textarea
                       id="bulk-note-content"
                       value={noteContent}
@@ -446,13 +578,23 @@ export function StudentsPage({ group, onGoToGroups, onSelectStudent }: StudentsP
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     />
                   </div>
-                  {noteError && <p className="text-danger text-sm">{noteError}</p>}
+                  {noteError && (
+                    <p className="text-danger text-sm">{noteError}</p>
+                  )}
                 </Modal.Body>
                 <Modal.Footer>
-                  <Button type="button" variant="ghost" onPress={closeNoteModal}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onPress={closeNoteModal}
+                  >
                     {t("common.cancel")}
                   </Button>
-                  <Button type="submit" variant="primary" isDisabled={noteSubmitting || !noteContent.trim()}>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    isDisabled={noteSubmitting || !noteContent.trim()}
+                  >
                     {noteSubmitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
