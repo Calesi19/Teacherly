@@ -1,10 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import "./App.css";
 import { Button, Drawer, useOverlayState } from "@heroui/react";
-import { getCurrentWindow, Window } from "@tauri-apps/api/window";
-
-// Explicitly type the constant so TS doesn't guess
-const appWindow: Window = getCurrentWindow();
 
 type ThemePreference = "light" | "dark" | "system";
 const THEME_KEY = "heroui-theme";
@@ -395,43 +391,11 @@ function App() {
   return (
     <LanguageProvider>
       <div className="app-container">
-        {" "}
-        {/* New Wrapper */}
         <div
           data-tauri-drag-region
-          className="fixed top-0 left-0 right-0 h-8 z-[9999] flex justify-end items-center select-none"
-          style={{ cursor: "default" }}
-        >
-          {/* The container for buttons MUST NOT have data-tauri-drag-region 
-      so that the buttons themselves remain clickable */}
-          <div className="flex no-drag">
-            <button
-              onClick={() => appWindow.minimize()}
-              className="px-3 py-1 hover:bg-white/10"
-            >
-              —
-            </button>
-            <button
-              onClick={async () => {
-                try {
-                  await appWindow.toggleMaximize();
-                } catch (e) {
-                  console.error("Maximize failed:", e);
-                }
-              }}
-              className="px-3 py-1 hover:bg-white/10"
-            >
-              {" "}
-              ▢
-            </button>
-            <button
-              onClick={() => appWindow.close()}
-              className="px-3 py-1 hover:bg-red-500"
-            >
-              ✕
-            </button>
-          </div>
-        </div>
+          className="fixed top-0 left-0 right-0 h-7 z-50"
+        />
+
         <div className="flex h-screen overflow-hidden">
           <Drawer state={drawerState}>
             <Drawer.Backdrop isDismissable>

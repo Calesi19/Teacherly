@@ -1,5 +1,14 @@
+import { useState, useEffect } from "react";
 import { Button, Select, ListBox, Spinner, Label } from "@heroui/react";
-import { Users, CalendarDays, ClipboardCheck, BookOpen, Settings, LayoutDashboard } from "lucide-react";
+import {
+  Users,
+  CalendarDays,
+  ClipboardCheck,
+  BookOpen,
+  Settings,
+  LayoutDashboard,
+} from "lucide-react";
+import { type } from "@tauri-apps/plugin-os";
 import { useGroups } from "../hooks/useGroups";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
@@ -39,6 +48,22 @@ export function Sidebar({
 }: SidebarProps) {
   const { groups, loading } = useGroups();
   const { t } = useTranslation();
+  const [isMac, setIsMac] = useState(false);
+
+  useEffect(() => {
+    // Detect platform to handle macOS window control spacing
+    const checkPlatform = async () => {
+      try {
+        const osName = await type();
+        if (osName === "macos") {
+          setIsMac(true);
+        }
+      } catch (error) {
+        console.error("Failed to detect OS:", error);
+      }
+    };
+    checkPlatform();
+  }, []);
 
   const nav = (action: () => void) => () => {
     action();
@@ -78,16 +103,30 @@ export function Sidebar({
       id: "assignments",
       label: t("sidebar.assignments"),
       icon: <BookOpen size={16} />,
-      active: currentPage === "assignments" || currentPage === "assignment-detail",
+      active:
+        currentPage === "assignments" || currentPage === "assignment-detail",
       onPress: nav(onGoToAssignments),
     },
   ];
 
   return (
     <aside className="bg-surface-secondary h-screen w-64 flex flex-col">
+      <div
+        data-tauri-drag-region
+        className="h-12 shrink-0 bg-surface-secondary/80 backdrop-blur"
+      />
+
       <div className="p-5 pb-4 flex items-center gap-3">
-        <img src="/icon-light.webp" alt="Tizara" className="w-9 h-9 rounded-xl shrink-0 dark:hidden" />
-        <img src="/icon-dark.webp" alt="Tizara" className="w-9 h-9 rounded-xl shrink-0 hidden dark:block" />
+        <img
+          src="/icon-light.webp"
+          alt="Tizara"
+          className="w-9 h-9 rounded-xl shrink-0 dark:hidden"
+        />
+        <img
+          src="/icon-dark.webp"
+          alt="Tizara"
+          className="w-9 h-9 rounded-xl shrink-0 hidden dark:block"
+        />
         <div>
           <h1 className="text-xl font-bold text-accent">Tizara</h1>
           <p className="text-xs text-muted">{t("sidebar.tagline")}</p>
@@ -100,47 +139,62 @@ export function Sidebar({
             <Spinner size="sm" />
           </div>
         ) : groups.length === 0 ? (
-          <p className="text-xs text-foreground/40 px-2 py-2">{t("sidebar.noGroups")}</p>
+          <p className="text-xs text-foreground/40 px-2 py-2">
+            {t("sidebar.noGroups")}
+          </p>
         ) : (
           <>
-          <Label id="group-select-label" className="text-xs font-semibold text-foreground/50 uppercase tracking-wide px-1 mb-1">{t("sidebar.group")}</Label>
-          <Select
-            aria-label={t("sidebar.selectGroup")}
-            selectedKey={currentGroup ? String(currentGroup.id) : null}
-            onSelectionChange={(key) => {
-              const group = groups.find((c) => String(c.id) === String(key));
-              if (group) onSelectGroup(group);
-            }}
-          >
-            <Select.Trigger className="w-full">
-              <Select.Value>
-                {({ isPlaceholder }) =>
-                  isPlaceholder ? (
-                    <span className="text-foreground/40">{t("sidebar.selectGroup")}</span>
-                  ) : (
-                    <span className="font-medium truncate">
-                      {currentGroup?.name}
-                    </span>
-                  )
-                }
-              </Select.Value>
-              <Select.Indicator />
-            </Select.Trigger>
-            <Select.Popover>
-              <ListBox>
-                {groups.map((c) => (
-                  <ListBox.Item key={c.id} id={String(c.id)} textValue={c.name}>
-                    <div className="flex flex-col">
-                      <span className="font-medium text-sm">{c.name}</span>
-                      {c.grade && (
-                        <span className="text-xs text-foreground/50">{c.grade}</span>
-                      )}
-                    </div>
-                  </ListBox.Item>
-                ))}
-              </ListBox>
-            </Select.Popover>
-          </Select>
+            <Label
+              id="group-select-label"
+              className="text-xs font-semibold text-foreground/50 uppercase tracking-wide px-1 mb-1"
+            >
+              {t("sidebar.group")}
+            </Label>
+            <Select
+              aria-label={t("sidebar.selectGroup")}
+              selectedKey={currentGroup ? String(currentGroup.id) : null}
+              onSelectionChange={(key) => {
+                const group = groups.find((c) => String(c.id) === String(key));
+                if (group) onSelectGroup(group);
+              }}
+            >
+              <Select.Trigger className="w-full">
+                <Select.Value>
+                  {({ isPlaceholder }) =>
+                    isPlaceholder ? (
+                      <span className="text-foreground/40">
+                        {t("sidebar.selectGroup")}
+                      </span>
+                    ) : (
+                      <span className="font-medium truncate">
+                        {currentGroup?.name}
+                      </span>
+                    )
+                  }
+                </Select.Value>
+                <Select.Indicator />
+              </Select.Trigger>
+              <Select.Popover>
+                <ListBox>
+                  {groups.map((c) => (
+                    <ListBox.Item
+                      key={c.id}
+                      id={String(c.id)}
+                      textValue={c.name}
+                    >
+                      <div className="flex flex-col">
+                        <span className="font-medium text-sm">{c.name}</span>
+                        {c.grade && (
+                          <span className="text-xs text-foreground/50">
+                            {c.grade}
+                          </span>
+                        )}
+                      </div>
+                    </ListBox.Item>
+                  ))}
+                </ListBox>
+              </Select.Popover>
+            </Select>
           </>
         )}
       </div>
