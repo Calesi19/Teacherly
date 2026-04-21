@@ -34,6 +34,16 @@ const STUDENTS_PAGES = new Set([
   "notes",
 ]);
 
+const formatMonthYear = (dateString: string | undefined) => {
+  if (!dateString) return "";
+  const date = new Date(dateString);
+
+  return new Intl.DateTimeFormat("en-US", {
+    month: "short",
+    year: "numeric",
+  }).format(date);
+};
+
 export function Sidebar({
   currentPage,
   currentGroup,
@@ -128,75 +138,14 @@ export function Sidebar({
           className="w-9 h-9 rounded-xl shrink-0 hidden dark:block"
         />
         <div>
-          <h1 className="text-xl font-bold text-accent">Tizara</h1>
-          <p className="text-xs text-muted">{t("sidebar.tagline")}</p>
-        </div>
-      </div>
-
-      <div className="px-3 pb-3">
-        {loading ? (
-          <div className="flex items-center justify-center h-9">
-            <Spinner size="sm" />
-          </div>
-        ) : groups.length === 0 ? (
-          <p className="text-xs text-foreground/40 px-2 py-2">
-            {t("sidebar.noGroups")}
+          <h1 className="text-xl font-bold text-accent">
+            {currentGroup?.name ?? "Select Group"}
+          </h1>
+          <p className="text-xs text-muted">
+            {formatMonthYear(currentGroup?.start_date ?? undefined)} -{" "}
+            {formatMonthYear(currentGroup?.end_date ?? undefined)}
           </p>
-        ) : (
-          <>
-            <Label
-              id="group-select-label"
-              className="text-xs font-semibold text-foreground/50 uppercase tracking-wide px-1 mb-1"
-            >
-              {t("sidebar.group")}
-            </Label>
-            <Select
-              aria-label={t("sidebar.selectGroup")}
-              selectedKey={currentGroup ? String(currentGroup.id) : null}
-              onSelectionChange={(key) => {
-                const group = groups.find((c) => String(c.id) === String(key));
-                if (group) onSelectGroup(group);
-              }}
-            >
-              <Select.Trigger className="w-full">
-                <Select.Value>
-                  {({ isPlaceholder }) =>
-                    isPlaceholder ? (
-                      <span className="text-foreground/40">
-                        {t("sidebar.selectGroup")}
-                      </span>
-                    ) : (
-                      <span className="font-medium truncate">
-                        {currentGroup?.name}
-                      </span>
-                    )
-                  }
-                </Select.Value>
-                <Select.Indicator />
-              </Select.Trigger>
-              <Select.Popover>
-                <ListBox>
-                  {groups.map((c) => (
-                    <ListBox.Item
-                      key={c.id}
-                      id={String(c.id)}
-                      textValue={c.name}
-                    >
-                      <div className="flex flex-col">
-                        <span className="font-medium text-sm">{c.name}</span>
-                        {c.grade && (
-                          <span className="text-xs text-foreground/50">
-                            {c.grade}
-                          </span>
-                        )}
-                      </div>
-                    </ListBox.Item>
-                  ))}
-                </ListBox>
-              </Select.Popover>
-            </Select>
-          </>
-        )}
+        </div>
       </div>
 
       <nav className="flex-1 px-2 py-1">

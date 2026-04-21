@@ -6,7 +6,12 @@ import {
   Input,
   Spinner,
   useOverlayState,
+  Chip,
+  DatePicker, // New
+  DateField, // New
+  Calendar, // New
 } from "@heroui/react";
+import { parseDate } from "@internationalized/date"; // Required for HeroUI Dates
 import { useTranslation } from "../i18n/LanguageContext";
 import type { NewGroupInput } from "../types/group";
 
@@ -14,7 +19,30 @@ interface AddGroupModalProps {
   onAdd: (input: NewGroupInput) => Promise<void>;
 }
 
-const emptyForm: NewGroupInput = { name: "", grade: "", start_date: "", end_date: "" };
+const GRADE_OPTIONS = [
+  "Preschool",
+  "Kindergarten",
+  "1st",
+  "2nd",
+  "3rd",
+  "4th",
+  "5th",
+  "6th",
+  "7th",
+  "8th",
+  "9th",
+  "10th",
+  "11th",
+  "12th",
+  "Adult",
+];
+
+const emptyForm: NewGroupInput = {
+  name: "",
+  grade: "",
+  start_date: "",
+  end_date: "",
+};
 
 export function AddGroupModal({ onAdd }: AddGroupModalProps) {
   const state = useOverlayState();
@@ -27,6 +55,13 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
     setForm(emptyForm);
     setError(null);
     state.close();
+  };
+
+  const handleGradeSelect = (grade: string) => {
+    setForm((prev) => ({
+      ...prev,
+      grade: prev.grade === grade ? "" : grade,
+    }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -44,6 +79,63 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
     }
   };
 
+  // Reusable DatePicker structure to keep the JSX clean
+  const CustomDatePicker = ({
+    label,
+    value,
+    onChange,
+    minValue,
+  }: {
+    label: string;
+    value: string;
+    onChange: (dateStr: string) => void;
+    minValue?: string;
+  }) => (
+    <DatePicker
+      className="w-full"
+      value={value ? parseDate(value) : null}
+      minValue={minValue ? parseDate(minValue) : undefined}
+      onChange={(date) => onChange(date ? date.toString() : "")}
+    >
+      <Label>{label}</Label>
+      <DateField.Group fullWidth>
+        <DateField.Input>
+          {(segment) => <DateField.Segment segment={segment} />}
+        </DateField.Input>
+        <DateField.Suffix>
+          <DatePicker.Trigger>
+            <DatePicker.TriggerIndicator />
+          </DatePicker.Trigger>
+        </DateField.Suffix>
+      </DateField.Group>
+      <DatePicker.Popover>
+        <Calendar aria-label={label}>
+          <Calendar.Header>
+            <Calendar.YearPickerTrigger>
+              <Calendar.YearPickerTriggerHeading />
+              <Calendar.YearPickerTriggerIndicator />
+            </Calendar.YearPickerTrigger>
+            <Calendar.NavButton slot="previous" />
+            <Calendar.NavButton slot="next" />
+          </Calendar.Header>
+          <Calendar.Grid>
+            <Calendar.GridHeader>
+              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
+            </Calendar.GridHeader>
+            <Calendar.GridBody>
+              {(date) => <Calendar.Cell date={date} />}
+            </Calendar.GridBody>
+          </Calendar.Grid>
+          <Calendar.YearPickerGrid>
+            <Calendar.YearPickerGridBody>
+              {({ year }) => <Calendar.YearPickerCell year={year} />}
+            </Calendar.YearPickerGridBody>
+          </Calendar.YearPickerGrid>
+        </Calendar>
+      </DatePicker.Popover>
+    </DatePicker>
+  );
+
   return (
     <>
       <Button variant="primary" onPress={state.open}>
@@ -57,55 +149,70 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
               <form onSubmit={handleSubmit}>
                 <Modal.Header>{t("groups.addGroupModal.title")}</Modal.Header>
                 <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
+                  {/* Group Name Input */}
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-name">{t("groups.addGroupModal.nameLabel")}</Label>
+                    <Label htmlFor="add-group-name">
+                      {t("groups.addGroupModal.nameLabel")}
+                    </Label>
                     <Input
                       id="add-group-name"
                       value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
+                      onChange={(e) =>
+                        setForm({ ...form, name: e.target.value })
+                      }
                       placeholder={t("groups.addGroupModal.namePlaceholder")}
                       required
                     />
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-grade">{t("groups.addGroupModal.gradeLabel")}</Label>
-                    <Input
-                      id="add-group-grade"
-                      value={form.grade}
-                      onChange={(e) => setForm({ ...form, grade: e.target.value })}
-                      placeholder={t("groups.addGroupModal.gradePlaceholder")}
-                    />
+
+                  {/* Grade Selection */}
+                  <div className="flex flex-col gap-2">
+                    <Label>{t("groups.addGroupModal.gradeLabel")}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {GRADE_OPTIONS.map((grade) => {
+                        const isSelected = form.grade === grade;
+                        return (
+                          <Chip
+                            key={grade}
+                            variant={isSelected ? "primary" : "soft"}
+                            color={isSelected ? "accent" : "default"}
+                            className="cursor-pointer transition-transform active:scale-95"
+                            onClick={() => handleGradeSelect(grade)}
+                          >
+                            {grade}
+                          </Chip>
+                        );
+                      })}
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-start-date">{t("groups.addGroupModal.startDateLabel")}</Label>
-                    <input
-                      id="add-group-start-date"
-                      type="date"
-                      value={form.start_date}
-                      onChange={(e) => setForm({ ...form, start_date: e.target.value })}
-                      className="w-full rounded-lg border border-foreground/20 bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent/50"
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-end-date">{t("groups.addGroupModal.endDateLabel")}</Label>
-                    <input
-                      id="add-group-end-date"
-                      type="date"
-                      value={form.end_date}
-                      min={form.start_date || undefined}
-                      onChange={(e) => setForm({ ...form, end_date: e.target.value })}
-                      className="w-full rounded-lg border border-foreground/20 bg-transparent px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-accent/50"
-                    />
-                  </div>
-                  {error && (
-                    <p className="text-danger text-sm">{error}</p>
-                  )}
+
+                  {/* Start Date */}
+                  <CustomDatePicker
+                    label={t("groups.addGroupModal.startDateLabel")}
+                    value={form.start_date}
+                    onChange={(val) => setForm({ ...form, start_date: val })}
+                  />
+
+                  {/* End Date */}
+                  <CustomDatePicker
+                    label={t("groups.addGroupModal.endDateLabel")}
+                    value={form.end_date}
+                    minValue={form.start_date}
+                    onChange={(val) => setForm({ ...form, end_date: val })}
+                  />
+
+                  {error && <p className="text-danger text-sm">{error}</p>}
                 </Modal.Body>
+
                 <Modal.Footer>
                   <Button type="button" variant="ghost" onPress={close}>
                     {t("common.cancel")}
                   </Button>
-                  <Button type="submit" variant="primary" isDisabled={submitting}>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    isDisabled={submitting}
+                  >
                     {submitting ? <Spinner size="sm" /> : t("common.add")}
                   </Button>
                 </Modal.Footer>
