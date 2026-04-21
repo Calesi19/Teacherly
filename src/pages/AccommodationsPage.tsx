@@ -23,39 +23,32 @@ const defaultForm: StudentAccommodationsInput = {
   visual_examples: false,
 };
 
-function CheckItem({
+function SelectCard({
   label,
-  checked,
-  onChange,
+  sublabel,
+  selected,
+  onToggle,
 }: {
   label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
+  sublabel?: string;
+  selected: boolean;
+  onToggle: () => void;
 }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer select-none group">
-      <div
-        className={`size-5 rounded flex items-center justify-center border transition-colors ${
-          checked
-            ? "bg-accent border-accent"
-            : "border-border bg-background group-hover:border-accent/50"
-        }`}
-        onClick={() => onChange(!checked)}
-      >
-        {checked && (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <polyline
-              points="2 6 5 9 10 3"
-              stroke="white"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </div>
-      <span className="text-sm text-foreground">{label}</span>
-    </label>
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`px-4 py-3 rounded-xl border text-left transition-all select-none flex flex-col gap-0.5 ${
+        selected
+          ? "border-accent bg-accent/10 text-accent"
+          : "border-border bg-background text-foreground/70 hover:border-foreground/30 hover:text-foreground"
+      }`}
+    >
+      <span className="text-sm font-medium">{label}</span>
+      {sublabel && (
+        <span className={`text-xs ${selected ? "text-accent/70" : "text-muted"}`}>{sublabel}</span>
+      )}
+    </button>
   );
 }
 
@@ -102,7 +95,8 @@ export function AccommodationsPage({
       <Breadcrumb
         items={[
           { label: "Groups", onClick: onGoToGroups },
-          { label: group.name, onClick: onGoToStudents },
+          { label: group.name },
+          { label: "Students", onClick: onGoToStudents },
           { label: student.name, onClick: onGoToStudentProfile },
           { label: "Accommodations" },
         ]}
@@ -127,38 +121,44 @@ export function AccommodationsPage({
           {error}
         </div>
       ) : (
-        <div className="flex flex-col gap-4 max-w-lg">
+        <div className="flex flex-col gap-4 max-w-2xl">
           <p className="text-sm text-muted">Select all accommodations that apply to this student.</p>
-          <div className="flex flex-col gap-3">
-            <CheckItem
-              label="Desk placement (Ubicación de pupitre)"
-              checked={form.desk_placement}
-              onChange={(v) => setForm((f) => ({ ...f, desk_placement: v }))}
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+            <SelectCard
+              label="Desk Placement"
+              sublabel="Ubicación de pupitre"
+              selected={form.desk_placement}
+              onToggle={() => setForm((f) => ({ ...f, desk_placement: !f.desk_placement }))}
             />
-            <CheckItem
-              label="Extended time (Tiempo y medio)"
-              checked={form.extended_time}
-              onChange={(v) => setForm((f) => ({ ...f, extended_time: v }))}
+            <SelectCard
+              label="Extended Time"
+              sublabel="Tiempo y medio"
+              selected={form.extended_time}
+              onToggle={() => setForm((f) => ({ ...f, extended_time: !f.extended_time }))}
             />
-            <CheckItem
-              label="Shorter assignments (Tareas más cortas)"
-              checked={form.shorter_assignments}
-              onChange={(v) => setForm((f) => ({ ...f, shorter_assignments: v }))}
+            <SelectCard
+              label="Shorter Assignments"
+              sublabel="Tareas más cortas"
+              selected={form.shorter_assignments}
+              onToggle={() => setForm((f) => ({ ...f, shorter_assignments: !f.shorter_assignments }))}
             />
-            <CheckItem
-              label="Use of an abacus (Ábaco)"
-              checked={form.use_abacus}
-              onChange={(v) => setForm((f) => ({ ...f, use_abacus: v }))}
+            <SelectCard
+              label="Abacus"
+              sublabel="Ábaco"
+              selected={form.use_abacus}
+              onToggle={() => setForm((f) => ({ ...f, use_abacus: !f.use_abacus }))}
             />
-            <CheckItem
-              label="Simple instructions (Instrucciones sencillas)"
-              checked={form.simple_instructions}
-              onChange={(v) => setForm((f) => ({ ...f, simple_instructions: v }))}
+            <SelectCard
+              label="Simple Instructions"
+              sublabel="Instrucciones sencillas"
+              selected={form.simple_instructions}
+              onToggle={() => setForm((f) => ({ ...f, simple_instructions: !f.simple_instructions }))}
             />
-            <CheckItem
-              label="Visual examples (Proveer ejemplos visuales)"
-              checked={form.visual_examples}
-              onChange={(v) => setForm((f) => ({ ...f, visual_examples: v }))}
+            <SelectCard
+              label="Visual Examples"
+              sublabel="Proveer ejemplos visuales"
+              selected={form.visual_examples}
+              onToggle={() => setForm((f) => ({ ...f, visual_examples: !f.visual_examples }))}
             />
           </div>
 

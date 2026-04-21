@@ -311,6 +311,12 @@ pub fn run() {
             );",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 23,
+            description: "add_allergies_to_student_services",
+            sql: "ALTER TABLE student_services ADD COLUMN allergies TEXT;",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

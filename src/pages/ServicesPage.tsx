@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Button, Spinner } from "@heroui/react";
+import { Button, Spinner, Label, Input } from "@heroui/react";
 import { useStudentServices } from "../hooks/useStudentServices";
 import { Breadcrumb } from "../components/Breadcrumb";
 import type { Group } from "../types/group";
@@ -22,41 +22,30 @@ const defaultForm: StudentServicesInput = {
   therapy_physical: false,
   medical_plan: "none",
   has_treatment: false,
+  allergies: "",
 };
 
-function CheckItem({
+function SelectCard({
   label,
-  checked,
-  onChange,
+  selected,
+  onToggle,
 }: {
   label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
+  selected: boolean;
+  onToggle: () => void;
 }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer select-none group">
-      <div
-        className={`size-5 rounded flex items-center justify-center border transition-colors ${
-          checked
-            ? "bg-accent border-accent"
-            : "border-border bg-background group-hover:border-accent/50"
-        }`}
-        onClick={() => onChange(!checked)}
-      >
-        {checked && (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <polyline
-              points="2 6 5 9 10 3"
-              stroke="white"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </div>
-      <span className="text-sm text-foreground">{label}</span>
-    </label>
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all select-none ${
+        selected
+          ? "border-accent bg-accent/10 text-accent"
+          : "border-border bg-background text-foreground/60 hover:border-foreground/30 hover:text-foreground"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -82,6 +71,7 @@ export function ServicesPage({
         therapy_physical: data.therapy_physical === 1,
         medical_plan: data.medical_plan,
         has_treatment: data.has_treatment === 1,
+        allergies: data.allergies ?? "",
       });
     }
   }, [data]);
@@ -104,15 +94,16 @@ export function ServicesPage({
       <Breadcrumb
         items={[
           { label: "Groups", onClick: onGoToGroups },
-          { label: group.name, onClick: onGoToStudents },
+          { label: group.name },
+          { label: "Students", onClick: onGoToStudents },
           { label: student.name, onClick: onGoToStudentProfile },
-          { label: "Status & Services" },
+          { label: "Health" },
         ]}
       />
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h2 className="text-2xl font-bold">Status & Services</h2>
+          <h2 className="text-2xl font-bold">Health</h2>
           <p className="text-sm text-muted">{student.name}</p>
         </div>
         <Button variant="primary" size="sm" onPress={handleSave} isDisabled={submitting}>
@@ -129,52 +120,56 @@ export function ServicesPage({
           {error}
         </div>
       ) : (
-        <div className="flex flex-col gap-6 max-w-lg">
+        <div className="flex flex-col gap-8 max-w-2xl pb-10">
           <section className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Special Education</h3>
-            <CheckItem
-              label="Has special education services"
-              checked={form.has_special_education}
-              onChange={(v) => setForm((f) => ({ ...f, has_special_education: v }))}
-            />
+            <div className="flex flex-wrap gap-2">
+              <SelectCard
+                label="Has Special Education Services"
+                selected={form.has_special_education}
+                onToggle={() => setForm((f) => ({ ...f, has_special_education: !f.has_special_education }))}
+              />
+            </div>
           </section>
 
           <section className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Therapies</h3>
-            <CheckItem
-              label="Speech and Language (HL)"
-              checked={form.therapy_speech}
-              onChange={(v) => setForm((f) => ({ ...f, therapy_speech: v }))}
-            />
-            <CheckItem
-              label="Occupational (OCUP)"
-              checked={form.therapy_occupational}
-              onChange={(v) => setForm((f) => ({ ...f, therapy_occupational: v }))}
-            />
-            <CheckItem
-              label="Psychological (PSIC)"
-              checked={form.therapy_psychological}
-              onChange={(v) => setForm((f) => ({ ...f, therapy_psychological: v }))}
-            />
-            <CheckItem
-              label="Physical (FIS)"
-              checked={form.therapy_physical}
-              onChange={(v) => setForm((f) => ({ ...f, therapy_physical: v }))}
-            />
+            <div className="flex flex-wrap gap-2">
+              <SelectCard
+                label="Speech and Language (HL)"
+                selected={form.therapy_speech}
+                onToggle={() => setForm((f) => ({ ...f, therapy_speech: !f.therapy_speech }))}
+              />
+              <SelectCard
+                label="Occupational (OCUP)"
+                selected={form.therapy_occupational}
+                onToggle={() => setForm((f) => ({ ...f, therapy_occupational: !f.therapy_occupational }))}
+              />
+              <SelectCard
+                label="Psychological (PSIC)"
+                selected={form.therapy_psychological}
+                onToggle={() => setForm((f) => ({ ...f, therapy_psychological: !f.therapy_psychological }))}
+              />
+              <SelectCard
+                label="Physical (FIS)"
+                selected={form.therapy_physical}
+                onToggle={() => setForm((f) => ({ ...f, therapy_physical: !f.therapy_physical }))}
+              />
+            </div>
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Medical Plan</h3>
-            <div className="flex gap-2">
+            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Medical Insurance</h3>
+            <div className="flex flex-wrap gap-2">
               {(["none", "private", "government"] as const).map((option) => (
                 <button
                   key={option}
                   type="button"
                   onClick={() => setForm((f) => ({ ...f, medical_plan: option }))}
-                  className={`px-4 py-1.5 rounded-full text-sm font-medium transition-colors ${
+                  className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all select-none ${
                     form.medical_plan === option
-                      ? "bg-accent text-white"
-                      : "bg-foreground/8 text-foreground/60 hover:bg-foreground/12"
+                      ? "border-accent bg-accent/10 text-accent"
+                      : "border-border bg-background text-foreground/60 hover:border-foreground/30 hover:text-foreground"
                   }`}
                 >
                   {option === "none" ? "None" : option.charAt(0).toUpperCase() + option.slice(1)}
@@ -185,11 +180,26 @@ export function ServicesPage({
 
           <section className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Treatment</h3>
-            <CheckItem
-              label="Currently receiving medical treatment"
-              checked={form.has_treatment}
-              onChange={(v) => setForm((f) => ({ ...f, has_treatment: v }))}
-            />
+            <div className="flex flex-wrap gap-2">
+              <SelectCard
+                label="Currently Receiving Medical Treatment"
+                selected={form.has_treatment}
+                onToggle={() => setForm((f) => ({ ...f, has_treatment: !f.has_treatment }))}
+              />
+            </div>
+          </section>
+
+          <section className="flex flex-col gap-3">
+            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Allergies</h3>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="allergies">Known allergies</Label>
+              <Input
+                id="allergies"
+                value={form.allergies}
+                onChange={(e) => setForm((f) => ({ ...f, allergies: e.target.value }))}
+                placeholder="e.g. Peanuts, Penicillin, Latex"
+              />
+            </div>
           </section>
 
           {saveError && (

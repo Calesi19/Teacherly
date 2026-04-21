@@ -585,17 +585,17 @@ export function StudentProfilePage({
               </Surface>
             </div>
 
-            {/* Services surface */}
+            {/* Health surface */}
             <Surface variant="default" className="rounded-2xl p-5 flex flex-col gap-3">
               <div className="flex items-center justify-between">
                 <h3 className="text-sm font-semibold text-muted uppercase tracking-wide">
-                  Status &amp; Services
+                  Health
                 </h3>
                 <button
                   type="button"
                   onClick={onGoToServices}
                   className="inline-flex items-center gap-1 text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
-                  aria-label="Edit services"
+                  aria-label="Edit health"
                 >
                   <Pencil size={12} />
                   Edit
@@ -606,49 +606,57 @@ export function StudentProfilePage({
                   <Spinner size="sm" color="accent" />
                 </div>
               ) : !services ? (
-                <p className="text-sm text-foreground/40">No services recorded</p>
-              ) : (
-                <div className="flex flex-wrap gap-1.5">
-                  {services.has_special_education ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
-                      Special Education
-                    </span>
-                  ) : null}
-                  {services.therapy_speech ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
-                      Speech (HL)
-                    </span>
-                  ) : null}
-                  {services.therapy_occupational ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
-                      Occupational (OCUP)
-                    </span>
-                  ) : null}
-                  {services.therapy_psychological ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
-                      Psychological (PSIC)
-                    </span>
-                  ) : null}
-                  {services.therapy_physical ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
-                      Physical (FIS)
-                    </span>
-                  ) : null}
-                  {services.medical_plan !== "none" ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-success/10 text-success">
-                      {services.medical_plan.charAt(0).toUpperCase() + services.medical_plan.slice(1)} Plan
-                    </span>
-                  ) : null}
-                  {services.has_treatment ? (
-                    <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-warning/10 text-warning">
-                      Treatment Active
-                    </span>
-                  ) : null}
-                  {!services.has_special_education && !services.therapy_speech && !services.therapy_occupational && !services.therapy_psychological && !services.therapy_physical && services.medical_plan === "none" && !services.has_treatment ? (
-                    <p className="text-sm text-foreground/40">No services recorded</p>
-                  ) : null}
-                </div>
-              )}
+                <p className="text-sm text-foreground/40">No health information recorded</p>
+              ) : (() => {
+                const therapies = [
+                  services.therapy_speech        ? "Speech (HL)" : "",
+                  services.therapy_occupational  ? "Occupational (OCUP)" : "",
+                  services.therapy_psychological ? "Psychological (PSIC)" : "",
+                  services.therapy_physical      ? "Physical (FIS)" : "",
+                ].filter(Boolean);
+                const hasAnything = services.has_special_education || therapies.length > 0 || services.medical_plan !== "none" || services.has_treatment || services.allergies;
+                if (!hasAnything) return <p className="text-sm text-foreground/40">No health information recorded</p>;
+                return (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-3">
+                    {services.has_special_education ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-muted uppercase tracking-wide">Special Education</span>
+                        <span className="text-sm font-medium text-foreground">Yes</span>
+                      </div>
+                    ) : null}
+                    {therapies.length > 0 ? (
+                      <div className="flex flex-col gap-1">
+                        <span className="text-xs text-muted uppercase tracking-wide">Attends Therapy</span>
+                        <div className="flex flex-wrap gap-1">
+                          {therapies.map((t) => (
+                            <span key={t} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">{t}</span>
+                          ))}
+                        </div>
+                      </div>
+                    ) : null}
+                    {services.medical_plan !== "none" ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-muted uppercase tracking-wide">Medical Insurance</span>
+                        <span className="text-sm font-medium text-foreground">
+                          {services.medical_plan.charAt(0).toUpperCase() + services.medical_plan.slice(1)}
+                        </span>
+                      </div>
+                    ) : null}
+                    {services.has_treatment ? (
+                      <div className="flex flex-col gap-0.5">
+                        <span className="text-xs text-muted uppercase tracking-wide">Medical Treatment</span>
+                        <span className="text-sm font-medium text-foreground">Active</span>
+                      </div>
+                    ) : null}
+                    {services.allergies ? (
+                      <div className="flex flex-col gap-0.5 sm:col-span-2">
+                        <span className="text-xs text-muted uppercase tracking-wide">Allergies</span>
+                        <span className="text-sm font-medium text-foreground">{services.allergies}</span>
+                      </div>
+                    ) : null}
+                  </div>
+                );
+              })()}
             </Surface>
 
             {/* Accommodations surface */}
@@ -711,34 +719,80 @@ export function StudentProfilePage({
               ) : !observations ? (
                 <p className="text-sm text-foreground/40">No observations recorded</p>
               ) : (() => {
-                const dyslexiaCount = [observations.obs_reading_writing, observations.obs_mirror_numbers, observations.obs_left_right_confusion, observations.obs_sequence_difficulty].filter(Boolean).length;
-                const adhdCount = [observations.obs_disorganized_work, observations.obs_inattention_detail, observations.obs_sustained_attention, observations.obs_doesnt_listen, observations.obs_task_organization, observations.obs_loses_belongings, observations.obs_distracted_stimuli, observations.obs_forgetful, observations.obs_excess_hand_foot, observations.obs_gets_up_from_seat, observations.obs_running_jumping, observations.obs_talks_excessively, observations.obs_difficulty_quiet, observations.obs_driven_by_motor, observations.obs_impulsive_answers, observations.obs_difficulty_waiting, observations.obs_interrupts_others].filter(Boolean).length;
-                const oppCount = [observations.obs_easily_angered, observations.obs_argues, observations.obs_defies_adults, observations.obs_annoys_others, observations.obs_aggressive, observations.obs_spiteful, observations.obs_blames_others, observations.obs_breaks_property].filter(Boolean).length;
-                const otherCount = [observations.obs_incomplete_homework, observations.obs_frequent_absences, observations.obs_neglected_appearance, observations.obs_uses_profanity, observations.obs_takes_belongings, observations.obs_forgets_materials, observations.obs_appears_sad].filter(Boolean).length;
-                const total = dyslexiaCount + adhdCount + oppCount + otherCount;
-                if (total === 0) return <p className="text-sm text-foreground/40">No observations recorded</p>;
+                const groups: { label: string; items: string[] }[] = [
+                  {
+                    label: "Dyslexia",
+                    items: [
+                      observations.obs_reading_writing    ? "Difficulty learning to read and write" : "",
+                      observations.obs_mirror_numbers     ? "Writing numbers in mirror image or backward" : "",
+                      observations.obs_left_right_confusion ? "Difficulty distinguishing left from right" : "",
+                      observations.obs_sequence_difficulty  ? "Difficulty retaining sequences" : "",
+                    ].filter(Boolean) as string[],
+                  },
+                  {
+                    label: "ADD / ADHD",
+                    items: [
+                      observations.obs_disorganized_work   ? "Disorganized in work" : "",
+                      observations.obs_inattention_detail  ? "Does not pay sufficient attention to detail" : "",
+                      observations.obs_sustained_attention ? "Difficulty with sustained attention" : "",
+                      observations.obs_doesnt_listen       ? "Does not seem to listen when spoken to directly" : "",
+                      observations.obs_task_organization   ? "Difficulty organizing tasks or activities" : "",
+                      observations.obs_loses_belongings    ? "Loses belongings easily" : "",
+                      observations.obs_distracted_stimuli  ? "Distracted by irrelevant stimuli" : "",
+                      observations.obs_forgetful           ? "Forgetful" : "",
+                      observations.obs_excess_hand_foot    ? "Excessive movement of hands and feet" : "",
+                      observations.obs_gets_up_from_seat   ? "Constantly getting up from seat" : "",
+                      observations.obs_running_jumping     ? "Running or jumping in inappropriate situations" : "",
+                      observations.obs_talks_excessively   ? "Talking excessively" : "",
+                      observations.obs_difficulty_quiet    ? "Difficulty engaging in quiet or passive activities" : "",
+                      observations.obs_driven_by_motor     ? "Acting as if \"driven by a motor\"" : "",
+                      observations.obs_impulsive_answers   ? "Answering questions impulsively or prematurely" : "",
+                      observations.obs_difficulty_waiting  ? "Difficulty waiting in lines" : "",
+                      observations.obs_interrupts_others   ? "Interrupting or intruding on others' activities" : "",
+                    ].filter(Boolean) as string[],
+                  },
+                  {
+                    label: "Oppositional / Social",
+                    items: [
+                      observations.obs_easily_angered ? "Easily angered" : "",
+                      observations.obs_argues         ? "Argues with friends and adults" : "",
+                      observations.obs_defies_adults  ? "Defies adults and fails to obey" : "",
+                      observations.obs_annoys_others  ? "Deliberately annoys other people" : "",
+                      observations.obs_aggressive     ? "Aggressive behavior" : "",
+                      observations.obs_spiteful       ? "Spiteful or vindictive" : "",
+                      observations.obs_blames_others  ? "Blames others for their own mistakes" : "",
+                      observations.obs_breaks_property ? "Breaks others' property" : "",
+                    ].filter(Boolean) as string[],
+                  },
+                  {
+                    label: "Other",
+                    items: [
+                      observations.obs_incomplete_homework  ? "Does not complete home assignments" : "",
+                      observations.obs_frequent_absences    ? "Frequent absences or pattern of tardiness" : "",
+                      observations.obs_neglected_appearance ? "Neglected appearance and poor eating habits" : "",
+                      observations.obs_uses_profanity       ? "Use of profanity" : "",
+                      observations.obs_takes_belongings     ? "Taking things that belong to others" : "",
+                      observations.obs_forgets_materials    ? "Failure to bring work materials" : "",
+                      observations.obs_appears_sad          ? "Appearing sad most of the time" : "",
+                    ].filter(Boolean) as string[],
+                  },
+                ].filter((g) => g.items.length > 0);
+
+                if (groups.length === 0) return <p className="text-sm text-foreground/40">No observations recorded</p>;
                 return (
-                  <div className="flex flex-wrap gap-1.5">
-                    {dyslexiaCount > 0 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
-                        Dyslexia ({dyslexiaCount})
-                      </span>
-                    )}
-                    {adhdCount > 0 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
-                        ADD/ADHD ({adhdCount})
-                      </span>
-                    )}
-                    {oppCount > 0 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
-                        Oppositional ({oppCount})
-                      </span>
-                    )}
-                    {otherCount > 0 && (
-                      <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
-                        Other ({otherCount})
-                      </span>
-                    )}
+                  <div className="flex flex-col gap-3">
+                    {groups.map((group) => (
+                      <div key={group.label} className="flex flex-col gap-1.5">
+                        <span className="text-xs font-semibold text-muted uppercase tracking-wide">{group.label}</span>
+                        <div className="flex flex-wrap gap-1.5">
+                          {group.items.map((item) => (
+                            <span key={item} className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-secondary/60 text-secondary-foreground">
+                              {item}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 );
               })()}

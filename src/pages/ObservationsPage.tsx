@@ -53,39 +53,27 @@ const defaultForm: StudentObservationsInput = {
   obs_appears_sad: false,
 };
 
-function CheckItem({
+function SelectCard({
   label,
-  checked,
-  onChange,
+  selected,
+  onToggle,
 }: {
   label: string;
-  checked: boolean;
-  onChange: (v: boolean) => void;
+  selected: boolean;
+  onToggle: () => void;
 }) {
   return (
-    <label className="flex items-center gap-3 cursor-pointer select-none group">
-      <div
-        className={`size-5 shrink-0 rounded flex items-center justify-center border transition-colors ${
-          checked
-            ? "bg-accent border-accent"
-            : "border-border bg-background group-hover:border-accent/50"
-        }`}
-        onClick={() => onChange(!checked)}
-      >
-        {checked && (
-          <svg width="12" height="12" viewBox="0 0 12 12" fill="none">
-            <polyline
-              points="2 6 5 9 10 3"
-              stroke="white"
-              strokeWidth="1.8"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-            />
-          </svg>
-        )}
-      </div>
-      <span className="text-sm text-foreground">{label}</span>
-    </label>
+    <button
+      type="button"
+      onClick={onToggle}
+      className={`px-3 py-2.5 rounded-xl border text-sm font-medium text-left transition-all select-none ${
+        selected
+          ? "border-accent bg-accent/10 text-accent"
+          : "border-border bg-background text-foreground/60 hover:border-foreground/30 hover:text-foreground"
+      }`}
+    >
+      {label}
+    </button>
   );
 }
 
@@ -144,8 +132,8 @@ export function ObservationsPage({
     }
   }, [data]);
 
-  const set = (key: keyof StudentObservationsInput, v: boolean) =>
-    setForm((f) => ({ ...f, [key]: v }));
+  const toggle = (key: keyof StudentObservationsInput) =>
+    setForm((f) => ({ ...f, [key]: !f[key] }));
 
   const handleSave = async () => {
     setSubmitting(true);
@@ -165,7 +153,8 @@ export function ObservationsPage({
       <Breadcrumb
         items={[
           { label: "Groups", onClick: onGoToGroups },
-          { label: group.name, onClick: onGoToStudents },
+          { label: group.name },
+          { label: "Students", onClick: onGoToStudents },
           { label: student.name, onClick: onGoToStudentProfile },
           { label: "Observations" },
         ]}
@@ -190,57 +179,65 @@ export function ObservationsPage({
           {error}
         </div>
       ) : (
-        <div className="flex flex-col gap-8 max-w-lg">
+        <div className="flex flex-col gap-8 max-w-2xl pb-10">
           <section className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Learning & Dyslexia (Dislexia)</h3>
-            <CheckItem label="Difficulty learning to read and write" checked={form.obs_reading_writing} onChange={(v) => set("obs_reading_writing", v)} />
-            <CheckItem label="Writing numbers in mirror image or backward" checked={form.obs_mirror_numbers} onChange={(v) => set("obs_mirror_numbers", v)} />
-            <CheckItem label="Difficulty distinguishing left from right" checked={form.obs_left_right_confusion} onChange={(v) => set("obs_left_right_confusion", v)} />
-            <CheckItem label="Difficulty retaining sequences" checked={form.obs_sequence_difficulty} onChange={(v) => set("obs_sequence_difficulty", v)} />
+            <div className="grid grid-cols-2 gap-2">
+              <SelectCard label="Difficulty learning to read and write" selected={form.obs_reading_writing} onToggle={() => toggle("obs_reading_writing")} />
+              <SelectCard label="Writing numbers in mirror image or backward" selected={form.obs_mirror_numbers} onToggle={() => toggle("obs_mirror_numbers")} />
+              <SelectCard label="Difficulty distinguishing left from right" selected={form.obs_left_right_confusion} onToggle={() => toggle("obs_left_right_confusion")} />
+              <SelectCard label="Difficulty retaining sequences" selected={form.obs_sequence_difficulty} onToggle={() => toggle("obs_sequence_difficulty")} />
+            </div>
           </section>
 
           <section className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Attention & Hyperactivity (ADD / ADHD)</h3>
-            <CheckItem label="Disorganized in work" checked={form.obs_disorganized_work} onChange={(v) => set("obs_disorganized_work", v)} />
-            <CheckItem label="Does not pay sufficient attention to detail" checked={form.obs_inattention_detail} onChange={(v) => set("obs_inattention_detail", v)} />
-            <CheckItem label="Difficulty with sustained attention" checked={form.obs_sustained_attention} onChange={(v) => set("obs_sustained_attention", v)} />
-            <CheckItem label="Does not seem to listen when spoken to directly" checked={form.obs_doesnt_listen} onChange={(v) => set("obs_doesnt_listen", v)} />
-            <CheckItem label="Difficulty organizing tasks or activities" checked={form.obs_task_organization} onChange={(v) => set("obs_task_organization", v)} />
-            <CheckItem label="Loses belongings easily" checked={form.obs_loses_belongings} onChange={(v) => set("obs_loses_belongings", v)} />
-            <CheckItem label="Distracted by irrelevant stimuli" checked={form.obs_distracted_stimuli} onChange={(v) => set("obs_distracted_stimuli", v)} />
-            <CheckItem label="Forgetful" checked={form.obs_forgetful} onChange={(v) => set("obs_forgetful", v)} />
-            <CheckItem label="Excessive movement of hands and feet" checked={form.obs_excess_hand_foot} onChange={(v) => set("obs_excess_hand_foot", v)} />
-            <CheckItem label="Constantly getting up from seat" checked={form.obs_gets_up_from_seat} onChange={(v) => set("obs_gets_up_from_seat", v)} />
-            <CheckItem label="Running or jumping in inappropriate situations" checked={form.obs_running_jumping} onChange={(v) => set("obs_running_jumping", v)} />
-            <CheckItem label="Talking excessively" checked={form.obs_talks_excessively} onChange={(v) => set("obs_talks_excessively", v)} />
-            <CheckItem label="Difficulty engaging in quiet or passive activities" checked={form.obs_difficulty_quiet} onChange={(v) => set("obs_difficulty_quiet", v)} />
-            <CheckItem label='Acting as if "driven by a motor"' checked={form.obs_driven_by_motor} onChange={(v) => set("obs_driven_by_motor", v)} />
-            <CheckItem label="Answering questions impulsively or prematurely" checked={form.obs_impulsive_answers} onChange={(v) => set("obs_impulsive_answers", v)} />
-            <CheckItem label="Difficulty waiting in lines" checked={form.obs_difficulty_waiting} onChange={(v) => set("obs_difficulty_waiting", v)} />
-            <CheckItem label="Interrupting or intruding on others' activities" checked={form.obs_interrupts_others} onChange={(v) => set("obs_interrupts_others", v)} />
+            <div className="grid grid-cols-2 gap-2">
+              <SelectCard label="Disorganized in work" selected={form.obs_disorganized_work} onToggle={() => toggle("obs_disorganized_work")} />
+              <SelectCard label="Does not pay sufficient attention to detail" selected={form.obs_inattention_detail} onToggle={() => toggle("obs_inattention_detail")} />
+              <SelectCard label="Difficulty with sustained attention" selected={form.obs_sustained_attention} onToggle={() => toggle("obs_sustained_attention")} />
+              <SelectCard label="Does not seem to listen when spoken to directly" selected={form.obs_doesnt_listen} onToggle={() => toggle("obs_doesnt_listen")} />
+              <SelectCard label="Difficulty organizing tasks or activities" selected={form.obs_task_organization} onToggle={() => toggle("obs_task_organization")} />
+              <SelectCard label="Loses belongings easily" selected={form.obs_loses_belongings} onToggle={() => toggle("obs_loses_belongings")} />
+              <SelectCard label="Distracted by irrelevant stimuli" selected={form.obs_distracted_stimuli} onToggle={() => toggle("obs_distracted_stimuli")} />
+              <SelectCard label="Forgetful" selected={form.obs_forgetful} onToggle={() => toggle("obs_forgetful")} />
+              <SelectCard label="Excessive movement of hands and feet" selected={form.obs_excess_hand_foot} onToggle={() => toggle("obs_excess_hand_foot")} />
+              <SelectCard label="Constantly getting up from seat" selected={form.obs_gets_up_from_seat} onToggle={() => toggle("obs_gets_up_from_seat")} />
+              <SelectCard label="Running or jumping in inappropriate situations" selected={form.obs_running_jumping} onToggle={() => toggle("obs_running_jumping")} />
+              <SelectCard label="Talking excessively" selected={form.obs_talks_excessively} onToggle={() => toggle("obs_talks_excessively")} />
+              <SelectCard label="Difficulty engaging in quiet or passive activities" selected={form.obs_difficulty_quiet} onToggle={() => toggle("obs_difficulty_quiet")} />
+              <SelectCard label='Acting as if "driven by a motor"' selected={form.obs_driven_by_motor} onToggle={() => toggle("obs_driven_by_motor")} />
+              <SelectCard label="Answering questions impulsively or prematurely" selected={form.obs_impulsive_answers} onToggle={() => toggle("obs_impulsive_answers")} />
+              <SelectCard label="Difficulty waiting in lines" selected={form.obs_difficulty_waiting} onToggle={() => toggle("obs_difficulty_waiting")} />
+              <SelectCard label="Interrupting or intruding on others' activities" selected={form.obs_interrupts_others} onToggle={() => toggle("obs_interrupts_others")} />
+            </div>
           </section>
 
           <section className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Social & Oppositional (Oposicional / Social)</h3>
-            <CheckItem label="Easily angered" checked={form.obs_easily_angered} onChange={(v) => set("obs_easily_angered", v)} />
-            <CheckItem label="Argues with friends and adults" checked={form.obs_argues} onChange={(v) => set("obs_argues", v)} />
-            <CheckItem label="Defies adults and fails to obey" checked={form.obs_defies_adults} onChange={(v) => set("obs_defies_adults", v)} />
-            <CheckItem label="Deliberately annoys other people" checked={form.obs_annoys_others} onChange={(v) => set("obs_annoys_others", v)} />
-            <CheckItem label="Aggressive behavior" checked={form.obs_aggressive} onChange={(v) => set("obs_aggressive", v)} />
-            <CheckItem label="Spiteful or vindictive" checked={form.obs_spiteful} onChange={(v) => set("obs_spiteful", v)} />
-            <CheckItem label="Blames others for their own mistakes" checked={form.obs_blames_others} onChange={(v) => set("obs_blames_others", v)} />
-            <CheckItem label="Breaks others' property" checked={form.obs_breaks_property} onChange={(v) => set("obs_breaks_property", v)} />
+            <div className="grid grid-cols-2 gap-2">
+              <SelectCard label="Easily angered" selected={form.obs_easily_angered} onToggle={() => toggle("obs_easily_angered")} />
+              <SelectCard label="Argues with friends and adults" selected={form.obs_argues} onToggle={() => toggle("obs_argues")} />
+              <SelectCard label="Defies adults and fails to obey" selected={form.obs_defies_adults} onToggle={() => toggle("obs_defies_adults")} />
+              <SelectCard label="Deliberately annoys other people" selected={form.obs_annoys_others} onToggle={() => toggle("obs_annoys_others")} />
+              <SelectCard label="Aggressive behavior" selected={form.obs_aggressive} onToggle={() => toggle("obs_aggressive")} />
+              <SelectCard label="Spiteful or vindictive" selected={form.obs_spiteful} onToggle={() => toggle("obs_spiteful")} />
+              <SelectCard label="Blames others for their own mistakes" selected={form.obs_blames_others} onToggle={() => toggle("obs_blames_others")} />
+              <SelectCard label="Breaks others' property" selected={form.obs_breaks_property} onToggle={() => toggle("obs_breaks_property")} />
+            </div>
           </section>
 
           <section className="flex flex-col gap-3">
             <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">Other Indicators</h3>
-            <CheckItem label="Does not complete home assignments" checked={form.obs_incomplete_homework} onChange={(v) => set("obs_incomplete_homework", v)} />
-            <CheckItem label="Frequent absences or pattern of tardiness" checked={form.obs_frequent_absences} onChange={(v) => set("obs_frequent_absences", v)} />
-            <CheckItem label="Neglected appearance and poor eating habits" checked={form.obs_neglected_appearance} onChange={(v) => set("obs_neglected_appearance", v)} />
-            <CheckItem label="Use of profanity" checked={form.obs_uses_profanity} onChange={(v) => set("obs_uses_profanity", v)} />
-            <CheckItem label="Taking things that belong to others" checked={form.obs_takes_belongings} onChange={(v) => set("obs_takes_belongings", v)} />
-            <CheckItem label="Failure to bring work materials" checked={form.obs_forgets_materials} onChange={(v) => set("obs_forgets_materials", v)} />
-            <CheckItem label="Appearing sad most of the time" checked={form.obs_appears_sad} onChange={(v) => set("obs_appears_sad", v)} />
+            <div className="grid grid-cols-2 gap-2">
+              <SelectCard label="Does not complete home assignments" selected={form.obs_incomplete_homework} onToggle={() => toggle("obs_incomplete_homework")} />
+              <SelectCard label="Frequent absences or pattern of tardiness" selected={form.obs_frequent_absences} onToggle={() => toggle("obs_frequent_absences")} />
+              <SelectCard label="Neglected appearance and poor eating habits" selected={form.obs_neglected_appearance} onToggle={() => toggle("obs_neglected_appearance")} />
+              <SelectCard label="Use of profanity" selected={form.obs_uses_profanity} onToggle={() => toggle("obs_uses_profanity")} />
+              <SelectCard label="Taking things that belong to others" selected={form.obs_takes_belongings} onToggle={() => toggle("obs_takes_belongings")} />
+              <SelectCard label="Failure to bring work materials" selected={form.obs_forgets_materials} onToggle={() => toggle("obs_forgets_materials")} />
+              <SelectCard label="Appearing sad most of the time" selected={form.obs_appears_sad} onToggle={() => toggle("obs_appears_sad")} />
+            </div>
           </section>
 
           {saveError && (

@@ -142,7 +142,8 @@ export function AddressesPage({
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
-          { label: group.name, onClick: onGoToStudents },
+          { label: group.name },
+          { label: t("attendance.studentsHeader"), onClick: onGoToStudents },
           { label: student.name, onClick: onGoToStudentProfile },
           { label: t("addresses.breadcrumb") },
         ]}
