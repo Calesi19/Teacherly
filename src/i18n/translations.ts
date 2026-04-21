@@ -343,8 +343,15 @@ const en = {
     breadcrumb: "Assignments",
     addAssignment: "+ Add Assignment",
     pts: "pts",
+    searchPlaceholder: "Search assignments...",
     noAssignmentsYet: "No assignments yet",
     noAssignmentsHint: 'Click "+ Add Assignment" to get started.',
+    tableColumns: {
+      title: "Title",
+      period: "Period",
+      maxScore: "Max Score",
+      date: "Date",
+    },
     deleteModal: {
       title: "Delete Assignment",
       description:
@@ -740,8 +747,15 @@ const es: typeof en = {
     breadcrumb: "Tareas",
     addAssignment: "+ Agregar tarea",
     pts: "pts",
+    searchPlaceholder: "Buscar tareas...",
     noAssignmentsYet: "Sin tareas aún",
     noAssignmentsHint: 'Haz clic en "+ Agregar tarea" para comenzar.',
+    tableColumns: {
+      title: "Título",
+      period: "Período",
+      maxScore: "Punt. máx.",
+      date: "Fecha",
+    },
     deleteModal: {
       title: "Eliminar tarea",
       description:
