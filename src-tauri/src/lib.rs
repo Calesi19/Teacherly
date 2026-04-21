@@ -200,6 +200,23 @@ pub fn run() {
             );",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 17,
+            description: "create_student_addresses_table",
+            sql: "CREATE TABLE IF NOT EXISTS student_addresses (
+                id         INTEGER PRIMARY KEY AUTOINCREMENT,
+                student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+                label      TEXT,
+                street     TEXT    NOT NULL,
+                city       TEXT,
+                state      TEXT,
+                zip_code   TEXT,
+                country    TEXT,
+                is_deleted INTEGER NOT NULL DEFAULT 0,
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+            );",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

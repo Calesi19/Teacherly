@@ -29,6 +29,7 @@ import type { DateValue } from "@internationalized/date";
 import { Inbox, Pencil } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { useContacts } from "../hooks/useContacts";
+import { useAddresses } from "../hooks/useAddresses";
 import { useNotes } from "../hooks/useNotes";
 import { useVisitations } from "../hooks/useVisitations";
 import { useStudentAssignmentPreviews } from "../hooks/useStudentAssignmentPreviews";
@@ -46,6 +47,7 @@ interface StudentProfilePageProps {
   onGoToDashboard: () => void;
   onGoToStudents: () => void;
   onGoToContacts: () => void;
+  onGoToAddresses: () => void;
 }
 
 function CopyButton({ value }: { value: string }) {
@@ -132,6 +134,7 @@ export function StudentProfilePage({
   onGoToDashboard,
   onGoToStudents,
   onGoToContacts,
+  onGoToAddresses,
 }: StudentProfilePageProps) {
   const { t } = useTranslation();
 
@@ -177,6 +180,7 @@ export function StudentProfilePage({
   const [visitationSearch, setVisitationSearch] = useState("");
 
   const { contacts, loading: loadingContacts } = useContacts(student.id);
+  const { addresses, loading: loadingAddresses } = useAddresses(student.id);
   const { notes, loading: loadingNotes, addNote, updateNote } = useNotes(student.id);
   const {
     visitations,
@@ -484,6 +488,55 @@ export function StudentProfilePage({
                             {contact.email}
                             <CopyButton value={contact.email} />
                           </span>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </Surface>
+
+              {/* Addresses card */}
+              <Surface
+                variant="default"
+                className="rounded-2xl p-5 flex flex-col gap-3"
+              >
+                <div className="flex items-center justify-between">
+                  <h3 className="text-sm font-semibold text-muted uppercase tracking-wide">
+                    {t("studentProfile.overview.addresses")}
+                  </h3>
+                  <button
+                    type="button"
+                    onClick={onGoToAddresses}
+                    className="inline-flex items-center gap-1 text-xs text-foreground/40 hover:text-foreground/70 transition-colors"
+                    aria-label="Edit addresses"
+                  >
+                    <Pencil size={12} />
+                    Edit
+                  </button>
+                </div>
+                {loadingAddresses ? (
+                  <div className="flex justify-center py-4">
+                    <Spinner size="sm" color="accent" />
+                  </div>
+                ) : addresses.length === 0 ? (
+                  <p className="text-sm text-foreground/40">
+                    {t("studentProfile.overview.noAddresses")}
+                  </p>
+                ) : (
+                  <div className="flex flex-col divide-y divide-border">
+                    {addresses.slice(0, 3).map((address) => (
+                      <div key={address.id} className="flex flex-col gap-0.5 py-2.5 first:pt-0 last:pb-0">
+                        {address.label && (
+                          <span className="text-sm font-medium">{address.label}</span>
+                        )}
+                        <span className="text-xs text-foreground/60">{address.street}</span>
+                        {(address.city || address.state || address.zip_code) && (
+                          <span className="text-xs text-foreground/60">
+                            {[address.city, address.state, address.zip_code].filter(Boolean).join(", ")}
+                          </span>
+                        )}
+                        {address.country && (
+                          <span className="text-xs text-muted">{address.country}</span>
                         )}
                       </div>
                     ))}

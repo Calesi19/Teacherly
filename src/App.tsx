@@ -88,6 +88,7 @@ import { GroupsPage } from "./pages/GroupsPage";
 import { StudentsPage } from "./pages/StudentsPage";
 import { StudentProfilePage } from "./pages/StudentProfilePage";
 import { ContactsPage } from "./pages/ContactsPage";
+import { AddressesPage } from "./pages/AddressesPage";
 import { VisitationsPage } from "./pages/VisitationsPage";
 import { NotesPage } from "./pages/NotesPage";
 import { DashboardPage } from "./pages/DashboardPage";
@@ -106,6 +107,7 @@ type Route =
   | { page: "students"; group: Group }
   | { page: "student-profile"; group: Group; student: Student }
   | { page: "contacts"; group: Group; student: Student }
+  | { page: "addresses"; group: Group; student: Student }
   | { page: "visitations"; group: Group; student: Student }
   | { page: "notes"; group: Group; student: Student }
   | { page: "schedule"; group: Group }
@@ -128,6 +130,8 @@ function App() {
     setRoute({ page: "student-profile", group, student });
   const goToContacts = (group: Group, student: Student) =>
     setRoute({ page: "contacts", group, student });
+  const goToAddresses = (group: Group, student: Student) =>
+    setRoute({ page: "addresses", group, student });
   const goToSchedule = (group: Group) => setRoute({ page: "schedule", group });
   const goToAttendance = (group: Group) =>
     setRoute({ page: "attendance", group });
@@ -209,6 +213,7 @@ function App() {
             onGoToDashboard={() => goToDashboard(route.group)}
             onGoToStudents={() => goToStudents(route.group)}
             onGoToContacts={() => goToContacts(route.group, route.student)}
+            onGoToAddresses={() => goToAddresses(route.group, route.student)}
           />
         );
       case "notes":
@@ -226,6 +231,18 @@ function App() {
       case "contacts":
         return (
           <ContactsPage
+            student={route.student}
+            group={route.group}
+            onGoToGroups={goToGroups}
+            onGoToStudents={() => goToStudents(route.group)}
+            onGoToStudentProfile={() =>
+              goToStudentProfile(route.group, route.student)
+            }
+          />
+        );
+      case "addresses":
+        return (
+          <AddressesPage
             student={route.student}
             group={route.group}
             onGoToGroups={goToGroups}
