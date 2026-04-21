@@ -47,8 +47,7 @@ export function AttendancePage({
     markPresent,
     markAbsent,
     markLate,
-    markEarlyPickup,
-    markLateArrival,
+    markPartial,
     markDayStatusBulk,
   } = useAttendance(group.id, date);
 
@@ -121,8 +120,7 @@ export function AttendancePage({
             onMarkPresent={(id) => withPastDateConfirm(() => markPresent(id))}
             onMarkAbsent={(id) => withPastDateConfirm(() => markAbsent(id))}
             onMarkLate={(id) => withPastDateConfirm(() => markLate(id))}
-            onMarkEarlyPickup={(id, time) => withPastDateConfirm(() => markEarlyPickup(id, time))}
-            onMarkLateArrival={(id, time) => withPastDateConfirm(() => markLateArrival(id, time))}
+            onMarkPartial={(id, periodStatuses) => withPastDateConfirm(() => markPartial(id, periodStatuses))}
             onMarkBulk={(ids, status) => withPastDateConfirm(() => markDayStatusBulk(ids, status))}
           />
         </div>

@@ -16,7 +16,6 @@ interface RawRecord {
 export interface StudentAttendanceDay {
   date: string;
   dayStatus: DayAttendanceStatus;
-  time?: string;
   records: { period_name: string; status: AttendanceStatus; notes: string | null }[];
 }
 
@@ -25,11 +24,10 @@ export interface StudentAttendanceSummary {
   present: number;
   absent: number;
   late: number;
-  earlyPickup: number;
-  lateArrival: number;
+  partial: number;
 }
 
-function deriveDayStatus(records: RawRecord[]): { status: DayAttendanceStatus; time?: string } {
+function deriveDayStatus(records: RawRecord[]): { status: DayAttendanceStatus } {
   if (records.length === 0) return { status: "present" };
 
   const sorted = [...records].sort(
@@ -37,24 +35,12 @@ function deriveDayStatus(records: RawRecord[]): { status: DayAttendanceStatus; t
   );
   const statuses = sorted.map((r) => r.status);
 
-  if (statuses.some((s) => s === "early_pickup")) {
-    const ep = sorted.find((r) => r.status === "early_pickup");
-    return { status: "early_pickup", time: ep?.notes ?? undefined };
-  }
   if (statuses.every((s) => s === "absent")) return { status: "absent" };
   if (statuses.every((s) => s === "present")) return { status: "present" };
   if (statuses[0] === "late" && statuses.slice(1).every((s) => s === "present")) {
     return { status: "late" };
   }
-  const firstPresent = statuses.findIndex((s) => s === "present");
-  if (
-    firstPresent > 0 &&
-    statuses.slice(0, firstPresent).every((s) => s === "absent") &&
-    statuses.slice(firstPresent).every((s) => s === "present")
-  ) {
-    return { status: "late_arrival", time: sorted[firstPresent]?.notes ?? undefined };
-  }
-  return { status: "present" };
+  return { status: "partial" };
 }
 
 export function useStudentAttendance(studentId: number) {
@@ -94,11 +80,10 @@ export function useStudentAttendance(studentId: number) {
       grouped.get(r.date)!.push(r);
     }
     return Array.from(grouped.entries()).map(([date, recs]) => {
-      const { status, time } = deriveDayStatus(recs);
+      const { status } = deriveDayStatus(recs);
       return {
         date,
         dayStatus: status,
-        time,
         records: recs.map((r) => ({ period_name: r.period_name, status: r.status, notes: r.notes })),
       };
     });
@@ -110,8 +95,7 @@ export function useStudentAttendance(studentId: number) {
       present: days.filter((d) => d.dayStatus === "present").length,
       absent: days.filter((d) => d.dayStatus === "absent").length,
       late: days.filter((d) => d.dayStatus === "late").length,
-      earlyPickup: days.filter((d) => d.dayStatus === "early_pickup").length,
-      lateArrival: days.filter((d) => d.dayStatus === "late_arrival").length,
+      partial: days.filter((d) => d.dayStatus === "partial").length,
     }),
     [days]
   );

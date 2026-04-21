@@ -1,8 +1,11 @@
 import { useState } from "react";
 import {
   Button,
+  Input,
   Modal,
   Label,
+  ListBox,
+  Select,
   Spinner,
   useOverlayState,
 } from "@heroui/react";
@@ -11,7 +14,8 @@ import { Breadcrumb } from "../components/Breadcrumb";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
-import type { NewNoteInput } from "../types/note";
+import type { NewNoteInput, NoteTagKey } from "../types/note";
+import { NOTE_TAG_KEYS, NOTE_TAG_COLORS, parseTags, serializeTags } from "../types/note";
 
 interface NotesPageProps {
   student: Student;
@@ -43,11 +47,15 @@ export function NotesPage({
   const { t } = useTranslation();
   const modalState = useOverlayState();
   const [content, setContent] = useState("");
+  const [selectedTags, setSelectedTags] = useState<NoteTagKey[]>([]);
   const [submitting, setSubmitting] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [tagFilter, setTagFilter] = useState<"all" | NoteTagKey>("all");
 
   const closeModal = () => {
     setContent("");
+    setSelectedTags([]);
     setAddError(null);
     modalState.close();
   };
@@ -58,16 +66,31 @@ export function NotesPage({
     setSubmitting(true);
     setAddError(null);
     try {
-      const input: NewNoteInput = { content: content.trim() };
+      const input: NewNoteInput = { content: content.trim(), tags: serializeTags(selectedTags) };
       await addNote(input);
-      setContent("");
-      modalState.close();
+      closeModal();
     } catch (err) {
       setAddError(String(err));
     } finally {
       setSubmitting(false);
     }
   };
+
+  const toggleTag = (tag: NoteTagKey) => {
+    setSelectedTags((prev) =>
+      prev.includes(tag) ? prev.filter((k) => k !== tag) : [...prev, tag]
+    );
+  };
+
+  const tagLabel = (tag: NoteTagKey) =>
+    t(`studentProfile.notes.tags.${tag}` as Parameters<typeof t>[0]);
+
+  const filteredNotes = notes.filter((n) => {
+    const q = search.toLowerCase();
+    const matchesSearch = !q || n.content.toLowerCase().includes(q) || n.tags.toLowerCase().includes(q);
+    const matchesTag = tagFilter === "all" || parseTags(n.tags).includes(tagFilter);
+    return matchesSearch && matchesTag;
+  });
 
   return (
     <div className="p-6 flex flex-col h-full">
@@ -80,7 +103,7 @@ export function NotesPage({
         ]}
       />
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-2xl font-bold">{t("notes.title")}</h2>
           <p className="text-sm text-muted">{student.name}</p>
@@ -88,6 +111,42 @@ export function NotesPage({
         <Button variant="primary" size="sm" onPress={modalState.open}>
           {t("notes.addNote")}
         </Button>
+      </div>
+
+      <div className="flex items-center gap-2 mb-4">
+        <Input
+          placeholder={t("studentProfile.notes.searchPlaceholder")}
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          className="max-w-xs"
+        />
+        <Select
+          aria-label={t("studentProfile.notes.tags.label")}
+          selectedKey={tagFilter}
+          onSelectionChange={(key) => setTagFilter(key as "all" | NoteTagKey)}
+          className="w-36"
+        >
+          <Select.Trigger>
+            <Select.Value>
+              {({ selectedText, isPlaceholder }) =>
+                isPlaceholder ? t("studentProfile.notes.tags.all") : selectedText
+              }
+            </Select.Value>
+            <Select.Indicator />
+          </Select.Trigger>
+          <Select.Popover>
+            <ListBox>
+              <ListBox.Item id="all" textValue={t("studentProfile.notes.tags.all")}>
+                {t("studentProfile.notes.tags.all")}
+              </ListBox.Item>
+              {NOTE_TAG_KEYS.map((tag) => (
+                <ListBox.Item key={tag} id={tag} textValue={tagLabel(tag)}>
+                  {tagLabel(tag)}
+                </ListBox.Item>
+              ))}
+            </ListBox>
+          </Select.Popover>
+        </Select>
       </div>
 
       {loading && (
@@ -109,14 +168,35 @@ export function NotesPage({
         </div>
       )}
 
-      {!loading && notes.length > 0 && (
+      {!loading && !error && notes.length > 0 && filteredNotes.length === 0 && (
+        <div className="flex flex-col items-center justify-center flex-1 text-center">
+          <p className="text-lg font-semibold text-muted">{t("studentProfile.notes.noResults")}</p>
+        </div>
+      )}
+
+      {!loading && filteredNotes.length > 0 && (
         <div className="flex flex-col gap-3">
-          {notes.map((note) => (
-            <div key={note.id} className="rounded-2xl bg-background-secondary p-4 flex flex-col gap-1">
-              <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
-              <p className="text-xs text-muted">{formatTimestamp(note.created_at)}</p>
-            </div>
-          ))}
+          {filteredNotes.map((note) => {
+            const noteTags = parseTags(note.tags);
+            return (
+              <div key={note.id} className="rounded-2xl bg-background-secondary p-4 flex flex-col gap-1.5">
+                {noteTags.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {noteTags.map((tag) => (
+                      <span
+                        key={tag}
+                        className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${NOTE_TAG_COLORS[tag].chip}`}
+                      >
+                        {tagLabel(tag)}
+                      </span>
+                    ))}
+                  </div>
+                )}
+                <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
+                <p className="text-xs text-muted">{formatTimestamp(note.created_at)}</p>
+              </div>
+            );
+          })}
         </div>
       )}
 
@@ -138,6 +218,26 @@ export function NotesPage({
                       required
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium">{t("notes.modal.tagsLabel")}</span>
+                    <div className="flex flex-wrap gap-2">
+                      {NOTE_TAG_KEYS.map((tag) => {
+                        const isActive = selectedTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() => toggleTag(tag)}
+                            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                              isActive ? NOTE_TAG_COLORS[tag].active : NOTE_TAG_COLORS[tag].inactive
+                            }`}
+                          >
+                            {tagLabel(tag)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   {addError && (
                     <p className="text-danger text-sm">{addError}</p>

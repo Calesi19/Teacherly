@@ -1,7 +1,6 @@
 import { useState } from "react";
 import {
   Avatar,
-  Chip,
   EmptyState,
   Surface,
   ListBox,
@@ -35,6 +34,7 @@ import { useVisitations } from "../hooks/useVisitations";
 import { useStudentAssignmentPreviews } from "../hooks/useStudentAssignmentPreviews";
 import { useStudentAttendance } from "../hooks/useStudentAttendance";
 import type { DayAttendanceStatus } from "../types/attendance";
+import { NOTE_TAG_KEYS, NOTE_TAG_COLORS, type NoteTagKey, parseTags, serializeTags } from "../types/note";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
@@ -116,6 +116,7 @@ export function StudentProfilePage({
 
   const noteModalState = useOverlayState();
   const [noteContent, setNoteContent] = useState("");
+  const [noteTags, setNoteTags] = useState<NoteTagKey[]>([]);
   const [noteSubmitting, setNoteSubmitting] = useState(false);
   const [noteError, setNoteError] = useState<string | null>(null);
 
@@ -134,6 +135,7 @@ export function StudentProfilePage({
   const [assignmentSearch, setAssignmentSearch] = useState("");
   const [assignmentPeriodFilter, setAssignmentPeriodFilter] = useState("all");
   const [noteSearch, setNoteSearch] = useState("");
+  const [noteTagFilter, setNoteTagFilter] = useState<"all" | NoteTagKey>("all");
   const [visitationSearch, setVisitationSearch] = useState("");
 
   const { contacts, loading: loadingContacts } = useContacts(student.id);
@@ -163,9 +165,12 @@ export function StudentProfilePage({
       a.period_name === assignmentPeriodFilter;
     return matchesSearch && matchesPeriod;
   });
-  const filteredNotes = notes.filter((n) =>
-    n.content.toLowerCase().includes(noteSearch.toLowerCase()),
-  );
+  const filteredNotes = notes.filter((n) => {
+    const q = noteSearch.toLowerCase();
+    const matchesSearch = n.content.toLowerCase().includes(q) || n.tags.toLowerCase().includes(q);
+    const matchesTag = noteTagFilter === "all" || parseTags(n.tags).includes(noteTagFilter);
+    return matchesSearch && matchesTag;
+  });
   const filteredVisitations = visitations.filter((v) =>
     v.contact_name.toLowerCase().includes(visitationSearch.toLowerCase()),
   );
@@ -213,6 +218,7 @@ export function StudentProfilePage({
 
   const closeNoteModal = () => {
     setNoteContent("");
+    setNoteTags([]);
     setNoteError(null);
     noteModalState.close();
   };
@@ -223,8 +229,9 @@ export function StudentProfilePage({
     setNoteSubmitting(true);
     setNoteError(null);
     try {
-      await addNote({ content: noteContent.trim() });
+      await addNote({ content: noteContent.trim(), tags: serializeTags(noteTags) });
       setNoteContent("");
+      setNoteTags([]);
       noteModalState.close();
     } catch (err) {
       setNoteError(String(err));
@@ -553,14 +560,9 @@ export function StudentProfilePage({
                       color: "text-warning",
                     },
                     {
-                      key: "earlyPickup",
-                      value: attendanceSummary.earlyPickup,
-                      color: "text-foreground/60",
-                    },
-                    {
-                      key: "lateArrival",
-                      value: attendanceSummary.lateArrival,
-                      color: "text-accent",
+                      key: "partial",
+                      value: attendanceSummary.partial,
+                      color: "text-secondary-foreground",
                     },
                   ] as { key: string; value: number; color: string }[]
                 ).map(({ key, value, color }) => (
@@ -613,8 +615,7 @@ export function StudentProfilePage({
                           present: "text-success",
                           absent: "text-danger",
                           late: "text-warning",
-                          early_pickup: "text-foreground/60",
-                          late_arrival: "text-accent",
+                          partial: "text-secondary-foreground",
                         };
                         return (
                           <TableRow key={day.date} id={day.date}>
@@ -631,7 +632,7 @@ export function StudentProfilePage({
                               </span>
                             </TableCell>
                             <TableCell className="text-sm text-foreground/50">
-                              {day.time ?? "—"}
+                              {"—"}
                             </TableCell>
                             <TableCell className="text-sm text-foreground/50">
                               {day.records.map((r) => r.period_name).join(", ")}
@@ -733,13 +734,42 @@ export function StudentProfilePage({
           className="pt-4 flex-1 min-h-0 flex flex-col gap-4"
           id="notes"
         >
-          <div className="flex items-center justify-between">
-            <Input
-              placeholder={t("studentProfile.notes.searchPlaceholder")}
-              value={noteSearch}
-              onChange={(e) => setNoteSearch(e.target.value)}
-              className="max-w-xs"
-            />
+          <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <Input
+                placeholder={t("studentProfile.notes.searchPlaceholder")}
+                value={noteSearch}
+                onChange={(e) => setNoteSearch(e.target.value)}
+                className="max-w-xs"
+              />
+              <Select
+                aria-label={t("studentProfile.notes.tags.label")}
+                selectedKey={noteTagFilter}
+                onSelectionChange={(key) => setNoteTagFilter(key as "all" | NoteTagKey)}
+                className="w-36"
+              >
+                <Select.Trigger>
+                  <Select.Value>
+                    {({ selectedText, isPlaceholder }) =>
+                      isPlaceholder ? t("studentProfile.notes.tags.all") : selectedText
+                    }
+                  </Select.Value>
+                  <Select.Indicator />
+                </Select.Trigger>
+                <Select.Popover>
+                  <ListBox>
+                    <ListBox.Item id="all" textValue={t("studentProfile.notes.tags.all")}>
+                      {t("studentProfile.notes.tags.all")}
+                    </ListBox.Item>
+                    {NOTE_TAG_KEYS.map((tag) => (
+                      <ListBox.Item key={tag} id={tag} textValue={t(`studentProfile.notes.tags.${tag}`)}>
+                        {t(`studentProfile.notes.tags.${tag}`)}
+                      </ListBox.Item>
+                    ))}
+                  </ListBox>
+                </Select.Popover>
+              </Select>
+            </div>
             <Button variant="primary" size="sm" onPress={noteModalState.open}>
               {t("studentProfile.notes.addNote")}
             </Button>
@@ -778,16 +808,31 @@ export function StudentProfilePage({
                       </EmptyState>
                     )}
                   >
-                    {filteredNotes.map((note) => (
-                      <TableRow key={note.id} id={note.id}>
-                        <TableCell className="text-sm text-foreground whitespace-pre-wrap max-w-md">
-                          {note.content}
-                        </TableCell>
-                        <TableCell className="text-sm text-foreground/50 whitespace-nowrap">
-                          {formatNoteTimestamp(note.created_at)}
-                        </TableCell>
-                      </TableRow>
-                    ))}
+                    {filteredNotes.map((note) => {
+                      const tags = parseTags(note.tags);
+                      return (
+                        <TableRow key={note.id} id={note.id}>
+                          <TableCell className="text-sm text-foreground whitespace-pre-wrap max-w-md">
+                            {tags.length > 0 && (
+                              <div className="flex flex-wrap gap-1 mb-1.5">
+                                {tags.map((tag) => (
+                                  <span
+                                    key={tag}
+                                    className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${NOTE_TAG_COLORS[tag].chip}`}
+                                  >
+                                    {t(`studentProfile.notes.tags.${tag}`)}
+                                  </span>
+                                ))}
+                              </div>
+                            )}
+                            {note.content}
+                          </TableCell>
+                          <TableCell className="text-sm text-foreground/50 whitespace-nowrap">
+                            {formatNoteTimestamp(note.created_at)}
+                          </TableCell>
+                        </TableRow>
+                      );
+                    })}
                   </TableBody>
                 </TableContent>
               </TableScrollContainer>
@@ -820,6 +865,32 @@ export function StudentProfilePage({
                       required
                       className="w-full rounded-lg border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-foreground/40 focus:outline-none focus:ring-2 focus:ring-accent resize-none"
                     />
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <span className="text-sm font-medium">
+                      {t("studentProfile.addNoteModal.tagsLabel")}
+                    </span>
+                    <div className="flex flex-wrap gap-2">
+                      {NOTE_TAG_KEYS.map((tag) => {
+                        const isActive = noteTags.includes(tag);
+                        return (
+                          <button
+                            key={tag}
+                            type="button"
+                            onClick={() =>
+                              setNoteTags((prev) =>
+                                isActive ? prev.filter((k) => k !== tag) : [...prev, tag]
+                              )
+                            }
+                            className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                              isActive ? NOTE_TAG_COLORS[tag].active : NOTE_TAG_COLORS[tag].inactive
+                            }`}
+                          >
+                            {t(`studentProfile.notes.tags.${tag}`)}
+                          </button>
+                        );
+                      })}
+                    </div>
                   </div>
                   {noteError && (
                     <p className="text-danger text-sm">{noteError}</p>

@@ -103,8 +103,7 @@ const en = {
         present: "Present",
         absent: "Absent",
         late: "Late",
-        earlyPickup: "Early Pickup",
-        lateArrival: "Late Arrival",
+        partial: "Partial",
       },
       columns: {
         date: "Date",
@@ -116,8 +115,7 @@ const en = {
         present: "Present",
         absent: "Absent",
         late: "Late",
-        early_pickup: "Early Pickup",
-        late_arrival: "Late Arrival",
+        partial: "Partial",
       },
     },
     overview: {
@@ -172,11 +170,20 @@ const en = {
         note: "Note",
         date: "Date",
       },
+      tags: {
+        label: "Tags",
+        all: "All",
+        incident: "Incident",
+        positive: "Positive",
+        negative: "Negative",
+        health: "Health",
+      },
     },
     addNoteModal: {
       title: "Add Note",
       noteLabel: "Note *",
       notePlaceholder: "Write your note here...",
+      tagsLabel: "Tags",
     },
     logVisitationModal: {
       title: "Log Visitation",
@@ -259,6 +266,7 @@ const en = {
       title: "Add Note",
       noteLabel: "Note *",
       notePlaceholder: "Write your note here...",
+      tagsLabel: "Tags",
     },
   },
   schedule: {
@@ -327,14 +335,10 @@ const en = {
       present: "Present",
       absent: "Absent",
       late: "Late",
-      earlyPickup: "Early Pickup",
-      lateArrival: "Late Arrival",
+      partial: "Partial",
     },
-    timeModal: {
-      earlyPickup: "Early Pickup",
-      lateArrival: "Late Arrival",
-      pickupTime: "Pickup time",
-      arrivalTime: "Arrival time",
+    partialModal: {
+      title: "Partial Attendance",
       confirm: "Confirm",
     },
     pastDateConfirm: {
@@ -509,8 +513,7 @@ const es: typeof en = {
         present: "Presente",
         absent: "Ausente",
         late: "Tarde",
-        earlyPickup: "Salida anticipada",
-        lateArrival: "Llegada tardía",
+        partial: "Parcial",
       },
       columns: {
         date: "Fecha",
@@ -522,8 +525,7 @@ const es: typeof en = {
         present: "Presente",
         absent: "Ausente",
         late: "Tarde",
-        early_pickup: "Salida anticipada",
-        late_arrival: "Llegada tardía",
+        partial: "Parcial",
       },
     },
     overview: {
@@ -579,11 +581,20 @@ const es: typeof en = {
         note: "Nota",
         date: "Fecha",
       },
+      tags: {
+        label: "Etiquetas",
+        all: "Todas",
+        incident: "Incidente",
+        positive: "Positivo",
+        negative: "Negativo",
+        health: "Salud",
+      },
     },
     addNoteModal: {
       title: "Agregar nota",
       noteLabel: "Nota *",
       notePlaceholder: "Escribe tu nota aquí...",
+      tagsLabel: "Etiquetas",
     },
     logVisitationModal: {
       title: "Registrar visita",
@@ -666,6 +677,7 @@ const es: typeof en = {
       title: "Agregar nota",
       noteLabel: "Nota *",
       notePlaceholder: "Escribe tu nota aquí...",
+      tagsLabel: "Etiquetas",
     },
   },
   schedule: {
@@ -736,14 +748,10 @@ const es: typeof en = {
       present: "Presente",
       absent: "Ausente",
       late: "Tarde",
-      earlyPickup: "Salida anticipada",
-      lateArrival: "Llegada tardía",
+      partial: "Parcial",
     },
-    timeModal: {
-      earlyPickup: "Salida anticipada",
-      lateArrival: "Llegada tardía",
-      pickupTime: "Hora de salida",
-      arrivalTime: "Hora de llegada",
+    partialModal: {
+      title: "Asistencia parcial",
       confirm: "Confirmar",
     },
     pastDateConfirm: {

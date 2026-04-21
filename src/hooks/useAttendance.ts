@@ -17,34 +17,28 @@ function deriveDayStatus(
   sortedPeriods: SchedulePeriod[],
   studentId: number,
   records: RawAttendanceRow[]
-): { status: DayAttendanceStatus; time?: string } {
-  if (sortedPeriods.length === 0) return { status: "present" };
+): { status: DayAttendanceStatus; periodStatuses: { periodId: number; periodName: string; status: "present" | "absent" }[] } {
+  const periodStatuses = sortedPeriods.map((p) => {
+    const rec = records.find((r) => r.student_id === studentId && r.schedule_period_id === p.id);
+    const raw = rec?.status ?? "present";
+    const status: "present" | "absent" = raw === "absent" ? "absent" : "present";
+    return { periodId: p.id, periodName: p.name, status };
+  });
+
+  if (sortedPeriods.length === 0) return { status: "present", periodStatuses: [] };
 
   const studentRecords = records.filter((r) => r.student_id === studentId);
-  const items = sortedPeriods.map((p) => {
+  const statuses = sortedPeriods.map((p) => {
     const rec = studentRecords.find((r) => r.schedule_period_id === p.id);
-    return { status: (rec?.status ?? "present") as AttendanceStatus, notes: rec?.notes ?? null };
+    return (rec?.status ?? "present") as AttendanceStatus;
   });
-  const statuses = items.map((i) => i.status);
 
-  if (statuses.some((s) => s === "early_pickup")) {
-    const epItem = items.find((i) => i.status === "early_pickup");
-    return { status: "early_pickup", time: epItem?.notes ?? undefined };
-  }
-  if (statuses.every((s) => s === "absent")) return { status: "absent" };
-  if (statuses.every((s) => s === "present")) return { status: "present" };
+  if (statuses.every((s) => s === "absent")) return { status: "absent", periodStatuses };
+  if (statuses.every((s) => s === "present")) return { status: "present", periodStatuses };
   if (statuses[0] === "late" && statuses.slice(1).every((s) => s === "present")) {
-    return { status: "late" };
+    return { status: "late", periodStatuses };
   }
-  const firstPresent = statuses.findIndex((s) => s === "present");
-  if (
-    firstPresent > 0 &&
-    statuses.slice(0, firstPresent).every((s) => s === "absent") &&
-    statuses.slice(firstPresent).every((s) => s === "present")
-  ) {
-    return { status: "late_arrival", time: items[firstPresent]?.notes ?? undefined };
-  }
-  return { status: "present" };
+  return { status: "partial", periodStatuses };
 }
 
 export function useAttendance(groupId: number, date: string) {
@@ -93,8 +87,8 @@ export function useAttendance(groupId: number, date: string) {
 
   const dayStatuses = useMemo((): StudentDayStatus[] => {
     return allStudents.map((s) => {
-      const { status, time } = deriveDayStatus(periodsForDay, s.id, rawRecords);
-      return { student_id: s.id, student_name: s.name, status, time };
+      const { status, periodStatuses } = deriveDayStatus(periodsForDay, s.id, rawRecords);
+      return { student_id: s.id, student_name: s.name, status, periodStatuses };
     });
   }, [allStudents, periodsForDay, rawRecords]);
 
@@ -146,43 +140,15 @@ export function useAttendance(groupId: number, date: string) {
     [periodsForDay, upsert, fetchData]
   );
 
-  const markEarlyPickup = useCallback(
-    async (studentId: number, pickupTime: string) => {
-      if (periodsForDay.length === 0) return;
+  const markPartial = useCallback(
+    async (studentId: number, periodStatuses: { periodId: number; status: "present" | "absent" }[]) => {
       const db = await Database.load(DB_URL);
-      // Last period whose start_time is at or before pickupTime
-      const pickupIdx = periodsForDay.reduce(
-        (best, p, idx) => (p.start_time <= pickupTime ? idx : best),
-        0
-      );
       await Promise.all(
-        periodsForDay.map((p, idx) => {
-          if (idx < pickupIdx) return upsert(db, studentId, p.id, "present");
-          if (idx === pickupIdx) return upsert(db, studentId, p.id, "early_pickup", pickupTime);
-          return upsert(db, studentId, p.id, "absent");
-        })
+        periodStatuses.map(({ periodId, status }) => upsert(db, studentId, periodId, status))
       );
       await fetchData();
     },
-    [periodsForDay, upsert, fetchData]
-  );
-
-  const markLateArrival = useCallback(
-    async (studentId: number, arrivalTime: string) => {
-      if (periodsForDay.length === 0) return;
-      const db = await Database.load(DB_URL);
-      // First period whose end_time is after arrivalTime (the period the student arrives in)
-      const arrivalIdx = periodsForDay.findIndex((p) => p.end_time > arrivalTime);
-      const effectiveIdx = arrivalIdx === -1 ? periodsForDay.length : arrivalIdx;
-      await Promise.all(
-        periodsForDay.map((p, idx) => {
-          if (idx < effectiveIdx) return upsert(db, studentId, p.id, "absent");
-          return upsert(db, studentId, p.id, "present", idx === effectiveIdx ? arrivalTime : null);
-        })
-      );
-      await fetchData();
-    },
-    [periodsForDay, upsert, fetchData]
+    [upsert, fetchData]
   );
 
   const markDayStatusBulk = useCallback(
@@ -215,8 +181,7 @@ export function useAttendance(groupId: number, date: string) {
     markPresent,
     markAbsent,
     markLate,
-    markEarlyPickup,
-    markLateArrival,
+    markPartial,
     markDayStatusBulk,
   };
 }
