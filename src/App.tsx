@@ -206,6 +206,7 @@ function App() {
             student={route.student}
             group={route.group}
             onGoToGroups={goToGroups}
+            onGoToDashboard={() => goToDashboard(route.group)}
             onGoToStudents={() => goToStudents(route.group)}
             onGoToContacts={() => goToContacts(route.group, route.student)}
           />
