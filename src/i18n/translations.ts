@@ -390,6 +390,7 @@ const en = {
     studentsTableLabel: "Students",
     scoreColumn: "Score",
     noStudents: "No students",
+    notScored: "Not Scored",
   },
   settings: {
     title: "Settings",
@@ -806,6 +807,7 @@ const es: typeof en = {
     studentsTableLabel: "Estudiantes",
     scoreColumn: "Puntaje",
     noStudents: "Sin estudiantes",
+    notScored: "Sin Calificar",
   },
   settings: {
     title: "Configuración",

@@ -11,13 +11,15 @@ interface AssignmentStats {
 }
 
 function computeStats(scores: AssignmentScore[], maxScore: number): AssignmentStats {
+  const total = scores.length;
   const graded = scores.filter((s) => s.score !== null);
   const gradedCount = graded.length;
-  if (gradedCount === 0) {
-    return { gradedCount: 0, average: null, distribution: [] };
-  }
-  const sum = graded.reduce((acc, s) => acc + s.score!, 0);
-  const average = sum / gradedCount;
+  const notScoredCount = total - gradedCount;
+
+  const average =
+    gradedCount > 0
+      ? graded.reduce((acc, s) => acc + s.score!, 0) / gradedCount
+      : null;
 
   const bandCounts: Record<string, number> = { A: 0, B: 0, C: 0, D: 0, F: 0 };
   for (const s of graded) {
@@ -34,8 +36,16 @@ function computeStats(scores: AssignmentScore[], maxScore: number): AssignmentSt
     .map((band) => ({
       band,
       count: bandCounts[band],
-      percentage: (bandCounts[band] / gradedCount) * 100,
+      percentage: total > 0 ? (bandCounts[band] / total) * 100 : 0,
     }));
+
+  if (notScoredCount > 0) {
+    distribution.push({
+      band: "N",
+      count: notScoredCount,
+      percentage: total > 0 ? (notScoredCount / total) * 100 : 100,
+    });
+  }
 
   return { gradedCount, average, distribution };
 }

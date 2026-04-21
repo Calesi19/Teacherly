@@ -23,7 +23,7 @@ export interface AssignmentScore {
   score: number | null;
 }
 
-export type GradeBand = "A" | "B" | "C" | "D" | "F";
+export type GradeBand = "A" | "B" | "C" | "D" | "F" | "N";
 
 export interface GradeDistribution {
   band: GradeBand;

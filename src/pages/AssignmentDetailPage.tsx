@@ -34,6 +34,7 @@ const BAND_COLORS: Record<GradeBand, { bar: string; text: string }> = {
   C: { bar: "bg-warning", text: "text-warning" },
   D: { bar: "bg-warning/60", text: "text-warning" },
   F: { bar: "bg-danger", text: "text-danger" },
+  N: { bar: "bg-foreground/10", text: "text-muted" },
 };
 
 export function AssignmentDetailPage({
@@ -110,57 +111,55 @@ export function AssignmentDetailPage({
         </div>
       ) : (
         <>
-          {stats.gradedCount > 0 && (
-            <Surface variant="secondary" className="rounded-2xl p-5 mb-6 flex flex-col gap-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs text-muted uppercase tracking-wide">{t("assignmentDetail.average")}</span>
-                  <span className="text-2xl font-bold">
-                    {stats.average !== null ? stats.average.toFixed(1) : "—"}
-                    <span className="text-sm font-normal text-muted ml-1">
-                      / {assignment.max_score}
-                    </span>
+          <Surface variant="secondary" className="rounded-2xl p-5 mb-6 flex flex-col gap-4">
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-muted uppercase tracking-wide">{t("assignmentDetail.average")}</span>
+                <span className="text-2xl font-bold">
+                  {stats.average !== null ? stats.average.toFixed(1) : "—"}
+                  <span className="text-sm font-normal text-muted ml-1">
+                    / {assignment.max_score}
                   </span>
+                </span>
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-xs text-muted uppercase tracking-wide">{t("assignmentDetail.graded")}</span>
+                <span className="text-2xl font-bold">
+                  {stats.gradedCount}
+                  <span className="text-sm font-normal text-muted ml-1">
+                    / {scores.length} {scores.length !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}
+                  </span>
+                </span>
+              </div>
+            </div>
+
+            {stats.distribution.length > 0 && (
+              <div className="flex flex-col gap-2">
+                <div className="flex rounded-full overflow-hidden h-3">
+                  {stats.distribution.map((d) => (
+                    <div
+                      key={d.band}
+                      className={`${BAND_COLORS[d.band].bar} h-full`}
+                      style={{ width: `${d.percentage}%` }}
+                      title={`${d.band === "N" ? t("assignmentDetail.notScored") : d.band}: ${d.count} ${d.count !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}`}
+                    />
+                  ))}
                 </div>
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs text-muted uppercase tracking-wide">{t("assignmentDetail.graded")}</span>
-                  <span className="text-2xl font-bold">
-                    {stats.gradedCount}
-                    <span className="text-sm font-normal text-muted ml-1">
-                      / {scores.length} {scores.length !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}
-                    </span>
-                  </span>
+                <div className="flex gap-3 flex-wrap">
+                  {stats.distribution.map((d) => (
+                    <div key={d.band} className="flex items-center gap-1">
+                      <span className={`text-xs font-semibold ${BAND_COLORS[d.band].text}`}>
+                        {d.band === "N" ? t("assignmentDetail.notScored") : d.band}
+                      </span>
+                      <span className="text-xs text-muted">
+                        {d.count} ({Math.round(d.percentage)}%)
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
-
-              {stats.distribution.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <div className="flex rounded-full overflow-hidden h-3">
-                    {stats.distribution.map((d) => (
-                      <div
-                        key={d.band}
-                        className={`${BAND_COLORS[d.band].bar} h-full`}
-                        style={{ width: `${d.percentage}%` }}
-                        title={`${d.band}: ${d.count} ${d.count !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}`}
-                      />
-                    ))}
-                  </div>
-                  <div className="flex gap-3 flex-wrap">
-                    {stats.distribution.map((d) => (
-                      <div key={d.band} className="flex items-center gap-1">
-                        <span className={`text-xs font-semibold ${BAND_COLORS[d.band].text}`}>
-                          {d.band}
-                        </span>
-                        <span className="text-xs text-muted">
-                          {d.count} ({Math.round(d.percentage)}%)
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </Surface>
-          )}
+            )}
+          </Surface>
 
           <div className="flex-1 flex flex-col min-h-0">
             <TableRoot variant="primary" className="flex-1 h-full">
