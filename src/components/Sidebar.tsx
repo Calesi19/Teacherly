@@ -1,5 +1,4 @@
-import { useState, useEffect } from "react";
-import { Button, Select, ListBox, Spinner, Label } from "@heroui/react";
+import { Button } from "@heroui/react";
 import {
   Users,
   CalendarDays,
@@ -9,8 +8,6 @@ import {
   LayoutDashboard,
   ArrowLeftRight,
 } from "lucide-react";
-import { type } from "@tauri-apps/plugin-os";
-import { useGroups } from "../hooks/useGroups";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
@@ -49,7 +46,6 @@ const formatMonthYear = (dateString: string | undefined) => {
 export function Sidebar({
   currentPage,
   currentGroup,
-  onSelectGroup,
   onGoToDashboard,
   onGoToStudents,
   onGoToSchedule,
@@ -59,24 +55,7 @@ export function Sidebar({
   onGoToGroups,
   onClose,
 }: SidebarProps) {
-  const { groups, loading } = useGroups();
   const { t } = useTranslation();
-  const [isMac, setIsMac] = useState(false);
-
-  useEffect(() => {
-    // Detect platform to handle macOS window control spacing
-    const checkPlatform = async () => {
-      try {
-        const osName = await type();
-        if (osName === "macos") {
-          setIsMac(true);
-        }
-      } catch (error) {
-        console.error("Failed to detect OS:", error);
-      }
-    };
-    checkPlatform();
-  }, []);
 
   const nav = (action: () => void) => () => {
     action();

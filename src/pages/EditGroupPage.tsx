@@ -100,7 +100,11 @@ function CustomDatePicker({
   );
 }
 
-export function EditGroupPage({ group, onGoToGroups, onGoToDashboard }: EditGroupPageProps) {
+export function EditGroupPage({
+  group,
+  onGoToGroups,
+  onGoToDashboard,
+}: EditGroupPageProps) {
   const { t } = useTranslation();
   const { updateGroup, deleteGroup } = useGroups();
   const deleteModalState = useOverlayState();
@@ -173,7 +177,9 @@ export function EditGroupPage({ group, onGoToGroups, onGoToDashboard }: EditGrou
 
       <div className="flex flex-col gap-5 max-w-lg pb-10">
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="edit-group-name">{t("groups.addGroupModal.nameLabel")}</Label>
+          <Label htmlFor="edit-group-name">
+            {t("groups.addGroupModal.nameLabel")}
+          </Label>
           <Input
             id="edit-group-name"
             value={name}
@@ -184,7 +190,9 @@ export function EditGroupPage({ group, onGoToGroups, onGoToDashboard }: EditGrou
         </div>
 
         <div className="flex flex-col gap-1.5">
-          <Label htmlFor="edit-group-school">{t("groups.addGroupModal.schoolNameLabel")}</Label>
+          <Label htmlFor="edit-group-school">
+            {t("groups.addGroupModal.schoolNameLabel")}
+          </Label>
           <Input
             id="edit-group-school"
             value={schoolName}
@@ -232,8 +240,12 @@ export function EditGroupPage({ group, onGoToGroups, onGoToDashboard }: EditGrou
 
         <div className="flex flex-col gap-3">
           <div>
-            <p className="text-sm font-semibold text-danger">{t("groups.editGroup.dangerZoneTitle")}</p>
-            <p className="text-sm text-foreground/60 mt-0.5">{t("groups.editGroup.dangerZoneDescription")}</p>
+            <p className="text-sm font-semibold text-danger">
+              {t("groups.editGroup.dangerZoneTitle")}
+            </p>
+            <p className="text-sm text-foreground/60 mt-0.5">
+              {t("groups.editGroup.dangerZoneDescription")}
+            </p>
           </div>
           <Button
             variant="danger"
@@ -246,26 +258,47 @@ export function EditGroupPage({ group, onGoToGroups, onGoToDashboard }: EditGrou
         </div>
       </div>
 
-      <Modal state={deleteModalState} onOpenChange={(open) => { if (!open) { setDeleteConfirmText(""); } }}>
+      <Modal
+        state={deleteModalState}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteConfirmText("");
+          }
+        }}
+      >
         <Modal.Backdrop isDismissable={!deleting}>
           <Modal.Container>
             <Modal.Dialog>
               <Modal.Header>{t("groups.editGroup.deleteTitle")}</Modal.Header>
               <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-                <p className="text-sm text-foreground/70">{t("groups.editGroup.deleteDescription")}</p>
+                <p className="text-sm text-foreground/70">
+                  {t("groups.editGroup.deleteDescription")}
+                </p>
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="delete-confirm">{t("groups.editGroup.deleteConfirmLabel", { phrase: CONFIRM_PHRASE })}</Label>
+                  <Label htmlFor="delete-confirm">
+                    {t("groups.editGroup.deleteConfirmLabel", {
+                      phrase: CONFIRM_PHRASE,
+                    })}
+                  </Label>
                   <Input
                     id="delete-confirm"
                     value={deleteConfirmText}
                     onChange={(e) => setDeleteConfirmText(e.target.value)}
                     placeholder={CONFIRM_PHRASE}
-                    isDisabled={deleting}
+                    disabled={deleting}
                   />
                 </div>
               </Modal.Body>
               <Modal.Footer>
-                <Button type="button" variant="ghost" isDisabled={deleting} onPress={() => { deleteModalState.close(); setDeleteConfirmText(""); }}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  isDisabled={deleting}
+                  onPress={() => {
+                    deleteModalState.close();
+                    setDeleteConfirmText("");
+                  }}
+                >
                   {t("common.cancel")}
                 </Button>
                 <Button

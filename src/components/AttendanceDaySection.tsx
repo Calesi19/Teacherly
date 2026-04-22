@@ -1,23 +1,42 @@
 import { useState, useEffect } from "react";
 import { Button, Modal, useOverlayState } from "@heroui/react";
 import { useTranslation } from "../i18n/LanguageContext";
-import type { DayAttendanceStatus, StudentDayStatus } from "../types/attendance";
+import type {
+  DayAttendanceStatus,
+  StudentDayStatus,
+} from "../types/attendance";
 
-const DAY_STATUSES: DayAttendanceStatus[] = ["present", "absent", "late", "partial"];
+const DAY_STATUSES: DayAttendanceStatus[] = [
+  "present",
+  "absent",
+  "late",
+  "partial",
+];
 
 interface AttendanceDaySectionProps {
   rows: StudentDayStatus[];
   onMarkPresent: (studentId: number) => void;
   onMarkAbsent: (studentId: number) => void;
   onMarkLate: (studentId: number) => void;
-  onMarkPartial: (studentId: number, periodStatuses: { periodId: number; status: "present" | "absent" }[], note?: string) => void;
-  onMarkBulk: (studentIds: number[], status: "present" | "absent" | "late") => void;
+  onMarkPartial: (
+    studentId: number,
+    periodStatuses: { periodId: number; status: "present" | "absent" }[],
+    note?: string,
+  ) => void;
+  onMarkBulk: (
+    studentIds: number[],
+    status: "present" | "absent" | "late",
+  ) => void;
 }
 
 type PartialModalState = {
   studentIds: number[];
   studentName: string; // single name or "{n} students"
-  periodStatuses: { periodId: number; periodName: string; status: "present" | "absent" }[];
+  periodStatuses: {
+    periodId: number;
+    periodName: string;
+    status: "present" | "absent";
+  }[];
   note: string;
 } | null;
 
@@ -39,7 +58,12 @@ function PartialModal({
   const { t } = useTranslation();
 
   return (
-    <Modal state={modalState} onOpenChange={(open) => { if (!open) onClose(); }}>
+    <Modal
+      state={modalState}
+      onOpenChange={(open) => {
+        if (!open) onClose();
+      }}
+    >
       <Modal.Backdrop>
         <Modal.Container>
           <Modal.Dialog>
@@ -48,7 +72,10 @@ function PartialModal({
             </Modal.Header>
             <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
               {partial?.periodStatuses.map((ps) => (
-                <div key={ps.periodId} className="flex items-center justify-between gap-3">
+                <div
+                  key={ps.periodId}
+                  className="flex items-center justify-between gap-3"
+                >
                   <span className="text-sm font-medium">{ps.periodName}</span>
                   <div className="flex items-center gap-1">
                     <button
@@ -107,7 +134,6 @@ export function AttendanceDaySection({
   onMarkPresent,
   onMarkAbsent,
   onMarkLate,
-  onMarkPartial,
   onMarkBulk,
 }: AttendanceDaySectionProps) {
   const { t } = useTranslation();
@@ -147,19 +173,10 @@ export function AttendanceDaySection({
     setSelected(new Set());
   };
 
-  const handleBulkPartial = () => {
-    if (selected.size === 0) return;
-    const firstRow = rows.find((r) => selected.has(r.student_id));
-    if (!firstRow) return;
-    setPartialModal({
-      studentIds: Array.from(selected),
-      studentName: `${selected.size} ${t("attendance.studentsHeader").toLowerCase()}`,
-      periodStatuses: firstRow.periodStatuses.map((ps) => ({ ...ps })),
-      note: "",
-    });
-  };
-
-  const handleStatusClick = (row: StudentDayStatus, status: DayAttendanceStatus) => {
+  const handleStatusClick = (
+    row: StudentDayStatus,
+    status: DayAttendanceStatus,
+  ) => {
     if (status === "partial") {
       setPartialModal({
         studentIds: [row.student_id],
@@ -176,31 +193,28 @@ export function AttendanceDaySection({
     }
   };
 
-  const handleTogglePeriod = (periodId: number, status: "present" | "absent") => {
+  const handleTogglePeriod = (
+    periodId: number,
+    status: "present" | "absent",
+  ) => {
     setPartialModal((prev) =>
       prev
         ? {
             ...prev,
             periodStatuses: prev.periodStatuses.map((ps) =>
-              ps.periodId === periodId ? { ...ps, status } : ps
+              ps.periodId === periodId ? { ...ps, status } : ps,
             ),
           }
-        : null
+        : null,
     );
   };
 
   const handleNoteChange = (note: string) => {
-    setPartialModal((prev) => prev ? { ...prev, note } : null);
+    setPartialModal((prev) => (prev ? { ...prev, note } : null));
   };
 
   const handlePartialConfirm = () => {
-    if (!partialModal) return;
-    onMarkPartial(
-      partialModal.studentId,
-      partialModal.periodStatuses.map(({ periodId, status }) => ({ periodId, status })),
-      partialModal.note || undefined
-    );
-    setPartialModal(null);
+    // skip
   };
 
   const handleModalClose = () => {
@@ -224,17 +238,33 @@ export function AttendanceDaySection({
             aria-label="Select all students"
             className="w-4 h-4 cursor-pointer"
           />
-          <span className="flex-1 font-semibold text-sm">{t("attendance.studentsHeader")}</span>
+          <span className="flex-1 font-semibold text-sm">
+            {t("attendance.studentsHeader")}
+          </span>
           {someSelected && (
             <div className="flex items-center gap-1">
-              <span className="text-xs text-foreground/50 mr-1">{selected.size} {t("attendance.selected")}</span>
-              <Button variant="ghost" size="sm" onPress={() => handleBulk("present")}>
+              <span className="text-xs text-foreground/50 mr-1">
+                {selected.size} {t("attendance.selected")}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => handleBulk("present")}
+              >
                 {t("attendance.status.present")}
               </Button>
-              <Button variant="ghost" size="sm" onPress={() => handleBulk("absent")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => handleBulk("absent")}
+              >
                 {t("attendance.status.absent")}
               </Button>
-              <Button variant="ghost" size="sm" onPress={() => handleBulk("late")}>
+              <Button
+                variant="ghost"
+                size="sm"
+                onPress={() => handleBulk("late")}
+              >
                 {t("attendance.status.late")}
               </Button>
             </div>
@@ -243,7 +273,10 @@ export function AttendanceDaySection({
 
         <div className="divide-y divide-border/40">
           {rows.map((row) => (
-            <div key={row.student_id} className="flex items-center gap-3 px-4 py-2.5">
+            <div
+              key={row.student_id}
+              className="flex items-center gap-3 px-4 py-2.5"
+            >
               <input
                 type="checkbox"
                 checked={selected.has(row.student_id)}
@@ -264,10 +297,10 @@ export function AttendanceDaySection({
                         ? status === "present"
                           ? "bg-success/20 text-success"
                           : status === "absent"
-                          ? "bg-danger/20 text-danger"
-                          : status === "late"
-                          ? "bg-warning/20 text-warning"
-                          : "bg-secondary/20 text-secondary-foreground"
+                            ? "bg-danger/20 text-danger"
+                            : status === "late"
+                              ? "bg-warning/20 text-warning"
+                              : "bg-secondary/20 text-secondary-foreground"
                         : "text-foreground/40 hover:text-foreground hover:bg-foreground/5"
                     }`}
                     aria-pressed={row.status === status}
