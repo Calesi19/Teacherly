@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button, Spinner } from "@heroui/react";
-import { CalendarDays, CalendarX, RotateCcw } from "lucide-react";
+import { CalendarDays, CalendarX } from "lucide-react";
 
 import { useAttendance } from "../hooks/useAttendance";
 import { Breadcrumb } from "../components/Breadcrumb";
@@ -34,7 +34,7 @@ export function AttendancePage({
   onGoToSchedule,
 }: AttendancePageProps) {
   const [date, setDate] = useState(() =>
-    clampDate(todayStr(), group.start_date, group.end_date)
+    clampDate(todayStr(), group.start_date, group.end_date),
   );
   const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const { t } = useTranslation();
@@ -76,31 +76,30 @@ export function AttendancePage({
         <div>
           <h2 className="text-2xl font-bold">{t("attendance.title")}</h2>
         </div>
-        {!loading && !error && (
-          isCanceled ? (
-            <Button
-              variant="secondary"
-              size="sm"
-              startContent={<RotateCcw size={14} />}
-              onPress={uncancelDay}
-            >
+        {!loading &&
+          !error &&
+          (isCanceled ? (
+            <Button variant="secondary" size="sm" onPress={uncancelDay}>
               {t("attendance.restoreDay")}
             </Button>
           ) : (
             <Button
               variant="secondary"
               size="sm"
-              startContent={<CalendarX size={14} />}
               onPress={() => cancelDay()}
               isDisabled={periodsForDay.length === 0}
             >
               {t("attendance.cancelDay")}
             </Button>
-          )
-        )}
+          ))}
       </div>
 
-      <DateNavigator date={date} onChange={setDate} minDate={group.start_date} maxDate={group.end_date} />
+      <DateNavigator
+        date={date}
+        onChange={setDate}
+        minDate={group.start_date}
+        maxDate={group.end_date}
+      />
 
       {loading && (
         <div className="flex justify-center py-12">
@@ -109,7 +108,10 @@ export function AttendancePage({
       )}
 
       {error && (
-        <div role="alert" className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm">
+        <div
+          role="alert"
+          className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm"
+        >
           {error}
         </div>
       )}
@@ -124,41 +126,63 @@ export function AttendancePage({
       {!loading && !error && !isCanceled && periodsForDay.length === 0 && (
         <div className="flex flex-col items-center justify-center flex-1 text-center gap-3 mt-8">
           <CalendarDays size={40} className="text-foreground/20" />
-          <p className="text-lg font-semibold text-muted">{t("attendance.noPeriodsForDay")}</p>
-          <p className="text-sm text-foreground/40">{t("attendance.noPeriodsHint")}</p>
+          <p className="text-lg font-semibold text-muted">
+            {t("attendance.noPeriodsForDay")}
+          </p>
+          <p className="text-sm text-foreground/40">
+            {t("attendance.noPeriodsHint")}
+          </p>
           <Button variant="primary" size="sm" onPress={onGoToSchedule}>
             {t("attendance.setUpSchedule")}
           </Button>
         </div>
       )}
 
-      {!loading && !error && !isCanceled && allStudents.length === 0 && periodsForDay.length > 0 && (
-        <div className="flex flex-col items-center justify-center flex-1 text-center gap-2 mt-8">
-          <p className="text-lg font-semibold text-muted">{t("attendance.noStudents")}</p>
-          <p className="text-sm text-foreground/40">{t("attendance.noStudentsHint")}</p>
-          <Button variant="ghost" size="sm" onPress={onGoToStudents}>
-            {t("attendance.goToStudents")}
-          </Button>
-        </div>
-      )}
+      {!loading &&
+        !error &&
+        !isCanceled &&
+        allStudents.length === 0 &&
+        periodsForDay.length > 0 && (
+          <div className="flex flex-col items-center justify-center flex-1 text-center gap-2 mt-8">
+            <p className="text-lg font-semibold text-muted">
+              {t("attendance.noStudents")}
+            </p>
+            <p className="text-sm text-foreground/40">
+              {t("attendance.noStudentsHint")}
+            </p>
+            <Button variant="ghost" size="sm" onPress={onGoToStudents}>
+              {t("attendance.goToStudents")}
+            </Button>
+          </div>
+        )}
 
-      {!loading && !error && !isCanceled && periodsForDay.length > 0 && allStudents.length > 0 && (
-        <div className="mt-2">
-          <AttendanceDaySection
-            rows={dayStatuses}
-            onMarkPresent={(id) => withPastDateConfirm(() => markPresent(id))}
-            onMarkAbsent={(id) => withPastDateConfirm(() => markAbsent(id))}
-            onMarkLate={(id) => withPastDateConfirm(() => markLate(id))}
-            onMarkPartial={(id, periodStatuses) => withPastDateConfirm(() => markPartial(id, periodStatuses))}
-            onMarkBulk={(ids, status) => withPastDateConfirm(() => markDayStatusBulk(ids, status))}
-          />
-        </div>
-      )}
+      {!loading &&
+        !error &&
+        !isCanceled &&
+        periodsForDay.length > 0 &&
+        allStudents.length > 0 && (
+          <div className="mt-2">
+            <AttendanceDaySection
+              rows={dayStatuses}
+              onMarkPresent={(id) => withPastDateConfirm(() => markPresent(id))}
+              onMarkAbsent={(id) => withPastDateConfirm(() => markAbsent(id))}
+              onMarkLate={(id) => withPastDateConfirm(() => markLate(id))}
+              onMarkPartial={(id, periodStatuses) =>
+                withPastDateConfirm(() => markPartial(id, periodStatuses))
+              }
+              onMarkBulk={(ids, status) =>
+                withPastDateConfirm(() => markDayStatusBulk(ids, status))
+              }
+            />
+          </div>
+        )}
 
       <ConfirmModal
         isOpen={pendingAction !== null}
         onClose={() => setPendingAction(null)}
-        onConfirm={() => { pendingAction?.(); }}
+        onConfirm={() => {
+          pendingAction?.();
+        }}
         title={t("attendance.pastDateConfirm.title")}
         description={t("attendance.pastDateConfirm.description")}
         confirmLabel={t("attendance.pastDateConfirm.confirmLabel")}
