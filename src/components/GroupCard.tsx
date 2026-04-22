@@ -1,5 +1,4 @@
-import { Card, Chip } from "@heroui/react";
-import { Users } from "lucide-react";
+import { Users, CalendarRange, School, GraduationCap } from "lucide-react";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
@@ -21,36 +20,46 @@ export function GroupCard({ group, isSelected, onClick }: GroupCardProps) {
   const dateRange = start && end ? `${start} – ${end}` : start || end || null;
 
   return (
-    <Card
-      className={`cursor-pointer shadow-sm transition-all border-2 ${
-        isSelected
-          ? "border-accent shadow-accent/20 shadow-md"
-          : "border-border hover:border-accent/40 hover:shadow-md"
-      }`}
+    <div
       onClick={onClick}
+      className={`cursor-pointer rounded-2xl border-2 p-5 transition-all ${
+        isSelected
+          ? "border-accent bg-accent/5 shadow-md shadow-accent/10"
+          : "border-border bg-card hover:border-accent/40 hover:shadow-md hover:shadow-black/5"
+      }`}
     >
-      <Card.Header>
-        <Card.Title>{group.name}</Card.Title>
-        {group.school_name && (
-          <p className="text-xs text-muted mt-0.5">{group.school_name}</p>
-        )}
-      </Card.Header>
-      <Card.Content>
-        <div className="flex flex-wrap gap-2 mb-3">
-          {group.grade && (
-            <Chip variant="tertiary">{group.grade}</Chip>
+      {/* Header: name + student count */}
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex-1 min-w-0">
+          <h3 className="font-semibold text-base text-foreground leading-tight truncate">{group.name}</h3>
+          {group.school_name && (
+            <span className="flex items-center gap-1 mt-1 text-xs text-foreground/50">
+              <School size={11} />
+              {group.school_name}
+            </span>
           )}
         </div>
-        <div className="flex items-center justify-between">
+        <span className="shrink-0 flex items-center gap-1 text-xs text-foreground/50 mt-0.5">
+          <Users size={12} />
+          {group.student_count}
+        </span>
+      </div>
+
+      {/* Footer rows */}
+      <div className="flex flex-col gap-1.5">
+        {group.grade && (
           <span className="flex items-center gap-1.5 text-xs text-foreground/50">
-            <Users size={12} />
-            {group.student_count} {group.student_count !== 1 ? t("groups.card.students") : t("groups.card.student")}
+            <GraduationCap size={12} />
+            {group.grade} {t("groups.card.grade")}
           </span>
-          {dateRange && (
-            <p className="text-xs text-foreground/40">{dateRange}</p>
-          )}
-        </div>
-      </Card.Content>
-    </Card>
+        )}
+        {dateRange && (
+          <span className="flex items-center gap-1.5 text-xs text-foreground/50">
+            <CalendarRange size={12} />
+            {dateRange}
+          </span>
+        )}
+      </div>
+    </div>
   );
 }

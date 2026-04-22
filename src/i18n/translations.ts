@@ -67,6 +67,7 @@ const en = {
       added: "Added",
       student: "student",
       students: "students",
+      grade: "Grade",
     },
     editGroup: {
       breadcrumb: "Edit Group",
@@ -706,6 +707,7 @@ const es: typeof en = {
       added: "Agregado",
       student: "estudiante",
       students: "estudiantes",
+      grade: "Grado",
     },
     editGroup: {
       breadcrumb: "Editar grupo",
