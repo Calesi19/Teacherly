@@ -84,6 +84,7 @@ function useAppTheme() {
 }
 import { useGroups } from "./hooks/useGroups";
 import { LanguageProvider } from "./i18n/LanguageContext";
+import { WindowBar } from "./components/AppWindowBar";
 import { Sidebar } from "./components/Sidebar";
 import { GroupsPage } from "./pages/GroupsPage";
 import { StudentsPage } from "./pages/StudentsPage";
@@ -427,13 +428,19 @@ function App() {
 
   const showSidebar = route.page !== "groups";
 
+  const showWindowsBar = navigator.userAgent.toLowerCase().includes("windows");
+
   return (
     <LanguageProvider>
       <div className="app-container">
-        <div
-          data-tauri-drag-region
-          className="fixed top-0 left-0 right-0 h-7 z-50"
-        />
+        {showWindowsBar ? (
+          <WindowBar />
+        ) : (
+          <div
+            data-tauri-drag-region
+            className="fixed top-0 left-0 right-0 h-7 z-50"
+          />
+        )}
 
         <div className="flex h-screen overflow-hidden">
           {showSidebar && (
