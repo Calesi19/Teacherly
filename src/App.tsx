@@ -1,6 +1,39 @@
-import { useState, useCallback, useEffect, useRef } from "react";
+import {
+  useState,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+} from "react";
 import "./App.css";
 import { Button, Drawer, useOverlayState } from "@heroui/react";
+import { invoke } from "@tauri-apps/api/core";
+import { useGroups } from "./hooks/useGroups";
+import { LanguageProvider } from "./i18n/LanguageContext";
+import { WindowBar } from "./components/AppWindowBar";
+import { Sidebar } from "./components/Sidebar";
+import { GroupsPage } from "./pages/GroupsPage";
+import { StudentsPage } from "./pages/StudentsPage";
+import { StudentProfilePage } from "./pages/StudentProfilePage";
+import { ContactsPage } from "./pages/ContactsPage";
+import { AddressesPage } from "./pages/AddressesPage";
+import { StudentInfoPage } from "./pages/StudentInfoPage";
+import { ServicesPage } from "./pages/ServicesPage";
+import { AccommodationsPage } from "./pages/AccommodationsPage";
+import { ObservationsPage } from "./pages/ObservationsPage";
+import { VisitationsPage } from "./pages/VisitationsPage";
+import { NotesPage } from "./pages/NotesPage";
+import { DashboardPage } from "./pages/DashboardPage";
+import { SchedulePage } from "./pages/SchedulePage";
+import { AttendancePage } from "./pages/AttendancePage";
+import { AssignmentsPage } from "./pages/AssignmentsPage";
+import { AssignmentDetailPage } from "./pages/AssignmentDetailPage";
+import { EditGroupPage } from "./pages/EditGroupPage";
+import { SettingsPage } from "./pages/SettingsPage";
+import { ReportsPage } from "./pages/ReportsPage";
+import type { Group } from "./types/group";
+import type { Student } from "./types/student";
+import type { Assignment } from "./types/assignment";
 
 type ThemePreference = "light" | "dark" | "system";
 const THEME_KEY = "heroui-theme";
@@ -33,7 +66,7 @@ function useAppColorTheme() {
     [applyColorTheme],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     applyColorTheme(colorTheme);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -68,7 +101,7 @@ function useAppTheme() {
     [apply],
   );
 
-  useEffect(() => {
+  useLayoutEffect(() => {
     apply(theme);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -82,32 +115,6 @@ function useAppTheme() {
 
   return { theme, setTheme };
 }
-import { useGroups } from "./hooks/useGroups";
-import { LanguageProvider } from "./i18n/LanguageContext";
-import { WindowBar } from "./components/AppWindowBar";
-import { Sidebar } from "./components/Sidebar";
-import { GroupsPage } from "./pages/GroupsPage";
-import { StudentsPage } from "./pages/StudentsPage";
-import { StudentProfilePage } from "./pages/StudentProfilePage";
-import { ContactsPage } from "./pages/ContactsPage";
-import { AddressesPage } from "./pages/AddressesPage";
-import { StudentInfoPage } from "./pages/StudentInfoPage";
-import { ServicesPage } from "./pages/ServicesPage";
-import { AccommodationsPage } from "./pages/AccommodationsPage";
-import { ObservationsPage } from "./pages/ObservationsPage";
-import { VisitationsPage } from "./pages/VisitationsPage";
-import { NotesPage } from "./pages/NotesPage";
-import { DashboardPage } from "./pages/DashboardPage";
-import { SchedulePage } from "./pages/SchedulePage";
-import { AttendancePage } from "./pages/AttendancePage";
-import { AssignmentsPage } from "./pages/AssignmentsPage";
-import { AssignmentDetailPage } from "./pages/AssignmentDetailPage";
-import { EditGroupPage } from "./pages/EditGroupPage";
-import { SettingsPage } from "./pages/SettingsPage";
-import { ReportsPage } from "./pages/ReportsPage";
-import type { Group } from "./types/group";
-import type { Student } from "./types/student";
-import type { Assignment } from "./types/assignment";
 
 type Route =
   | { page: "groups" }
@@ -175,6 +182,7 @@ function App() {
 
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const restoredRef = useRef(false);
+  const startupWindowsReadyRef = useRef(false);
 
   useEffect(() => {
     if (groupsLoading || restoredRef.current) return;
@@ -187,6 +195,16 @@ function App() {
       setRoute({ page: "dashboard", group });
     }
   }, [groupsLoading, groups]);
+
+  useEffect(() => {
+    if (groupsLoading || startupWindowsReadyRef.current) return;
+
+    startupWindowsReadyRef.current = true;
+
+    void (async () => {
+      await invoke("set_complete", { task: "frontend" });
+    })();
+  }, [groupsLoading]);
 
   const handleSelectGroup = (group: Group) => {
     localStorage.setItem(LAST_GROUP_KEY, String(group.id));
@@ -433,7 +451,6 @@ function App() {
   }
 
   const showSidebar = route.page !== "groups";
-
   const showWindowsBar = navigator.userAgent.toLowerCase().includes("windows");
 
   return (

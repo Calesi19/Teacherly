@@ -1,5 +1,13 @@
 use base64::Engine;
+use std::sync::Mutex;
+use tauri::async_runtime::spawn;
+use tauri::Manager;
 use tauri_plugin_sql::{Migration, MigrationKind};
+
+struct SetupState {
+    frontend_task: bool,
+    backend_task: bool,
+}
 
 #[tauri::command]
 fn write_pdf(path: String, data_base64: String) -> Result<(), String> {
@@ -10,6 +18,40 @@ fn write_pdf(path: String, data_base64: String) -> Result<(), String> {
         std::fs::create_dir_all(parent).map_err(|e| e.to_string())?;
     }
     std::fs::write(&path, &data).map_err(|e| e.to_string())
+}
+
+#[tauri::command]
+fn set_complete(
+    app: tauri::AppHandle,
+    state: tauri::State<'_, Mutex<SetupState>>,
+    task: String,
+) -> Result<(), String> {
+    let mut state_lock = state.lock().map_err(|e| e.to_string())?;
+
+    match task.as_str() {
+        "frontend" => state_lock.frontend_task = true,
+        "backend" => state_lock.backend_task = true,
+        _ => return Err(format!("invalid startup task: {task}")),
+    }
+
+    if state_lock.frontend_task && state_lock.backend_task {
+        let main_window = app
+            .get_webview_window("main")
+            .ok_or_else(|| "main window not found".to_string())?;
+
+        main_window.show().map_err(|e| e.to_string())?;
+        main_window.set_focus().map_err(|e| e.to_string())?;
+    }
+
+    Ok(())
+}
+
+async fn finish_backend_setup(app: tauri::AppHandle) -> Result<(), String> {
+    set_complete(
+        app.clone(),
+        app.state::<Mutex<SetupState>>(),
+        "backend".to_string(),
+    )
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -356,6 +398,14 @@ pub fn run() {
     ];
 
     tauri::Builder::default()
+        .manage(Mutex::new(SetupState {
+            frontend_task: false,
+            backend_task: false,
+        }))
+        .setup(|app| {
+            spawn(finish_backend_setup(app.handle().clone()));
+            Ok(())
+        })
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(
@@ -363,7 +413,7 @@ pub fn run() {
                 .add_migrations("sqlite:tizara.db", migrations)
                 .build(),
         )
-        .invoke_handler(tauri::generate_handler![write_pdf])
+        .invoke_handler(tauri::generate_handler![write_pdf, set_complete])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

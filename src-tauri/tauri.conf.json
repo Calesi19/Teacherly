@@ -13,11 +13,13 @@
     "macOSPrivateApi": true,
     "windows": [
       {
+        "label": "main",
         "title": "Tizara",
         "width": 1100,
         "height": 700,
         "minWidth": 800,
         "minHeight": 500,
+        "visible": false,
         "decorations": true,
         "transparent": true,
         "titleBarStyle": "Overlay",

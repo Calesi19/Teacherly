@@ -153,6 +153,9 @@
 }
 
 :root {
+  --accent: oklch(0.65 0.2 260);
+  --accent-foreground: #ffffff;
+  --background: #f7f7f8;
   font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
   font-size: 16px;
   line-height: 24px;
@@ -195,11 +198,10 @@
   background: #e81123 !important; /* Standard Windows close red */
 }
 
-/* Ensure the OS window background is invisible */
 html,
 body,
 #root {
-  background-color: transparent !important;
+  background-color: var(--background);
   margin: 0;
   padding: 0;
   overflow: hidden;
@@ -208,7 +210,7 @@ body,
 
 /* This is your "Actual" app window */
 .app-container {
-  background-color: var(--background-color); /* Use your theme color */
+  background-color: var(--background);
   border-radius: 12px; /* Standard macOS radius */
   overflow: hidden;
   height: 100vh;
