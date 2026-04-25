@@ -39,6 +39,8 @@ import { AssignmentDetailPage } from "./pages/AssignmentDetailPage";
 import { EditGroupPage } from "./pages/EditGroupPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ReportsPage } from "./pages/ReportsPage";
+import { TermsOfServicePage } from "./pages/TermsOfServicePage";
+import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import type { Group } from "./types/group";
 import type { Student } from "./types/student";
 import type { Assignment } from "./types/assignment";
@@ -165,7 +167,9 @@ type Route =
   | { page: "assignment-detail"; group: Group; assignment: Assignment }
   | { page: "group-edit"; group: Group }
   | { page: "reports"; group: Group }
-  | { page: "settings" };
+  | { page: "settings" }
+  | { page: "terms-of-service" }
+  | { page: "privacy-policy" };
 
 function App() {
   return (
@@ -216,6 +220,8 @@ function AppContent() {
   const goToEditGroup = (group: Group) => setRoute({ page: "group-edit", group });
   const goToReports = (group: Group) => setRoute({ page: "reports", group });
   const goToSettings = () => setRoute({ page: "settings" });
+  const goToTermsOfService = () => setRoute({ page: "terms-of-service" });
+  const goToPrivacyPolicy = () => setRoute({ page: "privacy-policy" });
 
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
   const [isPaletteOpen, setPaletteOpen] = useState(false);
@@ -311,7 +317,12 @@ function AppContent() {
   };
 
   const sidebarProps = {
-    currentPage: route.page === "group-edit" ? "dashboard" : route.page,
+    currentPage:
+      route.page === "group-edit"
+        ? "dashboard"
+        : route.page === "terms-of-service" || route.page === "privacy-policy"
+          ? "settings"
+          : route.page,
     currentGroup,
     onSelectGroup: handleSelectGroup,
     onGoToDashboard: () => currentGroup && goToDashboard(currentGroup),
@@ -715,8 +726,14 @@ function AppContent() {
             onThemeChange={setTheme}
             colorTheme={colorTheme}
             onColorThemeChange={setColorTheme}
+            onGoToTermsOfService={goToTermsOfService}
+            onGoToPrivacyPolicy={goToPrivacyPolicy}
           />
         );
+      case "terms-of-service":
+        return <TermsOfServicePage onGoToSettings={goToSettings} />;
+      case "privacy-policy":
+        return <PrivacyPolicyPage onGoToSettings={goToSettings} />;
     }
   }
 

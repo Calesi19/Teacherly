@@ -574,6 +574,7 @@ const en = {
     description: "App preferences and configuration",
     sectionPresentation: "Presentation",
     sectionGeneral: "General",
+    sectionLegal: "Legal",
     appearance: "Appearance",
     appearanceDescription:
       "Choose between light, dark, or your system default.",
@@ -585,6 +586,59 @@ const en = {
     language: "Language",
     languageDescription: "Choose your preferred language.",
     languageSystem: "System",
+    termsOfService: "Terms of Service",
+    termsOfServiceDescription: "Review the rules and conditions for using the app.",
+    privacyPolicy: "Privacy Policy",
+    privacyPolicyDescription: "Understand how your information is handled on this device.",
+  },
+  legal: {
+    backToSettings: "Settings",
+    terms: {
+      breadcrumb: "Terms of Service",
+      title: "Terms of Service",
+      description: "The basic terms that govern your use of the app.",
+      section1Title: "1. Using the App",
+      section1Body:
+        "Teacherly is provided as a local desktop application to help educators organize groups, students, attendance, schedules, and classroom records. You may use the app only for lawful educational or administrative purposes.",
+      section2Title: "2. Local Data Responsibility",
+      section2Body:
+        "You are responsible for the accuracy, legality, and retention of the information you enter into the app. Because records may include student or family information, you should use the app only on devices you control and protect with appropriate security measures.",
+      section3Title: "3. No Hosted Service",
+      section3Body:
+        "This version of the app stores information locally on your device and does not require a remote account to function. You are responsible for maintaining your own backups, exporting records when needed, and managing access to the device where the app is installed.",
+      section4Title: "4. Acceptable Use",
+      section4Body:
+        "You agree not to misuse the app, attempt to reverse engineer security protections, or use it in a way that violates school policy, privacy obligations, or applicable law. If you share exported documents, you remain responsible for that disclosure.",
+      section5Title: "5. Software Changes",
+      section5Body:
+        "The app may be updated over time to improve functionality, fix issues, or revise legal content. Continued use of the app after an update means you accept the then-current version of these terms.",
+      section6Title: "6. Disclaimer",
+      section6Body:
+        "The app is provided on an as-is basis without guarantees that it will meet every compliance, reporting, or workflow requirement for your organization. You should review your own institutional requirements before relying on it for official recordkeeping.",
+    },
+    privacy: {
+      breadcrumb: "Privacy Policy",
+      title: "Privacy Policy",
+      description: "How app data is stored and handled in the current offline version.",
+      section1Title: "1. Information You Enter",
+      section1Body:
+        "Teacherly stores the information you manually add to the app, such as group details, student records, attendance, assignments, notes, contact information, and related classroom data.",
+      section2Title: "2. Local Storage",
+      section2Body:
+        "In the current version, app data is stored locally on your device using on-device storage. The app is designed to work offline and does not depend on a cloud account or remote database for normal operation.",
+      section3Title: "3. No Automatic Sharing",
+      section3Body:
+        "The app does not automatically publish your records to other users or send them to a central web service as part of normal use. Information leaves the app only when you choose to export, print, back up, or otherwise share files from your device.",
+      section4Title: "4. Your Security Controls",
+      section4Body:
+        "Because data is stored locally, device-level protections matter. You are responsible for securing your computer, limiting access to authorized users, and following any school or legal requirements related to student privacy.",
+      section5Title: "5. Retention and Deletion",
+      section5Body:
+        "Data remains on your device until you edit, delete, or remove it, or until the app itself is removed and its local files are deleted. If you need a formal retention schedule, you should follow the policies that apply to your school or organization.",
+      section6Title: "6. Future Changes",
+      section6Body:
+        "If future versions introduce syncing, sharing, analytics, or other network-based features, this policy should be updated to describe those changes before they are relied upon in production use.",
+    },
   },
   addresses: {
     title: "Addresses",
@@ -1495,6 +1549,7 @@ const es: typeof en = {
     description: "Preferencias y configuración de la app",
     sectionPresentation: "Presentación",
     sectionGeneral: "General",
+    sectionLegal: "Legal",
     appearance: "Apariencia",
     appearanceDescription:
       "Elige entre claro, oscuro o el predeterminado del sistema.",
@@ -1506,6 +1561,59 @@ const es: typeof en = {
     language: "Idioma",
     languageDescription: "Elige tu idioma preferido.",
     languageSystem: "Sistema",
+    termsOfService: "Términos de servicio",
+    termsOfServiceDescription: "Revisa las reglas y condiciones para usar la app.",
+    privacyPolicy: "Política de privacidad",
+    privacyPolicyDescription: "Entiende cómo se maneja tu información en este dispositivo.",
+  },
+  legal: {
+    backToSettings: "Configuración",
+    terms: {
+      breadcrumb: "Términos de servicio",
+      title: "Términos de servicio",
+      description: "Los términos básicos que rigen el uso de la app.",
+      section1Title: "1. Uso de la app",
+      section1Body:
+        "Teacherly se ofrece como una aplicación de escritorio local para ayudar a educadores a organizar grupos, estudiantes, asistencia, horarios y registros del salón. Solo debes usar la app para fines educativos o administrativos legales.",
+      section2Title: "2. Responsabilidad sobre los datos locales",
+      section2Body:
+        "Eres responsable de la exactitud, legalidad y conservación de la información que ingreses en la app. Como los registros pueden incluir información de estudiantes o familiares, debes usar la app únicamente en dispositivos que controles y protejas con medidas de seguridad adecuadas.",
+      section3Title: "3. Sin servicio alojado",
+      section3Body:
+        "Esta versión de la app guarda la información localmente en tu dispositivo y no requiere una cuenta remota para funcionar. Eres responsable de mantener tus propias copias de respaldo, exportar registros cuando sea necesario y administrar el acceso al dispositivo donde está instalada la app.",
+      section4Title: "4. Uso aceptable",
+      section4Body:
+        "Aceptas no usar la app de forma indebida, no intentar vulnerar sus protecciones de seguridad y no utilizarla de manera que viole políticas escolares, obligaciones de privacidad o leyes aplicables. Si compartes documentos exportados, sigues siendo responsable de esa divulgación.",
+      section5Title: "5. Cambios en el software",
+      section5Body:
+        "La app puede actualizarse con el tiempo para mejorar funciones, corregir problemas o revisar el contenido legal. El uso continuo de la app después de una actualización significa que aceptas la versión vigente de estos términos.",
+      section6Title: "6. Descargo de responsabilidad",
+      section6Body:
+        "La app se proporciona tal cual, sin garantías de que cumpla todos los requisitos de cumplimiento, reportes o flujos de trabajo de tu organización. Debes revisar los requisitos de tu institución antes de depender de ella para registros oficiales.",
+    },
+    privacy: {
+      breadcrumb: "Política de privacidad",
+      title: "Política de privacidad",
+      description: "Cómo se almacenan y manejan los datos en la versión actual sin conexión.",
+      section1Title: "1. Información que ingresas",
+      section1Body:
+        "Teacherly almacena la información que agregas manualmente a la app, como detalles del grupo, registros de estudiantes, asistencia, tareas, notas, información de contacto y otros datos relacionados con el salón.",
+      section2Title: "2. Almacenamiento local",
+      section2Body:
+        "En la versión actual, los datos de la app se almacenan localmente en tu dispositivo mediante almacenamiento local. La app está diseñada para funcionar sin conexión y no depende de una cuenta en la nube ni de una base de datos remota para su funcionamiento normal.",
+      section3Title: "3. Sin compartición automática",
+      section3Body:
+        "La app no publica automáticamente tus registros a otros usuarios ni los envía a un servicio web central como parte del uso normal. La información solo sale de la app cuando eliges exportar, imprimir, respaldar o compartir archivos desde tu dispositivo.",
+      section4Title: "4. Tus controles de seguridad",
+      section4Body:
+        "Como los datos se almacenan localmente, las protecciones del dispositivo son importantes. Eres responsable de asegurar tu computadora, limitar el acceso a usuarios autorizados y seguir cualquier requisito escolar o legal relacionado con la privacidad estudiantil.",
+      section5Title: "5. Retención y eliminación",
+      section5Body:
+        "Los datos permanecen en tu dispositivo hasta que los edites, elimines o quites, o hasta que se elimine la app y sus archivos locales. Si necesitas un calendario formal de retención, debes seguir las políticas aplicables a tu escuela u organización.",
+      section6Title: "6. Cambios futuros",
+      section6Body:
+        "Si versiones futuras introducen sincronización, compartición, analíticas u otras funciones de red, esta política debe actualizarse para describir esos cambios antes de que se utilicen en producción.",
+    },
   },
   addresses: {
     title: "Direcciones",

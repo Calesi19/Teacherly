@@ -1,5 +1,5 @@
 import { Select, ListBox, Surface } from "@heroui/react";
-import { Sun, Moon, Monitor } from "lucide-react";
+import { Sun, Moon, Monitor, ChevronRight, FileText, Shield } from "lucide-react";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { LanguagePreference } from "../i18n/LanguageContext";
 
@@ -11,6 +11,8 @@ interface SettingsPageProps {
   onThemeChange: (theme: ThemePreference) => void;
   colorTheme: ColorTheme;
   onColorThemeChange: (colorTheme: ColorTheme) => void;
+  onGoToTermsOfService: () => void;
+  onGoToPrivacyPolicy: () => void;
 }
 
 const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string }[] = [
@@ -21,7 +23,14 @@ const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string }[] = [
   { id: "rose",    label: "Rose",    swatch: "oklch(0.65 0.22 0)" },
 ];
 
-export function SettingsPage({ theme, onThemeChange, colorTheme, onColorThemeChange }: SettingsPageProps) {
+export function SettingsPage({
+  theme,
+  onThemeChange,
+  colorTheme,
+  onColorThemeChange,
+  onGoToTermsOfService,
+  onGoToPrivacyPolicy,
+}: SettingsPageProps) {
   const { t, languagePreference, setLanguage } = useTranslation();
 
   return (
@@ -113,6 +122,49 @@ export function SettingsPage({ theme, onThemeChange, colorTheme, onColorThemeCha
                 </Select.Popover>
               </Select>
             </Surface>
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionLegal")}</p>
+          <div className="flex flex-col gap-2">
+            <button
+              type="button"
+              onClick={onGoToTermsOfService}
+              className="w-full text-left"
+            >
+              <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-surface-secondary/60">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                    <FileText size={16} />
+                  </div>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-sm font-medium">{t("settings.termsOfService")}</span>
+                    <span className="text-xs text-foreground/50">{t("settings.termsOfServiceDescription")}</span>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="shrink-0 text-foreground/40" />
+              </Surface>
+            </button>
+
+            <button
+              type="button"
+              onClick={onGoToPrivacyPolicy}
+              className="w-full text-left"
+            >
+              <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-surface-secondary/60">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                    <Shield size={16} />
+                  </div>
+                  <div className="flex flex-col gap-0.5 min-w-0">
+                    <span className="text-sm font-medium">{t("settings.privacyPolicy")}</span>
+                    <span className="text-xs text-foreground/50">{t("settings.privacyPolicyDescription")}</span>
+                  </div>
+                </div>
+                <ChevronRight size={16} className="shrink-0 text-foreground/40" />
+              </Surface>
+            </button>
           </div>
         </div>
 
