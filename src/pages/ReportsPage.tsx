@@ -154,8 +154,11 @@ export function ReportsPage({ group }: ReportsPageProps) {
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
+  const [stagedPreviewUrl, setStagedPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
-  const prevUrlRef = useRef<string | null>(null);
+  const previewUrlsRef = useRef<Set<string>>(new Set());
+  const previewUrlRef = useRef<string | null>(null);
+  const stagedPreviewUrlRef = useRef<string | null>(null);
 
   // Load group students on mount for the student picker
   useEffect(() => {
@@ -174,10 +177,21 @@ export function ReportsPage({ group }: ReportsPageProps) {
     setStudentGradesPeriod("");
   }, [selectedStudentId]);
 
+  useEffect(() => {
+    previewUrlRef.current = previewUrl;
+  }, [previewUrl]);
+
+  useEffect(() => {
+    stagedPreviewUrlRef.current = stagedPreviewUrl;
+  }, [stagedPreviewUrl]);
+
   // Revoke blob URL on unmount
   useEffect(() => {
     return () => {
-      if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
+      for (const url of previewUrlsRef.current) {
+        URL.revokeObjectURL(url);
+      }
+      previewUrlsRef.current.clear();
     };
   }, []);
 
@@ -185,11 +199,12 @@ export function ReportsPage({ group }: ReportsPageProps) {
   useEffect(() => {
     const needsStudent = scope === "individual" && !selectedStudentId;
     if (sections.size === 0 || needsStudent) {
-      if (prevUrlRef.current) {
-        URL.revokeObjectURL(prevUrlRef.current);
-        prevUrlRef.current = null;
+      for (const url of previewUrlsRef.current) {
+        URL.revokeObjectURL(url);
       }
+      previewUrlsRef.current.clear();
       setPreviewUrl(null);
+      setStagedPreviewUrl(null);
       setPreviewLoading(false);
       return;
     }
@@ -198,6 +213,8 @@ export function ReportsPage({ group }: ReportsPageProps) {
     let cancelled = false;
 
     const timer = setTimeout(async () => {
+      let nextUrl: string | null = null;
+
       try {
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         let doc: React.ReactElement<any>;
@@ -287,14 +304,24 @@ export function ReportsPage({ group }: ReportsPageProps) {
         const blob = await pdf(doc).toBlob();
         if (cancelled) return;
 
-        const url = URL.createObjectURL(blob);
-        if (prevUrlRef.current) URL.revokeObjectURL(prevUrlRef.current);
-        prevUrlRef.current = url;
-        setPreviewUrl(url);
+        nextUrl = URL.createObjectURL(blob);
+        previewUrlsRef.current.add(nextUrl);
+
+        const previousStagedUrl = stagedPreviewUrlRef.current;
+        if (previousStagedUrl && previousStagedUrl !== nextUrl) {
+          URL.revokeObjectURL(previousStagedUrl);
+          previewUrlsRef.current.delete(previousStagedUrl);
+        }
+
+        setStagedPreviewUrl(nextUrl);
       } catch {
         // silent — generation errors show on the Generate button
-      } finally {
         if (!cancelled) setPreviewLoading(false);
+      } finally {
+        if (cancelled && nextUrl) {
+          URL.revokeObjectURL(nextUrl);
+          previewUrlsRef.current.delete(nextUrl);
+        }
       }
     }, PREVIEW_DEBOUNCE_MS);
 
@@ -308,6 +335,21 @@ export function ReportsPage({ group }: ReportsPageProps) {
     noteTagFilter, studentDateFrom, studentDateTo, studentGradesPeriod,
     group.id, group.name, group.school_name,
   ]);
+
+  function handleStagedPreviewLoad() {
+    const nextPreviewUrl = stagedPreviewUrlRef.current;
+    if (!nextPreviewUrl) return;
+
+    const previousPreviewUrl = previewUrlRef.current;
+    setPreviewUrl(nextPreviewUrl);
+    setStagedPreviewUrl(null);
+    setPreviewLoading(false);
+
+    if (previousPreviewUrl) {
+      URL.revokeObjectURL(previousPreviewUrl);
+      previewUrlsRef.current.delete(previousPreviewUrl);
+    }
+  }
 
   function toggleSection(id: SectionId, on: boolean) {
     setSections((prev) => {
@@ -800,14 +842,22 @@ export function ReportsPage({ group }: ReportsPageProps) {
           <div className="flex-1 relative">
             {previewUrl && (
               <iframe
-                key={previewUrl}
                 src={previewUrl}
                 className="absolute inset-0 w-full h-full border-0"
                 title="PDF Preview"
               />
             )}
 
-            {!previewUrl && !previewLoading && (
+            {stagedPreviewUrl && (
+              <iframe
+                src={stagedPreviewUrl}
+                className="absolute inset-0 w-full h-full border-0 opacity-0 pointer-events-none"
+                title="PDF Preview Loading"
+                onLoad={handleStagedPreviewLoad}
+              />
+            )}
+
+            {!previewUrl && !stagedPreviewUrl && !previewLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-foreground/20">
                 <FileText size={48} strokeWidth={1} />
                 <p className="text-sm">
@@ -818,10 +868,10 @@ export function ReportsPage({ group }: ReportsPageProps) {
               </div>
             )}
 
-            {previewLoading && !previewUrl && (
-              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 text-foreground/30">
+            {previewLoading && (
+              <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/35 text-foreground/30 backdrop-blur-[1px]">
                 <span className="w-8 h-8 border-2 border-foreground/10 border-t-foreground/40 rounded-full animate-spin" />
-                <p className="text-sm">Building preview…</p>
+                <p className="text-sm">{previewUrl ? "Updating preview…" : "Building preview…"}</p>
               </div>
             )}
           </div>
