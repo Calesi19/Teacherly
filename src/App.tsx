@@ -3,14 +3,22 @@ import {
   useCallback,
   useEffect,
   useLayoutEffect,
+  useMemo,
   useRef,
 } from "react";
 import "./App.css";
 import { Button, Drawer, useOverlayState } from "@heroui/react";
 import { invoke } from "@tauri-apps/api/core";
 import { useGroups } from "./hooks/useGroups";
+import { useStudents } from "./hooks/useStudents";
+import { useAssignments } from "./hooks/useAssignments";
 import { LanguageProvider } from "./i18n/LanguageContext";
+import { useTranslation } from "./i18n/LanguageContext";
 import { WindowBar } from "./components/AppWindowBar";
+import {
+  CommandPalette,
+  type CommandPaletteItem,
+} from "./components/CommandPalette";
 import { Sidebar } from "./components/Sidebar";
 import { GroupsPage } from "./pages/GroupsPage";
 import { StudentsPage } from "./pages/StudentsPage";
@@ -35,11 +43,26 @@ import type { Group } from "./types/group";
 import type { Student } from "./types/student";
 import type { Assignment } from "./types/assignment";
 import {
+  RECENT_COMMANDS_KEY,
   APP_NAME,
   COLOR_THEME_KEY,
   LAST_GROUP_KEY,
   migrateLegacyAppStorage,
 } from "./appConfig";
+import {
+  ArrowLeftRight,
+  BookOpen,
+  CalendarDays,
+  ClipboardCheck,
+  FileText,
+  LayoutDashboard,
+  Monitor,
+  Moon,
+  Settings,
+  Sun,
+  User,
+  Users,
+} from "lucide-react";
 
 type ThemePreference = "light" | "dark" | "system";
 const THEME_KEY = "heroui-theme";
@@ -145,7 +168,16 @@ type Route =
   | { page: "settings" };
 
 function App() {
+  return (
+    <LanguageProvider>
+      <AppContent />
+    </LanguageProvider>
+  );
+}
+
+function AppContent() {
   const drawerState = useOverlayState();
+  const { t } = useTranslation();
   const { theme, setTheme } = useAppTheme();
   const { colorTheme, setColorTheme } = useAppColorTheme();
   const [route, setRoute] = useState<Route>({ page: "groups" });
@@ -186,8 +218,36 @@ function App() {
   const goToSettings = () => setRoute({ page: "settings" });
 
   const [currentGroup, setCurrentGroup] = useState<Group | null>(null);
+  const [isPaletteOpen, setPaletteOpen] = useState(false);
+  const [recentCommandIds, setRecentCommandIds] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(RECENT_COMMANDS_KEY);
+      if (!stored) return [];
+      const parsed = JSON.parse(stored);
+      return Array.isArray(parsed)
+        ? parsed.filter((value): value is string => typeof value === "string")
+        : [];
+    } catch {
+      return [];
+    }
+  });
   const restoredRef = useRef(false);
   const startupWindowsReadyRef = useRef(false);
+  const resolvedTheme =
+    theme === "system"
+      ? window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light"
+      : theme;
+  const { students: paletteStudents } = useStudents(currentGroup?.id ?? null, {
+    enabled: currentGroup !== null,
+  });
+  const { assignments: paletteAssignments } = useAssignments(
+    currentGroup?.id ?? null,
+    {
+      enabled: currentGroup !== null,
+    },
+  );
 
   useEffect(() => {
     if (groupsLoading || restoredRef.current) return;
@@ -210,6 +270,27 @@ function App() {
       await invoke("set_complete", { task: "frontend" });
     })();
   }, [groupsLoading]);
+
+  useEffect(() => {
+    localStorage.setItem(RECENT_COMMANDS_KEY, JSON.stringify(recentCommandIds));
+  }, [recentCommandIds]);
+
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === "k") {
+        event.preventDefault();
+        setPaletteOpen(true);
+        return;
+      }
+
+      if (event.key === "Escape") {
+        setPaletteOpen(false);
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   const handleSelectGroup = (group: Group) => {
     localStorage.setItem(LAST_GROUP_KEY, String(group.id));
@@ -242,6 +323,190 @@ function App() {
     onGoToSettings: goToSettings,
     onGoToGroups: changeGroup,
   };
+
+  const commandItems = useMemo<CommandPaletteItem[]>(() => {
+    const items: CommandPaletteItem[] = [
+      {
+        id: "page:groups",
+        title: currentGroup
+          ? t("commandPalette.items.changeGroup")
+          : t("groups.breadcrumb"),
+        subtitle: currentGroup?.name ?? t("commandPalette.items.selectAGroup"),
+        keywords: ["groups", "classes", "switch class", "change group"],
+        category: "pages",
+        icon: <ArrowLeftRight size={18} />,
+        perform: currentGroup ? changeGroup : goToGroups,
+      },
+      {
+        id: "page:settings",
+        title: t("sidebar.settings"),
+        subtitle: t("settings.description"),
+        keywords: ["preferences", "configuration"],
+        category: "pages",
+        icon: <Settings size={18} />,
+        perform: goToSettings,
+      },
+      {
+        id: "action:toggle-dark-mode",
+        title: t("commandPalette.items.toggleDarkMode"),
+        subtitle:
+          resolvedTheme === "dark"
+            ? t("commandPalette.items.switchToLightMode")
+            : t("commandPalette.items.switchToDarkMode"),
+        keywords: ["theme", "appearance", "dark mode", "light mode"],
+        category: "actions",
+        icon: resolvedTheme === "dark" ? <Sun size={18} /> : <Moon size={18} />,
+        perform: () => setTheme(resolvedTheme === "dark" ? "light" : "dark"),
+      },
+      {
+        id: "action:use-light-mode",
+        title: t("commandPalette.items.useLightMode"),
+        subtitle: t("settings.appearance"),
+        keywords: ["theme", "appearance", "light"],
+        category: "actions",
+        icon: <Sun size={18} />,
+        perform: () => setTheme("light"),
+      },
+      {
+        id: "action:use-system-theme",
+        title: t("commandPalette.items.useSystemTheme"),
+        subtitle: t("settings.appearance"),
+        keywords: ["theme", "appearance", "system"],
+        category: "actions",
+        icon: <Monitor size={18} />,
+        perform: () => setTheme("system"),
+      },
+    ];
+
+    if (!currentGroup) return items;
+
+    items.unshift(
+      {
+        id: "page:dashboard",
+        title: t("sidebar.dashboard"),
+        subtitle: currentGroup.name,
+        keywords: ["home", "overview"],
+        category: "pages",
+        icon: <LayoutDashboard size={18} />,
+        perform: () => goToDashboard(currentGroup),
+      },
+      {
+        id: "page:students",
+        title: t("sidebar.students"),
+        subtitle: t("commandPalette.items.studentRoster"),
+        keywords: ["student roster", "roster", "students"],
+        category: "pages",
+        icon: <Users size={18} />,
+        perform: () => goToStudents(currentGroup),
+      },
+      {
+        id: "page:schedule",
+        title: t("sidebar.schedule"),
+        subtitle: currentGroup.name,
+        keywords: ["calendar", "class periods"],
+        category: "pages",
+        icon: <CalendarDays size={18} />,
+        perform: () => goToSchedule(currentGroup),
+      },
+      {
+        id: "page:attendance",
+        title: t("sidebar.attendance"),
+        subtitle: t("attendance.title"),
+        keywords: ["roll call", "attendance records"],
+        category: "pages",
+        icon: <ClipboardCheck size={18} />,
+        perform: () => goToAttendance(currentGroup),
+      },
+      {
+        id: "page:assignments",
+        title: t("sidebar.assignments"),
+        subtitle: t("commandPalette.items.lessonPlansAlias"),
+        keywords: ["lesson plans", "lesson plan", "gradebook", "assignments"],
+        category: "pages",
+        icon: <BookOpen size={18} />,
+        perform: () => goToAssignments(currentGroup),
+      },
+      {
+        id: "page:reports",
+        title: t("sidebar.reports"),
+        subtitle: currentGroup.name,
+        keywords: ["exports", "documents"],
+        category: "pages",
+        icon: <FileText size={18} />,
+        perform: () => goToReports(currentGroup),
+      },
+    );
+
+    items.push(
+      ...paletteStudents.map((student) => ({
+        id: `student:${currentGroup.id}:${student.id}`,
+        title: student.name,
+        subtitle: student.student_number
+          ? `${t("studentProfile.overview.studentId")}: ${student.student_number}`
+          : currentGroup.name,
+        keywords: [
+          "student",
+          "profile",
+          "roster",
+          student.student_number ?? "",
+        ],
+        category: "students" as const,
+        icon: <User size={18} />,
+        perform: () => goToStudentProfile(currentGroup, student),
+      })),
+      ...paletteAssignments.map((assignment) => ({
+        id: `assignment:${currentGroup.id}:${assignment.id}`,
+        title: assignment.title,
+        subtitle: assignment.period_name
+          ? `${assignment.period_name} • ${currentGroup.name}`
+          : currentGroup.name,
+        keywords: [
+          "assignment",
+          "lesson plan",
+          "gradebook",
+          assignment.period_name,
+        ],
+        category: "assignments" as const,
+        icon: <BookOpen size={18} />,
+        perform: () => goToAssignmentDetail(currentGroup, assignment),
+      })),
+    );
+
+    return items;
+  }, [
+    changeGroup,
+    currentGroup,
+    goToAssignmentDetail,
+    goToAssignments,
+    goToAttendance,
+    goToDashboard,
+    goToGroups,
+    goToReports,
+    goToSchedule,
+    goToSettings,
+    goToStudentProfile,
+    goToStudents,
+    paletteAssignments,
+    paletteStudents,
+    resolvedTheme,
+    setTheme,
+    t,
+  ]);
+
+  const recentCommands = useMemo(() => {
+    const byId = new Map(commandItems.map((item) => [item.id, item]));
+    return recentCommandIds
+      .map((id) => byId.get(id))
+      .filter((item): item is CommandPaletteItem => item !== undefined);
+  }, [commandItems, recentCommandIds]);
+
+  const handleSelectCommand = useCallback((item: CommandPaletteItem) => {
+    item.perform();
+    setRecentCommandIds((previous) =>
+      [item.id, ...previous.filter((id) => id !== item.id)].slice(0, 6),
+    );
+    setPaletteOpen(false);
+  }, []);
 
   function renderPage() {
     switch (route.page) {
@@ -459,60 +724,66 @@ function App() {
   const showWindowsBar = navigator.userAgent.toLowerCase().includes("windows");
 
   return (
-    <LanguageProvider>
-      <div className="app-container">
-        {showWindowsBar ? (
-          <WindowBar />
-        ) : (
-          <div
-            data-tauri-drag-region
-            className="fixed top-0 left-0 right-0 h-7 z-50"
-          />
+    <div className="app-container">
+      {showWindowsBar ? (
+        <WindowBar />
+      ) : (
+        <div
+          data-tauri-drag-region
+          className="fixed top-0 left-0 right-0 h-7 z-50"
+        />
+      )}
+
+      <div className="flex h-screen overflow-hidden">
+        {showSidebar && (
+          <Drawer state={drawerState}>
+            <Drawer.Backdrop isDismissable>
+              <Drawer.Content placement="left">
+                <Drawer.Dialog aria-label="Navigation">
+                  <Drawer.Body className="p-0">
+                    <Sidebar {...sidebarProps} onClose={drawerState.close} />
+                  </Drawer.Body>
+                </Drawer.Dialog>
+              </Drawer.Content>
+            </Drawer.Backdrop>
+          </Drawer>
         )}
 
-        <div className="flex h-screen overflow-hidden">
-          {showSidebar && (
-            <Drawer state={drawerState}>
-              <Drawer.Backdrop isDismissable>
-                <Drawer.Content placement="left">
-                  <Drawer.Dialog aria-label="Navigation">
-                    <Drawer.Body className="p-0">
-                      <Sidebar {...sidebarProps} onClose={drawerState.close} />
-                    </Drawer.Body>
-                  </Drawer.Dialog>
-                </Drawer.Content>
-              </Drawer.Backdrop>
-            </Drawer>
-          )}
+        {showSidebar && (
+          <div className="hidden lg:flex">
+            <Sidebar {...sidebarProps} />
+          </div>
+        )}
 
+        <div className="flex flex-col flex-1 min-h-0">
           {showSidebar && (
-            <div className="hidden lg:flex">
-              <Sidebar {...sidebarProps} />
+            <div className="lg:hidden flex items-center gap-2 px-4 py-3 bg-background border-b border-border shadow-sm">
+              <Button
+                variant="ghost"
+                isIconOnly
+                size="sm"
+                onPress={drawerState.open}
+                aria-label="Open menu"
+              >
+                ☰
+              </Button>
+              <span className="text-lg font-bold">{APP_NAME}</span>
             </div>
           )}
-
-          <div className="flex flex-col flex-1 min-h-0">
-            {showSidebar && (
-              <div className="lg:hidden flex items-center gap-2 px-4 py-3 bg-background border-b border-border shadow-sm">
-                <Button
-                  variant="ghost"
-                  isIconOnly
-                  size="sm"
-                  onPress={drawerState.open}
-                  aria-label="Open menu"
-                >
-                  ☰
-                </Button>
-                <span className="text-lg font-bold">{APP_NAME}</span>
-              </div>
-            )}
-            <main className="flex-1 bg-background-secondary flex flex-col overflow-y-auto">
-              {renderPage()}
-            </main>
-          </div>
+          <main className="flex-1 bg-background-secondary flex flex-col overflow-y-auto">
+            {renderPage()}
+          </main>
         </div>
       </div>
-    </LanguageProvider>
+
+      <CommandPalette
+        isOpen={isPaletteOpen}
+        items={commandItems}
+        recentItems={recentCommands}
+        onClose={() => setPaletteOpen(false)}
+        onSelect={handleSelectCommand}
+      />
+    </div>
   );
 }
 

@@ -5,6 +5,7 @@ export const COLOR_THEME_KEY = "teacherly-color-theme";
 export const LAST_GROUP_KEY = "teacherly-last-group-id";
 export const LANG_KEY = "teacherly-language";
 export const REPORTS_FOLDER_KEY = "teacherly-reports-folder";
+export const RECENT_COMMANDS_KEY = "teacherly-recent-commands";
 
 const LEGACY_TO_CURRENT_STORAGE_KEYS = [
   ["tizara-color-theme", COLOR_THEME_KEY],

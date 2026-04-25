@@ -4,12 +4,26 @@ import type { Student, NewStudentInput } from "../types/student";
 
 const DB_URL = "sqlite:teacherly.db";
 
-export function useStudents(groupId: number) {
+interface UseStudentsOptions {
+  enabled?: boolean;
+}
+
+export function useStudents(
+  groupId: number | null,
+  { enabled = true }: UseStudentsOptions = {},
+) {
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchStudents = useCallback(async () => {
+    if (!enabled || groupId == null) {
+      setStudents([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const db = await Database.load(DB_URL);
@@ -24,10 +38,11 @@ export function useStudents(groupId: number) {
     } finally {
       setLoading(false);
     }
-  }, [groupId]);
+  }, [enabled, groupId]);
 
   const addStudent = useCallback(
     async (input: NewStudentInput) => {
+      if (groupId == null) throw new Error("Cannot add a student without a group");
       const db = await Database.load(DB_URL);
       await db.execute(
         "INSERT INTO students (group_id, name, gender, birthdate, student_number, enrollment_date) VALUES (?, ?, ?, ?, ?, ?)",

@@ -4,12 +4,26 @@ import type { Assignment, NewAssignmentInput } from "../types/assignment";
 
 const DB_URL = "sqlite:teacherly.db";
 
-export function useAssignments(groupId: number) {
+interface UseAssignmentsOptions {
+  enabled?: boolean;
+}
+
+export function useAssignments(
+  groupId: number | null,
+  { enabled = true }: UseAssignmentsOptions = {},
+) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   const fetchAssignments = useCallback(async () => {
+    if (!enabled || groupId == null) {
+      setAssignments([]);
+      setError(null);
+      setLoading(false);
+      return;
+    }
+
     try {
       setLoading(true);
       const db = await Database.load(DB_URL);
@@ -27,10 +41,11 @@ export function useAssignments(groupId: number) {
     } finally {
       setLoading(false);
     }
-  }, [groupId]);
+  }, [enabled, groupId]);
 
   const addAssignment = useCallback(
     async (input: NewAssignmentInput) => {
+      if (groupId == null) throw new Error("Cannot add an assignment without a group");
       const db = await Database.load(DB_URL);
       await db.execute(
         "INSERT INTO assignments (group_id, period_name, title, description, max_score) VALUES (?, ?, ?, ?, ?)",
