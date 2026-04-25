@@ -419,6 +419,20 @@ pub fn run() {
             sql: "ALTER TABLE student_services ADD COLUMN therapy_educational INTEGER NOT NULL DEFAULT 0;",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 28,
+            description: "add_tag_to_assignments",
+            sql: "ALTER TABLE assignments ADD COLUMN tag TEXT NOT NULL DEFAULT 'Homework';",
+            kind: MigrationKind::Up,
+        },
+        Migration {
+            version: 29,
+            description: "add_exempt_late_note_to_assignment_scores",
+            sql: "ALTER TABLE assignment_scores ADD COLUMN exempt INTEGER NOT NULL DEFAULT 0;
+                  ALTER TABLE assignment_scores ADD COLUMN late INTEGER NOT NULL DEFAULT 0;
+                  ALTER TABLE assignment_scores ADD COLUMN note TEXT;",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

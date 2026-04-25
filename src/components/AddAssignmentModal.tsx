@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import {
   Button,
+  Chip,
   Modal,
   Label,
   Input,
@@ -11,14 +12,16 @@ import {
 } from "@heroui/react";
 import { useSchedule } from "../hooks/useSchedule";
 import { useTranslation } from "../i18n/LanguageContext";
-import type { NewAssignmentInput } from "../types/assignment";
+import type { AssignmentTag, NewAssignmentInput } from "../types/assignment";
 
 interface AddAssignmentModalProps {
   groupId: number;
   onAdd: (input: NewAssignmentInput) => Promise<void>;
 }
 
-const emptyForm = { title: "", description: "", max_score: "", period_name: "" };
+const TAG_OPTIONS: AssignmentTag[] = ["Exam", "Quiz", "Homework", "Extra Credit", "Project"];
+
+const emptyForm = { title: "", description: "", max_score: "", period_name: "", tag: "" };
 
 export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) {
   const modalState = useOverlayState();
@@ -49,7 +52,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsedMax = parseFloat(form.max_score);
-    if (!form.title.trim() || isNaN(parsedMax) || parsedMax <= 0 || !form.period_name) return;
+    if (!form.title.trim() || isNaN(parsedMax) || parsedMax <= 0 || !form.period_name || !form.tag) return;
     setSubmitting(true);
     setAddError(null);
     try {
@@ -58,6 +61,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
         description: form.description.trim(),
         max_score: parsedMax,
         period_name: form.period_name,
+        tag: form.tag as AssignmentTag,
       });
       setForm(emptyForm);
       modalState.close();
@@ -66,6 +70,14 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const tagLabels: Record<AssignmentTag, string> = {
+    Exam: t("assignments.tags.exam"),
+    Quiz: t("assignments.tags.quiz"),
+    Homework: t("assignments.tags.homework"),
+    "Extra Credit": t("assignments.tags.extraCredit"),
+    Project: t("assignments.tags.project"),
   };
 
   return (
@@ -161,6 +173,26 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
                     )}
                   </div>
 
+                  <div className="flex flex-col gap-1.5">
+                    <Label>{t("assignments.addModal.tagLabel")}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {TAG_OPTIONS.map((tag) => {
+                        const isSelected = form.tag === tag;
+                        return (
+                          <Chip
+                            key={tag}
+                            variant={isSelected ? "primary" : "soft"}
+                            color={isSelected ? "accent" : "default"}
+                            className="cursor-pointer transition-transform active:scale-95"
+                            onClick={() => setForm({ ...form, tag })}
+                          >
+                            {tagLabels[tag]}
+                          </Chip>
+                        );
+                      })}
+                    </div>
+                  </div>
+
                   {addError && <p className="text-danger text-sm">{addError}</p>}
                 </Modal.Body>
                 <Modal.Footer>
@@ -175,6 +207,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
                       !form.title.trim() ||
                       !form.max_score ||
                       !form.period_name ||
+                      !form.tag ||
                       uniquePeriodNames.length === 0
                     }
                   >

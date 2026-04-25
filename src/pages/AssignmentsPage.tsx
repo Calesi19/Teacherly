@@ -1,6 +1,7 @@
 import { useState, useMemo } from "react";
 import {
   Button,
+  Chip,
   EmptyState,
   Input,
   Spinner,
@@ -22,7 +23,7 @@ import { AddAssignmentModal } from "../components/AddAssignmentModal";
 import { useAssignments } from "../hooks/useAssignments";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
-import type { Assignment } from "../types/assignment";
+import type { Assignment, AssignmentTag } from "../types/assignment";
 
 interface AssignmentsPageProps {
   group: Group;
@@ -30,6 +31,8 @@ interface AssignmentsPageProps {
   onGoToStudents: () => void;
   onSelectAssignment: (assignment: Assignment) => void;
 }
+
+const TAG_OPTIONS: AssignmentTag[] = ["Exam", "Quiz", "Homework", "Extra Credit", "Project"];
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString(undefined, {
@@ -49,6 +52,7 @@ export function AssignmentsPage({
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
+  const [selectedTag, setSelectedTag] = useState<string>("all");
   const [deletingAssignment, setDeletingAssignment] = useState<Assignment | null>(null);
 
   const periods = useMemo(
@@ -59,8 +63,18 @@ export function AssignmentsPage({
   const filtered = assignments.filter((a) => {
     const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
     const matchesPeriod = selectedPeriod === "all" || a.period_name === selectedPeriod;
-    return matchesSearch && matchesPeriod;
+    const matchesTag = selectedTag === "all" || a.tag === selectedTag;
+    return matchesSearch && matchesPeriod && matchesTag;
   });
+
+  const tagLabels: Record<string, string> = {
+    all: t("assignments.tags.all"),
+    Exam: t("assignments.tags.exam"),
+    Quiz: t("assignments.tags.quiz"),
+    Homework: t("assignments.tags.homework"),
+    "Extra Credit": t("assignments.tags.extraCredit"),
+    Project: t("assignments.tags.project"),
+  };
 
   return (
     <div className="p-6 flex flex-col h-full">
@@ -76,7 +90,21 @@ export function AssignmentsPage({
         <h2 className="text-2xl font-bold">{t("assignments.title")}</h2>
       </div>
 
-      <div className="flex items-center justify-between mt-6 mb-4">
+      <div className="flex flex-wrap gap-2 mt-4 mb-2">
+        {(["all", ...TAG_OPTIONS] as string[]).map((tag) => (
+          <Chip
+            key={tag}
+            variant={selectedTag === tag ? "primary" : "soft"}
+            color={selectedTag === tag ? "accent" : "default"}
+            className="cursor-pointer transition-transform active:scale-95"
+            onClick={() => setSelectedTag(tag)}
+          >
+            {tagLabels[tag]}
+          </Chip>
+        ))}
+      </div>
+
+      <div className="flex items-center justify-between mt-4 mb-4">
         {!loading && assignments.length > 0 && (
           <div className="flex items-center gap-2">
             <Input
@@ -178,7 +206,14 @@ export function AssignmentsPage({
                 >
                   {filtered.map((a) => (
                     <TableRow key={a.id} id={a.id} className="cursor-pointer">
-                      <TableCell className="font-medium">{a.title}</TableCell>
+                      <TableCell className="font-medium">
+                        <div className="flex items-center gap-2">
+                          {a.title}
+                          <Chip size="sm" variant="soft" color="default">
+                            {tagLabels[a.tag] ?? a.tag}
+                          </Chip>
+                        </div>
+                      </TableCell>
                       <TableCell className="text-sm text-foreground/50">{a.period_name}</TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {a.max_score} {t("assignments.pts")}

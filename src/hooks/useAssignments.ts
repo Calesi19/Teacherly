@@ -28,7 +28,7 @@ export function useAssignments(
       setLoading(true);
       const db = await Database.load(DB_URL);
       const rows = await db.select<Assignment[]>(
-        `SELECT id, group_id, period_name, title, description, max_score, created_at
+        `SELECT id, group_id, period_name, title, description, max_score, tag, created_at
          FROM assignments
          WHERE group_id = ? AND is_deleted = 0
          ORDER BY created_at DESC`,
@@ -48,8 +48,8 @@ export function useAssignments(
       if (groupId == null) throw new Error("Cannot add an assignment without a group");
       const db = await Database.load(DB_URL);
       await db.execute(
-        "INSERT INTO assignments (group_id, period_name, title, description, max_score) VALUES (?, ?, ?, ?, ?)",
-        [groupId, input.period_name, input.title.trim(), input.description.trim() || null, input.max_score]
+        "INSERT INTO assignments (group_id, period_name, title, description, max_score, tag) VALUES (?, ?, ?, ?, ?, ?)",
+        [groupId, input.period_name, input.title.trim(), input.description.trim() || null, input.max_score, input.tag]
       );
       await fetchAssignments();
     },

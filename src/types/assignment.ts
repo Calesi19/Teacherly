@@ -1,3 +1,5 @@
+export type AssignmentTag = "Exam" | "Quiz" | "Homework" | "Extra Credit" | "Project";
+
 export interface Assignment {
   id: number;
   group_id: number;
@@ -5,6 +7,7 @@ export interface Assignment {
   title: string;
   description: string | null;
   max_score: number;
+  tag: AssignmentTag;
   created_at: string;
 }
 
@@ -13,6 +16,7 @@ export interface NewAssignmentInput {
   description: string;
   max_score: number;
   period_name: string;
+  tag: AssignmentTag;
 }
 
 export interface AssignmentScore {
@@ -21,6 +25,9 @@ export interface AssignmentScore {
   student_id: number;
   student_name: string;
   score: number | null;
+  exempt: number;
+  late: number;
+  note: string | null;
 }
 
 export type GradeBand = "A" | "B" | "C" | "D" | "F" | "N";
