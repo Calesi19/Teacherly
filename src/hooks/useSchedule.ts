@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { SchedulePeriod, NewSchedulePeriodInput } from "../types/schedule";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export function useSchedule(groupId: number) {
   const [periods, setPeriods] = useState<SchedulePeriod[]>([]);

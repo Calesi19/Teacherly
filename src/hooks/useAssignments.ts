@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { Assignment, NewAssignmentInput } from "../types/assignment";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export function useAssignments(groupId: number) {
   const [assignments, setAssignments] = useState<Assignment[]>([]);

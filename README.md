@@ -1,4 +1,4 @@
-# Tizara
+# Teacherly
 
 A desktop app for teachers to manage classes and student information. Runs fully offline — all data is stored locally using SQLite.
 

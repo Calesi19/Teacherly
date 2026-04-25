@@ -7,7 +7,7 @@ import type { StudentAccommodations } from "../types/studentAccommodations";
 import type { StudentObservations } from "../types/studentObservations";
 import type { Note } from "../types/note";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export interface AttendanceRecordRow {
   date: string;

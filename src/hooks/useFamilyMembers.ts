@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { FamilyMember, NewFamilyMemberInput } from "../types/familyMember";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export function useFamilyMembers(studentId: number) {
   const [familyMembers, setFamilyMembers] = useState<FamilyMember[]>([]);

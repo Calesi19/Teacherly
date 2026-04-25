@@ -34,7 +34,7 @@ import { NOTE_TAG_KEYS, NOTE_TAG_COLORS, serializeTags, type NoteTagKey } from "
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 interface StudentsPageProps {
   group: Group;

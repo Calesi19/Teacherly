@@ -4,8 +4,7 @@ import { Sun, Moon, Monitor, FolderOpen } from "lucide-react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { LanguagePreference } from "../i18n/LanguageContext";
-
-const REPORTS_FOLDER_KEY = "tizara-reports-folder";
+import { REPORTS_FOLDER_KEY } from "../appConfig";
 
 type ThemePreference = "light" | "dark" | "system";
 type ColorTheme = "default" | "ocean" | "forest" | "sunset" | "rose";

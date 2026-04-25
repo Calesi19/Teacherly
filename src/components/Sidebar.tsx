@@ -11,6 +11,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
+import { APP_NAME } from "../appConfig";
 
 interface SidebarProps {
   currentPage: string;
@@ -121,12 +122,12 @@ export function Sidebar({
       <div className="p-5 pb-4 flex items-center gap-3">
         <img
           src="/icon-light.webp"
-          alt="Tizara"
+          alt={APP_NAME}
           className="w-9 h-9 rounded-xl shrink-0 dark:hidden"
         />
         <img
           src="/icon-dark.webp"
-          alt="Tizara"
+          alt={APP_NAME}
           className="w-9 h-9 rounded-xl shrink-0 hidden dark:block"
         />
         <div>

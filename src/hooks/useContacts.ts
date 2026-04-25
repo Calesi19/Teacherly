@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { Contact, NewContactInput } from "../types/contact";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export function useContacts(studentId: number) {
   const [contacts, setContacts] = useState<Contact[]>([]);

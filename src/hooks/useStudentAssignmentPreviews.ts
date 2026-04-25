@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { StudentAssignmentPreview } from "../types/assignment";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export function useStudentAssignmentPreviews(studentId: number, groupId: number) {
   const [previews, setPreviews] = useState<StudentAssignmentPreview[]>([]);

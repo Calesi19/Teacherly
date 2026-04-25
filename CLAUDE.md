@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What This App Is
 
-Tizara is an offline desktop app (Tauri 2 + React 19) for teachers to manage classrooms, students, and family contacts. All data is stored locally in SQLite — no network requests, no backend server.
+Teacherly is an offline desktop app (Tauri 2 + React 19) for teachers to manage classrooms, students, and family contacts. All data is stored locally in SQLite — no network requests, no backend server.
 
 ## Commands
 
@@ -25,7 +25,7 @@ App.tsx uses a discriminated union `Route` type for client-side routing — no r
 
 ### Data Layer
 
-Custom hooks in `src/hooks/` (`useClassrooms`, `useStudents`, `useFamilyMembers`) call SQLite directly via `@tauri-apps/plugin-sql`. The pattern is: load `"sqlite:tizara.db"`, run raw SQL, set state. No ORM, no caching — every mutation triggers a full refetch.
+Custom hooks in `src/hooks/` (`useClassrooms`, `useStudents`, `useFamilyMembers`) call SQLite directly via `@tauri-apps/plugin-sql`. The pattern is: load `"sqlite:teacherly.db"`, run raw SQL, set state. No ORM, no caching — every mutation triggers a full refetch.
 
 ### Database
 

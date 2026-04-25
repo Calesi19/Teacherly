@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { AttendanceStatus, DayAttendanceStatus } from "../types/attendance";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 interface RawRecord {
   date: string;

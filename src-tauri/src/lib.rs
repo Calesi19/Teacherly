@@ -4,6 +4,10 @@ use tauri::async_runtime::spawn;
 use tauri::Manager;
 use tauri_plugin_sql::{Migration, MigrationKind};
 
+const CURRENT_DB_URL: &str = "sqlite:teacherly.db";
+const CURRENT_DB_FILE: &str = "teacherly.db";
+const LEGACY_DB_FILE: &str = "tizara.db";
+
 struct SetupState {
     frontend_task: bool,
     backend_task: bool,
@@ -52,6 +56,26 @@ async fn finish_backend_setup(app: tauri::AppHandle) -> Result<(), String> {
         app.state::<Mutex<SetupState>>(),
         "backend".to_string(),
     )
+}
+
+fn migrate_legacy_database(app: &tauri::AppHandle) -> Result<(), String> {
+    let app_data_dir = app.path().app_data_dir().map_err(|e| e.to_string())?;
+
+    std::fs::create_dir_all(&app_data_dir).map_err(|e| e.to_string())?;
+
+    let current_db_path = app_data_dir.join(CURRENT_DB_FILE);
+    if current_db_path.exists() {
+        return Ok(());
+    }
+
+    let legacy_db_path = app_data_dir.join(LEGACY_DB_FILE);
+    if !legacy_db_path.exists() {
+        return Ok(());
+    }
+
+    std::fs::copy(&legacy_db_path, &current_db_path)
+        .map(|_| ())
+        .map_err(|e| e.to_string())
 }
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -403,6 +427,7 @@ pub fn run() {
             backend_task: false,
         }))
         .setup(|app| {
+            migrate_legacy_database(&app.handle())?;
             spawn(finish_backend_setup(app.handle().clone()));
             Ok(())
         })
@@ -410,7 +435,7 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(
             tauri_plugin_sql::Builder::default()
-                .add_migrations("sqlite:tizara.db", migrations)
+                .add_migrations(CURRENT_DB_URL, migrations)
                 .build(),
         )
         .invoke_handler(tauri::generate_handler![write_pdf, set_complete])

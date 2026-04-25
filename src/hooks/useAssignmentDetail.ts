@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { AssignmentScore, GradeDistribution } from "../types/assignment";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 interface AssignmentStats {
   gradedCount: number;

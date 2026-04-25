@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { StudentServices, StudentServicesInput } from "../types/studentServices";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export function useStudentServices(studentId: number) {
   const [data, setData] = useState<StudentServices | null>(null);

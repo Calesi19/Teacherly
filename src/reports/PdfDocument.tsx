@@ -1,5 +1,6 @@
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { ReactNode } from "react";
+import { APP_NAME } from "../appConfig";
 
 const styles = StyleSheet.create({
   page: {
@@ -85,7 +86,7 @@ export function PdfDocument({
               <Text style={styles.headerSub}>{subtitle}</Text>
             ) : null}
           </View>
-          <Text style={styles.headerApp}>Tizara</Text>
+          <Text style={styles.headerApp}>{APP_NAME}</Text>
         </View>
 
         <View style={styles.content}>{children}</View>

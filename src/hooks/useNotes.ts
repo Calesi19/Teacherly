@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback } from "react";
 import Database from "@tauri-apps/plugin-sql";
 import type { Note, NewNoteInput } from "../types/note";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export function useNotes(studentId: number) {
   const [notes, setNotes] = useState<Note[]>([]);

@@ -3,7 +3,7 @@ import Database from "@tauri-apps/plugin-sql";
 import type { SchedulePeriod } from "../types/schedule";
 import type { AttendanceStatus, DayAttendanceStatus, StudentDayStatus } from "../types/attendance";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 interface RawAttendanceRow {
   id: number;

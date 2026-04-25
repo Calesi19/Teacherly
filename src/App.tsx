@@ -34,12 +34,19 @@ import { ReportsPage } from "./pages/ReportsPage";
 import type { Group } from "./types/group";
 import type { Student } from "./types/student";
 import type { Assignment } from "./types/assignment";
+import {
+  APP_NAME,
+  COLOR_THEME_KEY,
+  LAST_GROUP_KEY,
+  migrateLegacyAppStorage,
+} from "./appConfig";
 
 type ThemePreference = "light" | "dark" | "system";
 const THEME_KEY = "heroui-theme";
 
 type ColorTheme = "default" | "ocean" | "forest" | "sunset" | "rose";
-const COLOR_THEME_KEY = "tizara-color-theme";
+
+migrateLegacyAppStorage();
 
 function useAppColorTheme() {
   const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
@@ -136,8 +143,6 @@ type Route =
   | { page: "group-edit"; group: Group }
   | { page: "reports"; group: Group }
   | { page: "settings" };
-
-const LAST_GROUP_KEY = "tizara-last-group-id";
 
 function App() {
   const drawerState = useOverlayState();
@@ -498,7 +503,7 @@ function App() {
                 >
                   ☰
                 </Button>
-                <span className="text-lg font-bold">Tizara</span>
+                <span className="text-lg font-bold">{APP_NAME}</span>
               </div>
             )}
             <main className="flex-1 bg-background-secondary flex flex-col overflow-y-auto">

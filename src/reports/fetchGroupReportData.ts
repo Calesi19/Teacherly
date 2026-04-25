@@ -1,7 +1,7 @@
 import Database from "@tauri-apps/plugin-sql";
 import type { Student } from "../types/student";
 
-const DB_URL = "sqlite:tizara.db";
+const DB_URL = "sqlite:teacherly.db";
 
 export interface AttendanceSummaryRow {
   studentId: number;

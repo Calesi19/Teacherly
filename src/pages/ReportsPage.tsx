@@ -44,8 +44,7 @@ import {
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 import { NOTE_TAG_KEYS } from "../types/note";
-
-const REPORTS_FOLDER_KEY = "tizara-reports-folder";
+import { REPORTS_FOLDER_KEY } from "../appConfig";
 const PREVIEW_DEBOUNCE_MS = 700;
 
 type Scope = "group" | "individual";
@@ -409,7 +408,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
         );
         const safeName = group.name.replace(/[^a-z0-9]/gi, "-").toLowerCase();
         const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-        filename = `tizara-group-${safeName}-${ts}.pdf`;
+        filename = `teacherly-group-${safeName}-${ts}.pdf`;
       } else {
         const [student, contacts, addresses, services, accommodations, observations, notes, attendanceRecords, grades] =
           await Promise.all([
@@ -459,7 +458,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
         );
         const safeName = (student?.name ?? "student").replace(/[^a-z0-9]/gi, "-").toLowerCase();
         const ts = new Date().toISOString().replace(/[:.]/g, "-").slice(0, 19);
-        filename = `tizara-student-${safeName}-${ts}.pdf`;
+        filename = `teacherly-student-${safeName}-${ts}.pdf`;
       }
 
       const blob = await pdf(doc).toBlob();

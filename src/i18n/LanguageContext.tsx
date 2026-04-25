@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useCallback, useEffect, type ReactNode } from "react";
 import { translations, type Language } from "./translations";
-
-const LANG_KEY = "tizara-language";
+import { LANG_KEY } from "../appConfig";
 
 export type LanguagePreference = "system" | "en" | "es";
 
