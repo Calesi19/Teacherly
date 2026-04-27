@@ -414,7 +414,7 @@ function AppContent() {
         id: "page:schedule",
         title: t("sidebar.schedule"),
         subtitle: currentGroup.name,
-        keywords: ["calendar", "class periods"],
+        keywords: ["calendar", "courses"],
         category: "pages",
         icon: <CalendarDays size={18} />,
         perform: () => goToSchedule(currentGroup),

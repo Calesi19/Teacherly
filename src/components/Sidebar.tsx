@@ -11,7 +11,6 @@ import {
 } from "lucide-react";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
-import { APP_NAME } from "../appConfig";
 
 interface SidebarProps {
   currentPage: string;
