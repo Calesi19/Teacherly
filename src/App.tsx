@@ -542,6 +542,7 @@ function AppContent() {
             onGoToAttendance={() => goToAttendance(route.group)}
             onGoToAssignments={() => goToAssignments(route.group)}
             onGoToEditGroup={() => goToEditGroup(route.group)}
+            onGoToReports={() => goToReports(route.group)}
           />
         );
       case "students":
