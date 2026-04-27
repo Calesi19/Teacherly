@@ -166,7 +166,7 @@ type Route =
   | { page: "assignment-detail"; group: Group; assignment: Assignment }
   | { page: "group-edit"; group: Group }
   | { page: "reports"; group: Group }
-  | { page: "settings" }
+  | { page: "settings"; group: Group | null }
   | { page: "terms-of-service" }
   | { page: "privacy-policy" };
 
@@ -218,7 +218,7 @@ function AppContent() {
     setRoute({ page: "assignment-detail", group, assignment });
   const goToEditGroup = (group: Group) => setRoute({ page: "group-edit", group });
   const goToReports = (group: Group) => setRoute({ page: "reports", group });
-  const goToSettings = () => setRoute({ page: "settings" });
+  const goToSettings = (group: Group | null = null) => setRoute({ page: "settings", group });
   const goToTermsOfService = () => setRoute({ page: "terms-of-service" });
   const goToPrivacyPolicy = () => setRoute({ page: "privacy-policy" });
 
@@ -327,7 +327,7 @@ function AppContent() {
     onGoToAttendance: () => currentGroup && goToAttendance(currentGroup),
     onGoToAssignments: () => currentGroup && goToAssignments(currentGroup),
     onGoToReports: () => currentGroup && goToReports(currentGroup),
-    onGoToSettings: goToSettings,
+    onGoToSettings: () => goToSettings(currentGroup),
     onGoToGroups: changeGroup,
   };
 
@@ -351,7 +351,7 @@ function AppContent() {
         keywords: ["preferences", "configuration"],
         category: "pages",
         icon: <Settings size={18} />,
-        perform: goToSettings,
+        perform: () => goToSettings(currentGroup),
       },
       {
         id: "action:toggle-dark-mode",
@@ -726,7 +726,9 @@ function AppContent() {
     }
   }
 
-  const showSidebar = route.page !== "groups";
+  const showSidebar =
+    route.page !== "groups" &&
+    !(route.page === "settings" && route.group === null);
   const showWindowsBar = navigator.userAgent.toLowerCase().includes("windows");
 
   return (
