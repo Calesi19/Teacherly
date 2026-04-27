@@ -120,16 +120,6 @@ export function Sidebar({
       />
 
       <div className="p-5 pb-4 flex items-center gap-3">
-        <img
-          src="/icon-light.webp"
-          alt={APP_NAME}
-          className="w-9 h-9 rounded-xl shrink-0 dark:hidden"
-        />
-        <img
-          src="/icon-dark.webp"
-          alt={APP_NAME}
-          className="w-9 h-9 rounded-xl shrink-0 hidden dark:block"
-        />
         <div>
           <h1 className="text-xl font-bold text-accent">
             {currentGroup?.name ?? "Select Group"}
