@@ -76,9 +76,9 @@ migrateLegacyAppStorage();
 function useAppColorTheme() {
   const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
     const s = localStorage.getItem(COLOR_THEME_KEY);
-    if (s === "ocean" || s === "forest" || s === "sunset" || s === "rose")
+    if (s === "default" || s === "ocean" || s === "forest" || s === "sunset" || s === "rose")
       return s;
-    return "default";
+    return "forest";
   });
 
   const applyColorTheme = useCallback((t: ColorTheme) => {
