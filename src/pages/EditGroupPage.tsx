@@ -11,7 +11,7 @@ import {
   Calendar,
   useOverlayState,
 } from "@heroui/react";
-import { Trash2 } from "lucide-react";
+import { Trash2, CalendarDays } from "lucide-react";
 import { parseDate } from "@internationalized/date";
 import { useGroups } from "../hooks/useGroups";
 import { Breadcrumb } from "../components/Breadcrumb";
@@ -40,6 +40,7 @@ interface EditGroupPageProps {
   group: Group;
   onGoToGroups: () => void;
   onGoToDashboard: () => void;
+  onGoToSchedule: () => void;
 }
 
 function CustomDatePicker({
@@ -104,6 +105,7 @@ export function EditGroupPage({
   group,
   onGoToGroups,
   onGoToDashboard,
+  onGoToSchedule,
 }: EditGroupPageProps) {
   const { t } = useTranslation();
   const { updateGroup, deleteGroup } = useGroups();
@@ -235,6 +237,21 @@ export function EditGroupPage({
         />
 
         {saveError && <p className="text-danger text-sm">{saveError}</p>}
+
+        <hr className="border-border" />
+
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold">{t("sidebar.schedule")}</p>
+            <p className="text-sm text-foreground/60 mt-0.5">
+              Manage course periods for this group.
+            </p>
+          </div>
+          <Button variant="ghost" size="sm" onPress={onGoToSchedule}>
+            <CalendarDays size={16} />
+            Manage
+          </Button>
+        </div>
 
         <hr className="border-border" />
 

@@ -54,7 +54,6 @@ import {
 import {
   ArrowLeftRight,
   BookOpen,
-  CalendarDays,
   ClipboardCheck,
   FileText,
   LayoutDashboard,
@@ -304,8 +303,6 @@ function AppContent() {
     switch (route.page) {
       case "dashboard":
         return goToDashboard(group);
-      case "schedule":
-        return goToSchedule(group);
       case "attendance":
         return goToAttendance(group);
       case "assignments":
@@ -327,7 +324,6 @@ function AppContent() {
     onSelectGroup: handleSelectGroup,
     onGoToDashboard: () => currentGroup && goToDashboard(currentGroup),
     onGoToStudents: () => currentGroup && goToStudents(currentGroup),
-    onGoToSchedule: () => currentGroup && goToSchedule(currentGroup),
     onGoToAttendance: () => currentGroup && goToAttendance(currentGroup),
     onGoToAssignments: () => currentGroup && goToAssignments(currentGroup),
     onGoToReports: () => currentGroup && goToReports(currentGroup),
@@ -409,15 +405,6 @@ function AppContent() {
         category: "pages",
         icon: <Users size={18} />,
         perform: () => goToStudents(currentGroup),
-      },
-      {
-        id: "page:schedule",
-        title: t("sidebar.schedule"),
-        subtitle: currentGroup.name,
-        keywords: ["calendar", "courses"],
-        category: "pages",
-        icon: <CalendarDays size={18} />,
-        perform: () => goToSchedule(currentGroup),
       },
       {
         id: "page:attendance",
@@ -679,7 +666,7 @@ function AppContent() {
           <SchedulePage
             group={route.group}
             onGoToGroups={goToGroups}
-            onGoToStudents={() => goToStudents(route.group)}
+            onGoToEditGroup={() => goToEditGroup(route.group)}
           />
         );
       case "attendance":
@@ -716,6 +703,7 @@ function AppContent() {
             group={route.group}
             onGoToGroups={changeGroup}
             onGoToDashboard={() => goToDashboard(route.group)}
+            onGoToSchedule={() => goToSchedule(route.group)}
           />
         );
       case "reports":

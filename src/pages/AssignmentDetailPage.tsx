@@ -205,6 +205,7 @@ export function AssignmentDetailPage({
                   <TableHeader>
                     <TableColumn>{" "}</TableColumn>
                     <TableColumn isRowHeader>{t("students.tableColumns.name")}</TableColumn>
+                    <TableColumn>{" "}</TableColumn>
                     <TableColumn className="text-right">{t("assignmentDetail.scoreColumn")}</TableColumn>
                   </TableHeader>
                   <TableBody
@@ -272,19 +273,18 @@ export function AssignmentDetailPage({
                             </Dropdown>
                           </TableCell>
                           <TableCell>
-                            <div className="flex items-center gap-2">
-                              <span className="font-medium">{row.student_name}</span>
-                              {isExempt && (
-                                <Chip size="sm" variant="soft" color="accent">
-                                  {t("assignmentDetail.exempt")}
-                                </Chip>
-                              )}
-                              {isLate && (
-                                <Chip size="sm" variant="soft" color="warning">
-                                  {t("assignmentDetail.late")}
-                                </Chip>
-                              )}
-                            </div>
+                            <span className="font-medium">{row.student_name}</span>
+                          </TableCell>
+                          <TableCell className="w-24">
+                            {isExempt ? (
+                              <Chip size="sm" variant="soft" color="accent">
+                                {t("assignmentDetail.exempt")}
+                              </Chip>
+                            ) : isLate ? (
+                              <Chip size="sm" variant="soft" color="warning">
+                                {t("assignmentDetail.late")}
+                              </Chip>
+                            ) : null}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center justify-end gap-2">

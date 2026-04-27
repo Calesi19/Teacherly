@@ -1,7 +1,6 @@
 import { Button } from "@heroui/react";
 import {
   Users,
-  CalendarDays,
   ClipboardCheck,
   BookOpen,
   FileText,
@@ -18,7 +17,6 @@ interface SidebarProps {
   onSelectGroup: (group: Group) => void;
   onGoToDashboard: () => void;
   onGoToStudents: () => void;
-  onGoToSchedule: () => void;
   onGoToAttendance: () => void;
   onGoToAssignments: () => void;
   onGoToReports: () => void;
@@ -50,7 +48,6 @@ export function Sidebar({
   currentGroup,
   onGoToDashboard,
   onGoToStudents,
-  onGoToSchedule,
   onGoToAttendance,
   onGoToAssignments,
   onGoToReports,
@@ -79,13 +76,6 @@ export function Sidebar({
       icon: <Users size={16} />,
       active: STUDENTS_PAGES.has(currentPage),
       onPress: nav(onGoToStudents),
-    },
-    {
-      id: "schedule",
-      label: t("sidebar.schedule"),
-      icon: <CalendarDays size={16} />,
-      active: currentPage === "schedule",
-      onPress: nav(onGoToSchedule),
     },
     {
       id: "attendance",
