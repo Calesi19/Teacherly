@@ -605,9 +605,6 @@ export function StudentProfilePage({
             <div>
               <div>
                 <h2 className="text-2xl font-bold">{student.name}</h2>
-                <p className="text-sm text-muted">
-                  {t("studentProfile.enrolled")} {formatShortDate(student.created_at)}
-                </p>
               </div>
             </div>
 

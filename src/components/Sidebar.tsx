@@ -206,7 +206,7 @@ export function Sidebar({
                   onMouseEnter={() => setHoveredIndex(index)}
                   onClick={item.onClick}
                   className={cn(
-                    "relative flex items-center overflow-hidden rounded-xl text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                    "relative flex items-center overflow-hidden rounded-lg text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
                     item.active
                       ? "text-accent"
                       : "text-neutral-700 dark:text-neutral-200/70",
@@ -216,7 +216,7 @@ export function Sidebar({
                   <AnimatePresence>
                     {item.active && (
                       <motion.span
-                        className="absolute inset-0 z-0 rounded-xl bg-neutral-200 dark:bg-neutral-700"
+                        className="absolute inset-0 z-0 rounded-lg bg-neutral-200 dark:bg-neutral-700"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -229,7 +229,7 @@ export function Sidebar({
                     {hoveredIndex === index && !item.active && !item.disabled && (
                       <motion.span
                         layoutId="sidebar-hover-bg"
-                        className="absolute inset-0 z-0 rounded-xl bg-neutral-200/60 dark:bg-neutral-900/50"
+                        className="absolute inset-0 z-0 rounded-lg bg-neutral-200/60 dark:bg-neutral-900/50"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
