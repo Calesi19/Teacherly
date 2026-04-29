@@ -1,19 +1,30 @@
 import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
-import { useGroups } from "../hooks/useGroups";
 import { GroupCard } from "../components/GroupCard";
 import { AddGroupModal } from "../components/AddGroupModal";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
+import type { NewGroupInput } from "../types/group";
 
 interface GroupsPageProps {
   onSelectGroup: (group: Group) => void;
   currentGroup: Group | null;
   onGoToSettings: () => void;
+  groups: Group[];
+  loading: boolean;
+  error: string | null;
+  onAddGroup: (input: NewGroupInput) => Promise<void>;
 }
 
-export function GroupsPage({ onSelectGroup, currentGroup, onGoToSettings }: GroupsPageProps) {
-  const { groups, loading, error, addGroup } = useGroups();
+export function GroupsPage({
+  onSelectGroup,
+  currentGroup,
+  onGoToSettings,
+  groups,
+  loading,
+  error,
+  onAddGroup,
+}: GroupsPageProps) {
   const { t } = useTranslation();
 
   return (
@@ -21,7 +32,7 @@ export function GroupsPage({ onSelectGroup, currentGroup, onGoToSettings }: Grou
       <div className="max-w-3xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-2xl font-bold">{t("groups.title")}</h2>
-          <AddGroupModal onAdd={addGroup} />
+          <AddGroupModal onAdd={onAddGroup} />
         </div>
 
         {loading && (

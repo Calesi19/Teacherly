@@ -15,9 +15,6 @@ import { cn } from "@/lib/utils";
 import { FileText, FolderOpen, CheckCircle, AlertCircle } from "lucide-react";
 import { pdf } from "@react-pdf/renderer";
 import { invoke } from "@tauri-apps/api/core";
-import { dirname } from "@tauri-apps/api/path";
-import { save } from "@tauri-apps/plugin-dialog";
-import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { PdfDocument } from "../reports/PdfDocument";
 import { StudentRosterSection } from "../reports/sections/StudentRosterSection";
 import { AttendanceSummarySection } from "../reports/sections/AttendanceSummarySection";
@@ -583,6 +580,10 @@ export function ReportsPage({ group }: ReportsPageProps) {
 
       const lastDir = localStorage.getItem(REPORTS_LAST_DIR_KEY) ?? undefined;
       const defaultPath = lastDir ? `${lastDir}/${filename}` : filename;
+      const [{ save }, { dirname }] = await Promise.all([
+        import("@tauri-apps/plugin-dialog"),
+        import("@tauri-apps/api/path"),
+      ]);
       const filePath = await save({
         defaultPath,
         filters: [{ name: "PDF", extensions: ["pdf"] }],
@@ -722,6 +723,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       <SelectValue placeholder={t("reports.ui.student")} />
                     </SelectTrigger>
                     <SelectContent>
+                      <SelectItem value="__none__">{t("reports.ui.selectStudentFirst")}</SelectItem>
                       {groupStudents.map((student) => (
                         <SelectItem key={student.id} value={String(student.id)}>
                           {student.name}
@@ -976,7 +978,10 @@ export function ReportsPage({ group }: ReportsPageProps) {
                   {result.ok && result.filePath && (
                     <button
                       className="mt-1.5 flex items-center gap-1 text-xs text-foreground/50 transition-colors hover:text-foreground/80"
-                      onClick={() => revealItemInDir(result.filePath!)}
+                      onClick={async () => {
+                        const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
+                        await revealItemInDir(result.filePath!);
+                      }}
                     >
                       <FolderOpen size={11} />
                       {t("reports.ui.showInFinder")}

@@ -1,4 +1,6 @@
 import {
+  Suspense,
+  lazy,
   useState,
   useCallback,
   useEffect,
@@ -38,7 +40,6 @@ import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { AssignmentDetailPage } from "./pages/AssignmentDetailPage";
 import { ConfirmModal } from "./components/ConfirmModal";
 import { SettingsPage } from "./pages/SettingsPage";
-import { ReportsPage } from "./pages/ReportsPage";
 import { TermsOfServicePage } from "./pages/TermsOfServicePage";
 import { PrivacyPolicyPage } from "./pages/PrivacyPolicyPage";
 import type { Group } from "./types/group";
@@ -63,6 +64,12 @@ import {
   User,
   Users,
 } from "lucide-react";
+
+const ReportsPage = lazy(() =>
+  import("./pages/ReportsPage").then((module) => ({
+    default: module.ReportsPage,
+  })),
+);
 
 type ThemePreference = "light" | "dark" | "system";
 const THEME_KEY = "app-theme";
@@ -183,7 +190,7 @@ function AppContent() {
   const [route, setRoute] = useState<Route>({ page: "groups" });
   const [assignmentDetailDirty, setAssignmentDetailDirty] = useState(false);
   const [pendingSidebarNav, setPendingSidebarNav] = useState<(() => void) | null>(null);
-  const { groups, loading: groupsLoading } = useGroups();
+  const { groups, loading: groupsLoading, error: groupsError, addGroup } = useGroups();
 
   const goToGroups = () => setRoute({ page: "groups" });
   const changeGroup = () => {
@@ -263,14 +270,18 @@ function AppContent() {
   }, [groupsLoading, groups]);
 
   useEffect(() => {
-    if (groupsLoading || startupWindowsReadyRef.current) return;
+    if (startupWindowsReadyRef.current) return;
 
     startupWindowsReadyRef.current = true;
 
     void (async () => {
-      await invoke("set_complete", { task: "frontend" });
+      try {
+        await invoke("set_complete", { task: "frontend" });
+      } catch (error) {
+        console.error("Failed to mark frontend startup as complete", error);
+      }
     })();
-  }, [groupsLoading]);
+  }, []);
 
   useEffect(() => {
     localStorage.setItem(RECENT_COMMANDS_KEY, JSON.stringify(recentCommandIds));
@@ -501,6 +512,10 @@ function AppContent() {
         return (
           <GroupsPage
             currentGroup={currentGroup}
+            groups={groups}
+            loading={groupsLoading}
+            error={groupsError}
+            onAddGroup={addGroup}
             onSelectGroup={(c) => {
               setCurrentGroup(c);
               goToStudents(c);
@@ -673,7 +688,17 @@ function AppContent() {
           />
         );
       case "reports":
-        return <ReportsPage group={route.group} />;
+        return (
+          <Suspense
+            fallback={
+              <div className="flex min-h-full items-center justify-center py-12">
+                <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+              </div>
+            }
+          >
+            <ReportsPage group={route.group} />
+          </Suspense>
+        );
       case "settings":
         return (
           <SettingsPage
