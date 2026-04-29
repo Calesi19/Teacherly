@@ -206,7 +206,10 @@ export function Sidebar({
                   onMouseEnter={() => setHoveredIndex(index)}
                   onClick={item.onClick}
                   className={cn(
-                    "relative flex items-center overflow-hidden rounded-xl text-left transition-opacity disabled:cursor-not-allowed disabled:opacity-40",
+                    "relative flex items-center overflow-hidden rounded-xl text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                    item.active
+                      ? "text-accent"
+                      : "text-neutral-700 dark:text-neutral-200/70",
                     isOpen ? "min-h-12 px-3" : "min-h-12 justify-center px-0",
                   )}
                 >
@@ -249,7 +252,7 @@ export function Sidebar({
                         className={cn(
                           "relative z-10 truncate pr-3 text-sm tracking-tight",
                           item.active
-                            ? "font-medium text-neutral-950 dark:text-white"
+                            ? "font-medium text-accent"
                             : "text-neutral-700 dark:text-neutral-200/70",
                         )}
                       >
