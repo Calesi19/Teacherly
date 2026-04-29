@@ -838,6 +838,9 @@ const en = {
       notesDescription: "Chronological student notes with tags.",
       attendanceRecordsLabel: "Attendance Records",
       attendanceRecordsDescription: "Per-course attendance log with status and notes.",
+      attendanceRecordsStatusFilter: "Statuses",
+      studentAttendanceSummaryLabel: "Attendance Summary",
+      studentAttendanceSummaryDescription: "Total count for each attendance status.",
       gradesLabel: "Assignments",
       gradesDescription: "All assignment scores, grouped by course.",
       studentGradeSummaryLabel: "Grades",
@@ -1002,6 +1005,8 @@ const en = {
       statusEarlyPickup: "Early Pickup",
       recordCount: "{n} record",
       recordCountPlural: "{n} records",
+      // Student attendance summary
+      studentAttendanceSummary: "Attendance Summary",
       // Assignments (detailed list)
       assignments: "Assignments",
       noGrades: "No grades recorded.",
@@ -1861,6 +1866,9 @@ const es: typeof en = {
       notesDescription: "Notas cronológicas del estudiante con etiquetas.",
       attendanceRecordsLabel: "Registros de Asistencia",
       attendanceRecordsDescription: "Registro de asistencia por curso con estado y notas.",
+      attendanceRecordsStatusFilter: "Estados",
+      studentAttendanceSummaryLabel: "Resumen de Asistencia",
+      studentAttendanceSummaryDescription: "Total por cada estado de asistencia.",
       gradesLabel: "Asignaciones",
       gradesDescription: "Todas las puntuaciones de tareas, agrupadas por curso.",
       studentGradeSummaryLabel: "Calificaciones",
@@ -2034,6 +2042,8 @@ const es: typeof en = {
       assignmentCount: "{n} tarea",
       assignmentCountPlural: "{n} tareas",
       classAvgLine: "Promedio de clase: {pct}%",
+      // Student attendance summary
+      studentAttendanceSummary: "Resumen de Asistencia",
       // Student grade summary (per-course totals)
       studentGradeSummary: "Calificaciones",
       noCourseSummary: "No se encontraron tareas.",

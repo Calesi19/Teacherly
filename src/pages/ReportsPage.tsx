@@ -23,6 +23,7 @@ import { AccommodationsSection } from "../reports/sections/AccommodationsSection
 import { ObservationsSection } from "../reports/sections/ObservationsSection";
 import { NotesSection } from "../reports/sections/NotesSection";
 import { AttendanceRecordsSection } from "../reports/sections/AttendanceRecordsSection";
+import { StudentAttendanceSummarySection } from "../reports/sections/StudentAttendanceSummarySection";
 import { GradesSection } from "../reports/sections/GradesSection";
 import { StudentGradeSummarySection } from "../reports/sections/StudentGradeSummarySection";
 // Group data
@@ -41,6 +42,7 @@ import {
   fetchStudentAccommodations,
   fetchStudentObservations,
   fetchStudentNotes,
+  fetchStudentAttendanceSummary,
   fetchStudentAttendanceRecords,
   fetchStudentGrades,
   fetchStudentCourseSummary,
@@ -62,6 +64,7 @@ type StudentSectionId =
   | "accommodations"
   | "observations"
   | "notes"
+  | "student-attendance-summary"
   | "student-attendance"
   | "student-grades"
   | "student-grade-summary";
@@ -152,6 +155,11 @@ export function ReportsPage({ group }: ReportsPageProps) {
   const [noteTagFilter, setNoteTagFilter] = useState("");
   const [studentDateFrom, setStudentDateFrom] = useState("");
   const [studentDateTo, setStudentDateTo] = useState("");
+  const [studentAttendanceStatuses, setStudentAttendanceStatuses] = useState<Set<string>>(
+    new Set(["present", "absent", "late", "early_pickup"])
+  );
+  const [studentSummaryDateFrom, setStudentSummaryDateFrom] = useState("");
+  const [studentSummaryDateTo, setStudentSummaryDateTo] = useState("");
   const [studentGradesPeriod, setStudentGradesPeriod] = useState("");
   const [studentAvailablePeriods, setStudentAvailablePeriods] = useState<string[]>([]);
 
@@ -259,7 +267,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
           );
         } else {
           const sid = selectedStudentId!;
-          const [student, contacts, addresses, services, accommodations, observations, notes, attendanceRecords, grades, courseSummary] =
+          const [student, contacts, addresses, services, accommodations, observations, notes, attendanceSummary, attendanceRecords, grades, courseSummary] =
             await Promise.all([
               fetchStudentProfile(sid),
               sections.has("contacts") ? fetchStudentContacts(sid) : Promise.resolve(null),
@@ -269,6 +277,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
               sections.has("observations") ? fetchStudentObservations(sid) : Promise.resolve(null),
               sections.has("notes")
                 ? fetchStudentNotes(sid, noteTagFilter || undefined)
+                : Promise.resolve(null),
+              sections.has("student-attendance-summary")
+                ? fetchStudentAttendanceSummary(sid, studentSummaryDateFrom || undefined, studentSummaryDateTo || undefined)
                 : Promise.resolve(null),
               sections.has("student-attendance")
                 ? fetchStudentAttendanceRecords(sid, studentDateFrom || undefined, studentDateTo || undefined)
@@ -281,6 +292,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
                 : Promise.resolve(null),
             ]);
           if (cancelled) return;
+          const filteredRecords = attendanceRecords
+            ? attendanceRecords.filter((r) => studentAttendanceStatuses.has(r.status))
+            : null;
           doc = (
             <PdfDocument
               title={`${student?.name ?? t("reports.pdf.studentFallback")} — ${t("reports.pdf.studentReport")}`}
@@ -300,9 +314,17 @@ export function ReportsPage({ group }: ReportsPageProps) {
                 <ObservationsSection observations={observations} language={language} />
               ) : null}
               {notes ? <NotesSection notes={notes} tagFilter={noteTagFilter || undefined} language={language} /> : null}
-              {attendanceRecords ? (
+              {attendanceSummary ? (
+                <StudentAttendanceSummarySection
+                  summary={attendanceSummary}
+                  dateFrom={studentSummaryDateFrom || undefined}
+                  dateTo={studentSummaryDateTo || undefined}
+                  language={language}
+                />
+              ) : null}
+              {filteredRecords ? (
                 <AttendanceRecordsSection
-                  records={attendanceRecords}
+                  records={filteredRecords}
                   dateFrom={studentDateFrom || undefined}
                   dateTo={studentDateTo || undefined}
                   language={language}
@@ -345,7 +367,8 @@ export function ReportsPage({ group }: ReportsPageProps) {
   }, [
     sections, scope, selectedStudentId,
     dateFrom, dateTo, gradesPeriod,
-    noteTagFilter, studentDateFrom, studentDateTo, studentGradesPeriod,
+    noteTagFilter, studentDateFrom, studentDateTo, studentAttendanceStatuses,
+    studentSummaryDateFrom, studentSummaryDateTo, studentGradesPeriod,
     group.id, group.name, group.school_name,
   ]);
 
@@ -426,7 +449,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
         const ts = new Date().toISOString().slice(0, 10);
         filename = `group-${safeName}-${ts}.pdf`;
       } else {
-        const [student, contacts, addresses, services, accommodations, observations, notes, attendanceRecords, grades, courseSummary] =
+        const [student, contacts, addresses, services, accommodations, observations, notes, attendanceSummary, attendanceRecords, grades, courseSummary] =
           await Promise.all([
             fetchStudentProfile(sid!),
             sections.has("contacts") ? fetchStudentContacts(sid!) : Promise.resolve(null),
@@ -436,6 +459,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
             sections.has("observations") ? fetchStudentObservations(sid!) : Promise.resolve(null),
             sections.has("notes")
               ? fetchStudentNotes(sid!, noteTagFilter || undefined)
+              : Promise.resolve(null),
+            sections.has("student-attendance-summary")
+              ? fetchStudentAttendanceSummary(sid!, studentSummaryDateFrom || undefined, studentSummaryDateTo || undefined)
               : Promise.resolve(null),
             sections.has("student-attendance")
               ? fetchStudentAttendanceRecords(sid!, studentDateFrom || undefined, studentDateTo || undefined)
@@ -447,6 +473,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
               ? fetchStudentCourseSummary(sid!)
               : Promise.resolve(null),
           ]);
+        const filteredRecords = attendanceRecords
+          ? attendanceRecords.filter((r) => studentAttendanceStatuses.has(r.status))
+          : null;
         doc = (
           <PdfDocument
             title={`${student?.name ?? t("reports.pdf.studentFallback")} — ${t("reports.pdf.studentReport")}`}
@@ -466,16 +495,24 @@ export function ReportsPage({ group }: ReportsPageProps) {
               <ObservationsSection observations={observations} language={language} />
             ) : null}
             {notes ? <NotesSection notes={notes} tagFilter={noteTagFilter || undefined} language={language} /> : null}
-            {attendanceRecords ? (
+            {attendanceSummary ? (
+              <StudentAttendanceSummarySection
+                summary={attendanceSummary}
+                dateFrom={studentSummaryDateFrom || undefined}
+                dateTo={studentSummaryDateTo || undefined}
+                language={language}
+              />
+            ) : null}
+            {filteredRecords ? (
               <AttendanceRecordsSection
-                records={attendanceRecords}
+                records={filteredRecords}
                 dateFrom={studentDateFrom || undefined}
                 dateTo={studentDateTo || undefined}
                 language={language}
               />
             ) : null}
-            {grades ? <GradesSection grades={grades} periodFilter={studentGradesPeriod || undefined} language={language} /> : null}
             {courseSummary ? <StudentGradeSummarySection courses={courseSummary} language={language} /> : null}
+            {grades ? <GradesSection grades={grades} periodFilter={studentGradesPeriod || undefined} language={language} /> : null}
           </PdfDocument>
         );
         const safeName = (student?.name ?? "student").replace(/[^a-z0-9]/gi, "-").toLowerCase();
@@ -745,6 +782,32 @@ export function ReportsPage({ group }: ReportsPageProps) {
                     </SectionToggle>
 
                     <SectionToggle
+                      id="student-attendance-summary"
+                      label={t("reports.ui.studentAttendanceSummaryLabel")}
+                      description={t("reports.ui.studentAttendanceSummaryDescription")}
+                      checked={sections.has("student-attendance-summary")}
+                      onChange={(v) => toggleSection("student-attendance-summary", v)}
+                    >
+                      {sections.has("student-attendance-summary") && (
+                        <div className="mt-2 flex flex-col gap-1.5">
+                          <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
+                          <div className="flex flex-col gap-2">
+                            <ReportDatePicker
+                              label={t("reports.ui.dateFrom")}
+                              value={studentSummaryDateFrom}
+                              onChange={setStudentSummaryDateFrom}
+                            />
+                            <ReportDatePicker
+                              label={t("reports.ui.dateTo")}
+                              value={studentSummaryDateTo}
+                              onChange={setStudentSummaryDateTo}
+                            />
+                          </div>
+                        </div>
+                      )}
+                    </SectionToggle>
+
+                    <SectionToggle
                       id="student-attendance"
                       label={t("reports.ui.attendanceRecordsLabel")}
                       description={t("reports.ui.attendanceRecordsDescription")}
@@ -752,19 +815,55 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       onChange={(v) => toggleSection("student-attendance", v)}
                     >
                       {sections.has("student-attendance") && (
-                        <div className="mt-2 flex flex-col gap-1.5">
-                          <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
-                          <div className="flex flex-col gap-2">
-                            <ReportDatePicker
-                              label={t("reports.ui.dateFrom")}
-                              value={studentDateFrom}
-                              onChange={setStudentDateFrom}
-                            />
-                            <ReportDatePicker
-                              label={t("reports.ui.dateTo")}
-                              value={studentDateTo}
-                              onChange={setStudentDateTo}
-                            />
+                        <div className="mt-2 flex flex-col gap-2">
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
+                            <div className="flex flex-col gap-2">
+                              <ReportDatePicker
+                                label={t("reports.ui.dateFrom")}
+                                value={studentDateFrom}
+                                onChange={setStudentDateFrom}
+                              />
+                              <ReportDatePicker
+                                label={t("reports.ui.dateTo")}
+                                value={studentDateTo}
+                                onChange={setStudentDateTo}
+                              />
+                            </div>
+                          </div>
+                          <div className="flex flex-col gap-1.5">
+                            <span className="text-xs text-foreground/50">{t("reports.ui.attendanceRecordsStatusFilter")}</span>
+                            <div className="flex flex-wrap gap-1.5">
+                              {(["present", "absent", "late", "early_pickup"] as const).map((status) => {
+                                const label = {
+                                  present: t("reports.pdf.statusPresent"),
+                                  absent: t("reports.pdf.statusAbsent"),
+                                  late: t("reports.pdf.statusLate"),
+                                  early_pickup: t("reports.pdf.colPartial"),
+                                }[status];
+                                const active = studentAttendanceStatuses.has(status);
+                                return (
+                                  <button
+                                    key={status}
+                                    type="button"
+                                    onClick={() => {
+                                      setStudentAttendanceStatuses((prev) => {
+                                        const next = new Set(prev);
+                                        next.has(status) ? next.delete(status) : next.add(status);
+                                        return next;
+                                      });
+                                    }}
+                                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium border transition-colors ${
+                                      active
+                                        ? "bg-accent/15 text-accent border-accent/40"
+                                        : "bg-transparent text-foreground/35 border-foreground/15"
+                                    }`}
+                                  >
+                                    {label}
+                                  </button>
+                                );
+                              })}
+                            </div>
                           </div>
                         </div>
                       )}

@@ -99,6 +99,41 @@ export async function fetchStudentNotes(studentId: number, tagFilter?: string): 
   return db.select<Note[]>(sql, params);
 }
 
+export interface StudentAttendanceSummary {
+  present: number;
+  absent: number;
+  late: number;
+  partial: number;
+  total: number;
+}
+
+export async function fetchStudentAttendanceSummary(
+  studentId: number,
+  dateFrom?: string,
+  dateTo?: string
+): Promise<StudentAttendanceSummary> {
+  const db = await Database.load(DB_URL);
+  let sql = `
+    SELECT
+      COUNT(CASE WHEN ar.status = 'present' THEN 1 END) AS present,
+      COUNT(CASE WHEN ar.status = 'absent' THEN 1 END) AS absent,
+      COUNT(CASE WHEN ar.status = 'late' THEN 1 END) AS late,
+      COUNT(CASE WHEN ar.status = 'early_pickup' THEN 1 END) AS partial,
+      COUNT(*) AS total
+    FROM attendance_records ar
+    JOIN schedule_periods sp ON sp.id = ar.schedule_period_id
+    WHERE ar.student_id = ? AND ar.is_deleted = 0 AND sp.is_deleted = 0
+  `;
+  const params: unknown[] = [studentId];
+  if (dateFrom) { sql += " AND ar.date >= ?"; params.push(dateFrom); }
+  if (dateTo) { sql += " AND ar.date <= ?"; params.push(dateTo); }
+
+  interface RawRow { present: number; absent: number; late: number; partial: number; total: number; }
+  const rows = await db.select<RawRow[]>(sql, params);
+  const r = rows[0] ?? { present: 0, absent: 0, late: 0, partial: 0, total: 0 };
+  return { present: r.present, absent: r.absent, late: r.late, partial: r.partial, total: r.total };
+}
+
 export async function fetchStudentAttendanceRecords(
   studentId: number,
   dateFrom?: string,
