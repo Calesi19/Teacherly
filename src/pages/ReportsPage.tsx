@@ -614,16 +614,15 @@ export function ReportsPage({ group }: ReportsPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="shrink-0 border-b border-border pl-3 pr-6 pt-6 pb-4">
-        <h2 className="flex items-center gap-2 text-2xl font-bold">
-          <FileText size={22} />
-          {t("reports.ui.title")}
-        </h2>
-        <p className="mt-0.5 text-sm text-muted">{t("reports.ui.description")}</p>
-      </div>
-
       <div className="flex min-h-0 flex-1">
         <div className="flex w-88 shrink-0 flex-col overflow-y-auto border-r border-border">
+          <div className="shrink-0 border-b border-border px-5 pt-6 pb-4">
+            <h2 className="flex items-center gap-2 text-2xl font-bold">
+              <FileText size={22} />
+              {t("reports.ui.title")}
+            </h2>
+          </div>
+
           <div className="flex flex-col gap-4 p-5">
             <div className="flex gap-1 rounded-lg bg-foreground/5 p-1">
               {(["group", "individual"] as Scope[]).map((value) => (
@@ -993,21 +992,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
           </div>
         </div>
 
-        <div className="flex min-w-0 flex-1 flex-col bg-foreground/[0.03]">
-          <div className="shrink-0 border-b border-border bg-background px-4 py-2">
-            <div className="flex items-center gap-2">
-              <span className="text-xs font-medium uppercase tracking-wide text-foreground/40">
-                {t("reports.ui.preview")}
-              </span>
-              {previewLoading && (
-                <span className="flex items-center gap-1.5 text-xs text-foreground/40">
-                  <span className="h-3 w-3 animate-spin rounded-full border border-foreground/20 border-t-foreground/60" />
-                  {t("reports.ui.previewUpdating")}
-                </span>
-              )}
-            </div>
-          </div>
-
+        <div className="flex h-dvh min-w-0 flex-1 flex-col bg-foreground/[0.03]">
           <div className="relative flex-1">
             {previewUrl && (
               <iframe
