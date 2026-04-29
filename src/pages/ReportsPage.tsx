@@ -709,14 +709,15 @@ export function ReportsPage({ group }: ReportsPageProps) {
     (scope === "group" || selectedStudentId !== null);
   const selectedStudent =
     selectedStudentId !== null
-      ? groupStudents.find((student) => student.id === selectedStudentId) ?? null
+      ? (groupStudents.find((student) => student.id === selectedStudentId) ??
+        null)
       : null;
 
   return (
     <div className="flex h-full flex-col">
       <div className="flex min-h-0 flex-1">
-        <div className="flex w-88 shrink-0 flex-col overflow-y-auto border-r border-border">
-          <div className="shrink-0 border-b border-border px-3 pt-3">
+        <div className="flex w-88 shrink-0 flex-col overflow-y-auto border-r border-border pr-3">
+          <div className="shrink-0 px-3 pt-3">
             <h2 className="text-2xl font-bold">{t("reports.ui.title")}</h2>
           </div>
 
@@ -840,8 +841,11 @@ export function ReportsPage({ group }: ReportsPageProps) {
                     }}
                   >
                     <SelectTrigger className="w-full">
-                      <SelectValue placeholder={t("reports.ui.selectStudentFirst")}>
-                        {selectedStudent?.name ?? t("reports.ui.selectStudentFirst")}
+                      <SelectValue
+                        placeholder={t("reports.ui.selectStudentFirst")}
+                      >
+                        {selectedStudent?.name ??
+                          t("reports.ui.selectStudentFirst")}
                       </SelectValue>
                     </SelectTrigger>
                     <SelectContent>

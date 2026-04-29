@@ -31,7 +31,6 @@ export function TermsOfServicePage({
 
       <div className="mb-6">
         <h2 className="text-2xl font-bold">{t("legal.terms.title")}</h2>
-        <p className="text-sm text-muted mt-0.5">{t("legal.terms.description")}</p>
       </div>
 
       <Surface className="rounded-xl px-5 py-5 overflow-y-auto">
