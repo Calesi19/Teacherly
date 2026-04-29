@@ -19,27 +19,16 @@ import type { LanguagePreference } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
 type ThemePreference = "light" | "dark" | "system";
-type ColorTheme = "default" | "ocean" | "forest" | "sunset" | "rose";
 
 interface SettingsPageProps {
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
-  colorTheme: ColorTheme;
-  onColorThemeChange: (colorTheme: ColorTheme) => void;
   onGoToTermsOfService: () => void;
   onGoToPrivacyPolicy: () => void;
   group?: Group | null;
   onGoToSchedule?: () => void;
   onGoToGroups?: () => void;
 }
-
-const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string }[] = [
-  { id: "default", label: "Default", swatch: "oklch(0.60 0.15 260)" },
-  { id: "ocean", label: "Ocean", swatch: "oklch(0.65 0.17 195)" },
-  { id: "forest", label: "Forest", swatch: "oklch(0.65 0.17 145)" },
-  { id: "sunset", label: "Sunset", swatch: "oklch(0.72 0.18 55)" },
-  { id: "rose", label: "Rose", swatch: "oklch(0.65 0.22 0)" },
-];
 
 function SettingsCard({
   children,
@@ -58,8 +47,6 @@ function SettingsCard({
 export function SettingsPage({
   theme,
   onThemeChange,
-  colorTheme,
-  onColorThemeChange,
   onGoToTermsOfService,
   onGoToPrivacyPolicy,
   group,
@@ -131,33 +118,6 @@ export function SettingsPage({
                   </SelectItem>
                 </SelectContent>
               </Select>
-            </SettingsCard>
-
-            <SettingsCard className="flex items-center justify-between gap-4">
-              <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">{t("settings.colorTheme")}</span>
-                <span className="text-xs text-foreground/50">
-                  {t("settings.colorThemeDescription")}
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                {COLOR_THEMES.map((themeOption) => (
-                  <button
-                    key={themeOption.id}
-                    onClick={() => onColorThemeChange(themeOption.id)}
-                    aria-label={themeOption.label}
-                    title={themeOption.label}
-                    className="h-7 w-7 rounded-full transition-transform hover:scale-110 focus:outline-none"
-                    style={{
-                      backgroundColor: themeOption.swatch,
-                      boxShadow:
-                        colorTheme === themeOption.id
-                          ? `0 0 0 2px var(--background), 0 0 0 4px ${themeOption.swatch}`
-                          : undefined,
-                    }}
-                  />
-                ))}
-              </div>
             </SettingsCard>
           </div>
         </div>

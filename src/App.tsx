@@ -48,7 +48,6 @@ import type { Assignment } from "./types/assignment";
 import {
   RECENT_COMMANDS_KEY,
   APP_NAME,
-  COLOR_THEME_KEY,
   LAST_GROUP_KEY,
   migrateLegacyAppStorage,
 } from "./appConfig";
@@ -74,41 +73,7 @@ const ReportsPage = lazy(() =>
 type ThemePreference = "light" | "dark" | "system";
 const THEME_KEY = "app-theme";
 
-type ColorTheme = "default" | "ocean" | "forest" | "sunset" | "rose";
-
 migrateLegacyAppStorage();
-
-function useAppColorTheme() {
-  const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
-    const s = localStorage.getItem(COLOR_THEME_KEY);
-    if (s === "default" || s === "ocean" || s === "forest" || s === "sunset" || s === "rose")
-      return s;
-    return "forest";
-  });
-
-  const applyColorTheme = useCallback((t: ColorTheme) => {
-    if (t === "default") {
-      document.documentElement.removeAttribute("data-color-theme");
-    } else {
-      document.documentElement.setAttribute("data-color-theme", t);
-    }
-  }, []);
-
-  const setColorTheme = useCallback(
-    (t: ColorTheme) => {
-      localStorage.setItem(COLOR_THEME_KEY, t);
-      setColorThemeState(t);
-      applyColorTheme(t);
-    },
-    [applyColorTheme],
-  );
-
-  useLayoutEffect(() => {
-    applyColorTheme(colorTheme);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-
-  return { colorTheme, setColorTheme };
-}
 
 function useAppTheme() {
   const [theme, setThemeState] = useState<ThemePreference>(() => {
@@ -186,7 +151,6 @@ function AppContent() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { t } = useTranslation();
   const { theme, setTheme } = useAppTheme();
-  const { colorTheme, setColorTheme } = useAppColorTheme();
   const [route, setRoute] = useState<Route>({ page: "groups" });
   const [assignmentDetailDirty, setAssignmentDetailDirty] = useState(false);
   const [pendingSidebarNav, setPendingSidebarNav] = useState<(() => void) | null>(null);
@@ -704,8 +668,6 @@ function AppContent() {
           <SettingsPage
             theme={theme}
             onThemeChange={setTheme}
-            colorTheme={colorTheme}
-            onColorThemeChange={setColorTheme}
             onGoToTermsOfService={goToTermsOfService}
             onGoToPrivacyPolicy={goToPrivacyPolicy}
             group={route.group}
