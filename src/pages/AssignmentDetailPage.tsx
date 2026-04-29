@@ -78,13 +78,27 @@ export function AssignmentDetailPage({
   onGoToAssignments,
   onDirtyChange,
 }: AssignmentDetailPageProps) {
-  const { scores, loading, error, upsertScore, setExempt, setLate, setNote, stats } =
-    useAssignmentDetail(assignment.id, group.id, assignment.max_score);
+  const {
+    scores,
+    loading,
+    error,
+    upsertScore,
+    setExempt,
+    setLate,
+    setNote,
+    stats,
+  } = useAssignmentDetail(assignment.id, group.id, assignment.max_score);
   const { t } = useTranslation();
 
-  const [pendingScores, setPendingScores] = useState<Map<number, string>>(new Map());
-  const [pendingLate, setPendingLate] = useState<Map<number, boolean>>(new Map());
-  const [pendingExempt, setPendingExempt] = useState<Map<number, boolean>>(new Map());
+  const [pendingScores, setPendingScores] = useState<Map<number, string>>(
+    new Map(),
+  );
+  const [pendingLate, setPendingLate] = useState<Map<number, boolean>>(
+    new Map(),
+  );
+  const [pendingExempt, setPendingExempt] = useState<Map<number, boolean>>(
+    new Map(),
+  );
 
   const [noteModal, setNoteModal] = useState<NoteModalState | null>(null);
   const [noteText, setNoteText] = useState("");
@@ -137,7 +151,10 @@ export function AssignmentDetailPage({
     }
   };
 
-  const getDisplayValue = (studentId: number, dbScore: number | null): string => {
+  const getDisplayValue = (
+    studentId: number,
+    dbScore: number | null,
+  ): string => {
     if (pendingScores.has(studentId)) return pendingScores.get(studentId) ?? "";
     return dbScore !== null ? String(dbScore) : "";
   };
@@ -185,12 +202,18 @@ export function AssignmentDetailPage({
   };
 
   return (
-    <div className="flex h-full flex-col px-6 pt-8 pb-6 pl-3">
+    <div className="flex h-full flex-col px-6 pt-8 pb-3 pl-3">
       <Breadcrumb
         items={[
-          { label: t("groups.breadcrumb"), onClick: () => guardedNav(onGoToGroups) },
+          {
+            label: t("groups.breadcrumb"),
+            onClick: () => guardedNav(onGoToGroups),
+          },
           { label: group.name, onClick: () => guardedNav(onGoToStudents) },
-          { label: t("assignments.breadcrumb"), onClick: () => guardedNav(onGoToAssignments) },
+          {
+            label: t("assignments.breadcrumb"),
+            onClick: () => guardedNav(onGoToAssignments),
+          },
           { label: assignment.title },
         ]}
       />
@@ -202,10 +225,11 @@ export function AssignmentDetailPage({
             onClick={() => guardedNav(onGoToAssignments)}
           />
           <div>
-          <h2 className="text-2xl font-bold">{assignment.title}</h2>
-          <p className="mt-0.5 text-sm text-muted">
-            {assignment.period_name} · {assignment.max_score} {t("assignmentDetail.ptsMax")}
-          </p>
+            <h2 className="text-2xl font-bold">{assignment.title}</h2>
+            <p className="mt-0.5 text-sm text-muted">
+              {assignment.period_name} · {assignment.max_score}{" "}
+              {t("assignmentDetail.ptsMax")}
+            </p>
           </div>
         </div>
         {hasChanges && (
@@ -228,7 +252,10 @@ export function AssignmentDetailPage({
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         </div>
       ) : error ? (
-        <div role="alert" className="mb-6 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div
+          role="alert"
+          className="mb-6 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
           {error}
         </div>
       ) : (
@@ -268,7 +295,10 @@ export function AssignmentDetailPage({
                   {stats.distribution.map((distribution) => (
                     <div
                       key={distribution.band}
-                      className={cn(BAND_COLORS[distribution.band].bar, "h-full")}
+                      className={cn(
+                        BAND_COLORS[distribution.band].bar,
+                        "h-full",
+                      )}
                       style={{ width: `${distribution.percentage}%` }}
                       title={`${distribution.band === "N" ? t("assignmentDetail.notScored") : distribution.band}: ${distribution.count} ${distribution.count !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}`}
                     />
@@ -276,14 +306,23 @@ export function AssignmentDetailPage({
                 </div>
                 <div className="flex flex-wrap gap-3">
                   {stats.distribution.map((distribution) => (
-                    <div key={distribution.band} className="flex items-center gap-1">
-                      <span className={cn("text-xs font-semibold", BAND_COLORS[distribution.band].text)}>
+                    <div
+                      key={distribution.band}
+                      className="flex items-center gap-1"
+                    >
+                      <span
+                        className={cn(
+                          "text-xs font-semibold",
+                          BAND_COLORS[distribution.band].text,
+                        )}
+                      >
                         {distribution.band === "N"
                           ? t("assignmentDetail.notScored")
                           : distribution.band}
                       </span>
                       <span className="text-xs text-muted">
-                        {distribution.count} ({Math.round(distribution.percentage)}%)
+                        {distribution.count} (
+                        {Math.round(distribution.percentage)}%)
                       </span>
                     </div>
                   ))}
@@ -298,22 +337,27 @@ export function AssignmentDetailPage({
                 <Table>
                   <TableHeader>
                     <TableRow>
-                      <TableHead>{" "}</TableHead>
+                      <TableHead> </TableHead>
                       <TableHead>{t("students.tableColumns.name")}</TableHead>
-                      <TableHead>{" "}</TableHead>
-                      <TableHead className="text-right">{t("assignmentDetail.scoreColumn")}</TableHead>
+                      <TableHead> </TableHead>
+                      <TableHead className="text-right">
+                        {t("assignmentDetail.scoreColumn")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
                     {scores.map((row) => {
-                      const displayVal = getDisplayValue(row.student_id, row.score);
+                      const displayVal = getDisplayValue(
+                        row.student_id,
+                        row.score,
+                      );
                       const isExtraCredit =
                         row.score !== null && row.score > assignment.max_score;
                       const isExempt = pendingExempt.has(row.student_id)
-                        ? pendingExempt.get(row.student_id) ?? false
+                        ? (pendingExempt.get(row.student_id) ?? false)
                         : row.exempt === 1;
                       const isLate = pendingLate.has(row.student_id)
-                        ? pendingLate.get(row.student_id) ?? false
+                        ? (pendingLate.get(row.student_id) ?? false)
                         : Boolean(row.late);
 
                       return (
@@ -332,7 +376,11 @@ export function AssignmentDetailPage({
                               >
                                 <MoreHorizontal size={14} />
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="start" sideOffset={4} className="w-52">
+                              <DropdownMenuContent
+                                align="start"
+                                sideOffset={4}
+                                className="w-52"
+                              >
                                 <DropdownMenuItem
                                   onClick={() => {
                                     const next = !isLate;
@@ -348,7 +396,10 @@ export function AssignmentDetailPage({
                                       ? t("assignmentDetail.removeLate")
                                       : t("assignmentDetail.markAsLate")}
                                     {isLate ? (
-                                      <Check size={12} className="text-warning" />
+                                      <Check
+                                        size={12}
+                                        className="text-warning"
+                                      />
                                     ) : (
                                       <span className="w-3" />
                                     )}
@@ -369,7 +420,10 @@ export function AssignmentDetailPage({
                                       ? t("assignmentDetail.removeExempt")
                                       : t("assignmentDetail.markAsExempt")}
                                     {isExempt ? (
-                                      <Check size={12} className="text-accent" />
+                                      <Check
+                                        size={12}
+                                        className="text-accent"
+                                      />
                                     ) : (
                                       <span className="w-3" />
                                     )}
@@ -377,7 +431,11 @@ export function AssignmentDetailPage({
                                 </DropdownMenuItem>
                                 <DropdownMenuItem
                                   onClick={() =>
-                                    openNoteModal(row.student_id, row.student_name, row.note)
+                                    openNoteModal(
+                                      row.student_id,
+                                      row.student_name,
+                                      row.note,
+                                    )
                                   }
                                 >
                                   {row.note
@@ -388,7 +446,9 @@ export function AssignmentDetailPage({
                             </DropdownMenu>
                           </TableCell>
                           <TableCell>
-                            <span className="font-medium">{row.student_name}</span>
+                            <span className="font-medium">
+                              {row.student_name}
+                            </span>
                           </TableCell>
                           <TableCell className="w-24">
                             {isExempt ? (
@@ -410,7 +470,10 @@ export function AssignmentDetailPage({
                               )}
                               {row.score !== null && (
                                 <span className="text-sm text-muted">
-                                  {Math.round((row.score / assignment.max_score) * 100)}%
+                                  {Math.round(
+                                    (row.score / assignment.max_score) * 100,
+                                  )}
+                                  %
                                 </span>
                               )}
                               <input
@@ -420,8 +483,12 @@ export function AssignmentDetailPage({
                                 placeholder="—"
                                 value={displayVal}
                                 disabled={isExempt}
-                                onChange={(e) => handleChange(row.student_id, e.target.value)}
-                                onBlur={(e) => handleBlur(row.student_id, e.target.value)}
+                                onChange={(e) =>
+                                  handleChange(row.student_id, e.target.value)
+                                }
+                                onBlur={(e) =>
+                                  handleBlur(row.student_id, e.target.value)
+                                }
                                 className={cn(
                                   "flex h-9 w-20 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none",
                                   isExempt && "cursor-not-allowed opacity-50",
@@ -477,10 +544,19 @@ export function AssignmentDetailPage({
             />
           </div>
           <DialogFooter>
-            <Button type="button" variant="ghost" onClick={closeNoteModal} disabled={savingNote}>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={closeNoteModal}
+              disabled={savingNote}
+            >
               {t("common.cancel")}
             </Button>
-            <Button type="button" onClick={handleNoteSave} disabled={savingNote}>
+            <Button
+              type="button"
+              onClick={handleNoteSave}
+              disabled={savingNote}
+            >
               {savingNote ? (
                 <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
               ) : (
