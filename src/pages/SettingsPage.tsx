@@ -13,6 +13,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import {
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@/components/ui/tabs";
 import { GroupSettingsSection } from "../components/GroupSettingsSection";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { LanguagePreference } from "../i18n/LanguageContext";
@@ -38,7 +44,7 @@ function SettingsCard({
   className?: string;
 }) {
   return (
-    <div className={`rounded-lg border bg-background px-4 py-3 ${className}`}>
+    <div className={`rounded-xl border bg-background px-4 py-3 ${className}`}>
       {children}
     </div>
   );
@@ -54,33 +60,47 @@ export function SettingsPage({
   onGoToGroups,
 }: SettingsPageProps) {
   const { t, languagePreference, setLanguage } = useTranslation();
+  const hasGroupTab = Boolean(group && onGoToSchedule && onGoToGroups);
+  const defaultTab = hasGroupTab ? "group" : "presentation";
 
   return (
     <div className="flex h-full flex-col overflow-y-auto px-6 py-6 pl-3">
       <div className="mb-6">
         <h2 className="text-2xl font-bold">{t("settings.title")}</h2>
-        <p className="mt-0.5 text-sm text-muted">{t("settings.description")}</p>
       </div>
 
-      <div className="flex flex-col gap-6">
-        {group && onGoToSchedule && onGoToGroups && (
-          <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
+      <Tabs defaultValue={defaultTab} className="gap-4">
+        <TabsList variant="line" aria-label="Settings sections" className="flex-wrap">
+          {hasGroupTab && (
+            <TabsTrigger value="group">
               {t("settings.sectionGroup")}
-            </p>
-            <GroupSettingsSection
-              group={group}
-              onGoToSchedule={onGoToSchedule}
-              onGoToGroups={onGoToGroups}
-            />
-          </div>
+            </TabsTrigger>
+          )}
+          <TabsTrigger value="presentation">
+            {t("settings.sectionPresentation")}
+          </TabsTrigger>
+          <TabsTrigger value="general">
+            {t("settings.sectionGeneral")}
+          </TabsTrigger>
+          <TabsTrigger value="legal">
+            {t("settings.sectionLegal")}
+          </TabsTrigger>
+        </TabsList>
+
+        {hasGroupTab && group && onGoToSchedule && onGoToGroups && (
+          <TabsContent value="group">
+            <div className="pt-2">
+              <GroupSettingsSection
+                group={group}
+                onGoToSchedule={onGoToSchedule}
+                onGoToGroups={onGoToGroups}
+              />
+            </div>
+          </TabsContent>
         )}
 
-        <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
-            {t("settings.sectionPresentation")}
-          </p>
-          <div className="flex flex-col gap-2">
+        <TabsContent value="presentation">
+          <div className="flex flex-col gap-3 pt-2">
             <SettingsCard className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-medium">{t("settings.appearance")}</span>
@@ -120,13 +140,10 @@ export function SettingsPage({
               </Select>
             </SettingsCard>
           </div>
-        </div>
+        </TabsContent>
 
-        <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
-            {t("settings.sectionGeneral")}
-          </p>
-          <div className="flex flex-col gap-2">
+        <TabsContent value="general">
+          <div className="flex flex-col gap-3 pt-2">
             <SettingsCard className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-medium">{t("settings.language")}</span>
@@ -156,13 +173,10 @@ export function SettingsPage({
               </Select>
             </SettingsCard>
           </div>
-        </div>
+        </TabsContent>
 
-        <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
-            {t("settings.sectionLegal")}
-          </p>
-          <div className="flex flex-col gap-2">
+        <TabsContent value="legal">
+          <div className="flex flex-col gap-3 pt-2">
             <button type="button" onClick={onGoToTermsOfService} className="w-full text-left">
               <SettingsCard className="transition-colors hover:bg-muted/40">
                 <div className="flex items-center justify-between gap-4">
@@ -201,9 +215,8 @@ export function SettingsPage({
               </SettingsCard>
             </button>
           </div>
-        </div>
-
-      </div>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }
