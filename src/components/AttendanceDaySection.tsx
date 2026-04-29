@@ -293,16 +293,16 @@ export function AttendanceDaySection({
                   <button
                     key={status}
                     onClick={() => handleStatusClick(row, status)}
-                    className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                    className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
                       row.status === status
                         ? status === "present"
-                          ? "bg-success/20 text-success"
+                          ? "border-success/30 bg-success/15 text-success"
                           : status === "absent"
-                            ? "bg-danger/20 text-danger"
+                            ? "border-danger/30 bg-danger/15 text-danger"
                             : status === "late"
-                              ? "bg-warning/20 text-warning"
-                              : "bg-secondary/20 text-secondary-foreground"
-                        : "text-foreground/40 hover:text-foreground hover:bg-foreground/5"
+                              ? "border-warning/30 bg-warning/15 text-warning"
+                              : "border-accent/25 bg-accent/10 text-accent"
+                        : "border-transparent text-foreground/40 hover:bg-foreground/5 hover:text-foreground"
                     }`}
                     aria-pressed={row.status === status}
                   >

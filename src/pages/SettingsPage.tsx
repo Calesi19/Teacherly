@@ -13,12 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { GroupSettingsSection } from "../components/GroupSettingsSection";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { LanguagePreference } from "../i18n/LanguageContext";
@@ -64,32 +59,38 @@ export function SettingsPage({
   const defaultTab = hasGroupTab ? "group" : "presentation";
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto px-6 py-6 pl-3">
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold">{t("settings.title")}</h2>
-      </div>
+    <div className="flex h-full flex-col overflow-y-auto px-6 py-3 pl-3">
+      <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col">
+        <div className="mb-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">{t("settings.title")}</h2>
+          </div>
 
-      <Tabs defaultValue={defaultTab} className="gap-4">
-        <TabsList variant="line" aria-label="Settings sections" className="flex-wrap">
-          {hasGroupTab && (
-            <TabsTrigger value="group">
-              {t("settings.sectionGroup")}
+          <TabsList
+            variant="line"
+            aria-label="Settings sections"
+            className="flex-wrap"
+          >
+            {hasGroupTab && (
+              <TabsTrigger value="group">
+                {t("settings.sectionGroup")}
+              </TabsTrigger>
+            )}
+            <TabsTrigger value="presentation">
+              {t("settings.sectionPresentation")}
             </TabsTrigger>
-          )}
-          <TabsTrigger value="presentation">
-            {t("settings.sectionPresentation")}
-          </TabsTrigger>
-          <TabsTrigger value="general">
-            {t("settings.sectionGeneral")}
-          </TabsTrigger>
-          <TabsTrigger value="legal">
-            {t("settings.sectionLegal")}
-          </TabsTrigger>
-        </TabsList>
+            <TabsTrigger value="general">
+              {t("settings.sectionGeneral")}
+            </TabsTrigger>
+            <TabsTrigger value="legal">
+              {t("settings.sectionLegal")}
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
         {hasGroupTab && group && onGoToSchedule && onGoToGroups && (
-          <TabsContent value="group">
-            <div className="pt-2">
+          <TabsContent value="group" className="pt-4">
+            <div>
               <GroupSettingsSection
                 group={group}
                 onGoToSchedule={onGoToSchedule}
@@ -99,11 +100,13 @@ export function SettingsPage({
           </TabsContent>
         )}
 
-        <TabsContent value="presentation">
-          <div className="flex flex-col gap-3 pt-2">
+        <TabsContent value="presentation" className="pt-4">
+          <div className="flex flex-col gap-3">
             <SettingsCard className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">{t("settings.appearance")}</span>
+                <span className="text-sm font-medium">
+                  {t("settings.appearance")}
+                </span>
                 <span className="text-xs text-foreground/50">
                   {t("settings.appearanceDescription")}
                 </span>
@@ -142,11 +145,13 @@ export function SettingsPage({
           </div>
         </TabsContent>
 
-        <TabsContent value="general">
-          <div className="flex flex-col gap-3 pt-2">
+        <TabsContent value="general" className="pt-4">
+          <div className="flex flex-col gap-3">
             <SettingsCard className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
-                <span className="text-sm font-medium">{t("settings.language")}</span>
+                <span className="text-sm font-medium">
+                  {t("settings.language")}
+                </span>
                 <span className="text-xs text-foreground/50">
                   {t("settings.languageDescription")}
                 </span>
@@ -175,9 +180,13 @@ export function SettingsPage({
           </div>
         </TabsContent>
 
-        <TabsContent value="legal">
-          <div className="flex flex-col gap-3 pt-2">
-            <button type="button" onClick={onGoToTermsOfService} className="w-full text-left">
+        <TabsContent value="legal" className="pt-4">
+          <div className="flex flex-col gap-3">
+            <button
+              type="button"
+              onClick={onGoToTermsOfService}
+              className="w-full text-left"
+            >
               <SettingsCard className="transition-colors hover:bg-muted/40">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-3">
@@ -185,18 +194,27 @@ export function SettingsPage({
                       <FileText size={16} />
                     </div>
                     <div className="flex min-w-0 flex-col gap-0.5">
-                      <span className="text-sm font-medium">{t("settings.termsOfService")}</span>
+                      <span className="text-sm font-medium">
+                        {t("settings.termsOfService")}
+                      </span>
                       <span className="text-xs text-foreground/50">
                         {t("settings.termsOfServiceDescription")}
                       </span>
                     </div>
                   </div>
-                  <ChevronRight size={16} className="shrink-0 text-foreground/40" />
+                  <ChevronRight
+                    size={16}
+                    className="shrink-0 text-foreground/40"
+                  />
                 </div>
               </SettingsCard>
             </button>
 
-            <button type="button" onClick={onGoToPrivacyPolicy} className="w-full text-left">
+            <button
+              type="button"
+              onClick={onGoToPrivacyPolicy}
+              className="w-full text-left"
+            >
               <SettingsCard className="transition-colors hover:bg-muted/40">
                 <div className="flex items-center justify-between gap-4">
                   <div className="flex min-w-0 items-center gap-3">
@@ -204,13 +222,18 @@ export function SettingsPage({
                       <Shield size={16} />
                     </div>
                     <div className="flex min-w-0 flex-col gap-0.5">
-                      <span className="text-sm font-medium">{t("settings.privacyPolicy")}</span>
+                      <span className="text-sm font-medium">
+                        {t("settings.privacyPolicy")}
+                      </span>
                       <span className="text-xs text-foreground/50">
                         {t("settings.privacyPolicyDescription")}
                       </span>
                     </div>
                   </div>
-                  <ChevronRight size={16} className="shrink-0 text-foreground/40" />
+                  <ChevronRight
+                    size={16}
+                    className="shrink-0 text-foreground/40"
+                  />
                 </div>
               </SettingsCard>
             </button>

@@ -128,7 +128,7 @@ export function Sidebar({
   );
 
   return (
-    <aside className="h-screen rounded-[28px] bg-neutral-200 p-3 dark:bg-neutral-900">
+    <aside className="h-screen rounded-[14px] bg-neutral-200 p-3 dark:bg-neutral-900">
       <motion.div
         animate={{ width: isOpen ? 248 : 72 }}
         transition={{ type: "spring", bounce: 0.28, duration: 0.75 }}
@@ -193,7 +193,7 @@ export function Sidebar({
 
         <motion.div
           transition={{ duration: 0.35 }}
-          className="min-h-0 flex-1 rounded-[22px] p-2"
+          className="min-h-0 flex-1 rounded-[14px] p-2"
         >
           <div
             className="flex h-full flex-col gap-1"
@@ -210,7 +210,7 @@ export function Sidebar({
                   onMouseEnter={() => setHoveredIndex(index)}
                   onClick={item.onClick}
                   className={cn(
-                    "relative flex items-center overflow-hidden rounded-lg text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                    "relative flex items-center overflow-hidden rounded-md text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
                     item.active
                       ? "text-accent"
                       : "text-neutral-700 dark:text-neutral-200/70",
@@ -220,7 +220,7 @@ export function Sidebar({
                   <AnimatePresence>
                     {item.active && (
                       <motion.span
-                        className="absolute inset-0 z-0 rounded-lg bg-neutral-200 dark:bg-neutral-700"
+                        className="absolute inset-0 z-0 rounded-md bg-neutral-200 dark:bg-neutral-700"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -235,7 +235,7 @@ export function Sidebar({
                       !item.disabled && (
                         <motion.span
                           layoutId="sidebar-hover-bg"
-                          className="absolute inset-0 z-0 rounded-lg bg-neutral-200/60 dark:bg-neutral-900/50"
+                          className="absolute inset-0 z-0 rounded-md bg-neutral-200/60 dark:bg-neutral-900/50"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
