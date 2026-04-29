@@ -207,7 +207,7 @@ export function CommandPalette({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[140] flex items-start justify-center bg-background/55 px-4 pt-[12vh] backdrop-blur-md sm:px-6"
+      className="fixed inset-0 z-[140] flex items-center justify-center bg-black/10 px-4 backdrop-blur-sm dark:bg-black/40 sm:px-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -217,19 +217,19 @@ export function CommandPalette({
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        className="w-full max-w-2xl overflow-hidden rounded-[28px] border border-border/70 bg-surface/86 text-foreground shadow-[0_30px_80px_rgba(15,23,42,0.18)] ring-1 ring-border/35 backdrop-blur-2xl"
+        className="w-full max-w-2xl overflow-hidden rounded-[28px] border border-black/5 bg-neutral-100 text-foreground shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-white/8 dark:bg-neutral-900"
         onKeyDown={handleKeyDown}
       >
         <h2 id={headingId} className="sr-only">
           {t("commandPalette.title")}
         </h2>
 
-        <div className="border-b border-border/60 px-5 py-4">
+        <div className="border-b border-black/5 px-4 py-4 dark:border-white/8">
           <label htmlFor="command-palette-search" className="sr-only">
             {t("commandPalette.searchLabel")}
           </label>
-          <div className="flex items-center gap-3 rounded-2xl border border-border bg-background/70 px-4 py-3 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
-            <Search size={18} className="text-muted" />
+          <div className="flex items-center gap-3 rounded-2xl bg-neutral-200 px-4 py-3 dark:bg-neutral-800">
+            <Search size={18} className="text-neutral-500 dark:text-neutral-400" />
             <input
               id="command-palette-search"
               ref={inputRef}
@@ -246,40 +246,36 @@ export function CommandPalette({
               aria-autocomplete="list"
               role="combobox"
               placeholder={t("commandPalette.placeholder")}
-              className="w-full bg-transparent text-[15px] text-foreground outline-none placeholder:text-muted"
+              className="w-full bg-transparent text-[15px] text-foreground outline-none placeholder:text-neutral-500 dark:placeholder:text-neutral-400"
             />
-            <div className="hidden items-center gap-1 rounded-full border border-border bg-surface-secondary/85 px-2.5 py-1 text-[11px] font-medium tracking-wide text-muted sm:flex">
-              <span>{navigator.platform.toLowerCase().includes("mac") ? "⌘" : "Ctrl"}</span>
-              <span>K</span>
-            </div>
           </div>
         </div>
 
-        <div className="max-h-[28rem] overflow-y-auto px-3 py-3">
+        <div className="max-h-[30rem] overflow-y-auto px-3 py-3">
           {!query.trim() ? (
             recentItems.length === 0 ? (
-              <div className="flex min-h-44 flex-col items-center justify-center rounded-[22px] border border-dashed border-border bg-surface-secondary/45 px-6 text-center">
-                <p className="text-sm font-medium text-foreground">
+              <div className="flex min-h-44 flex-col items-center justify-center rounded-[22px] bg-neutral-200/80 px-6 text-center dark:bg-neutral-800/80">
+                <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                   {t("commandPalette.emptyState")}
                 </p>
-                <p className="mt-2 text-xs text-muted">
+                <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
                   {t("commandPalette.emptyStateHint")}
                 </p>
               </div>
             ) : (
               <div>
-                <div className="mb-3 rounded-[22px] border border-dashed border-border bg-surface-secondary/45 px-4 py-3">
-                  <p className="text-sm font-medium text-foreground">
+                <div className="mb-3 rounded-[22px] bg-neutral-200/80 px-4 py-3 dark:bg-neutral-800/80">
+                  <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     {t("commandPalette.emptyState")}
                   </p>
-                  <p className="mt-1 text-xs text-muted">
+                  <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                     {t("commandPalette.emptyStateHint")}
                   </p>
                 </div>
                 <div role="listbox" id={listboxId} aria-label={t("commandPalette.resultsLabel")}>
                   {groupedItems.map((group) => (
                     <section key={group.category} className="mb-3 last:mb-0">
-                      <div className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+                      <div className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500 dark:text-neutral-400">
                         {categoryLabel(group.category)}
                       </div>
                       <div className="space-y-1">
@@ -298,19 +294,13 @@ export function CommandPalette({
                               aria-selected={isActive}
                               onMouseEnter={() => setHighlightedIndex(itemIndex)}
                               onClick={() => handleSelect(item)}
-                              className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
+                              className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
                                 isActive
-                                  ? "bg-accent text-accent-foreground shadow-[0_18px_40px_rgba(15,23,42,0.18)]"
-                                  : "text-foreground hover:bg-surface-secondary/80"
+                                  ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
+                                  : "text-neutral-700 hover:bg-neutral-200/60 dark:text-neutral-300/70 dark:hover:bg-neutral-800/70"
                               }`}
                             >
-                              <span
-                                className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border ${
-                                  isActive
-                                    ? "border-accent-foreground/15 bg-accent-foreground/10"
-                                    : "border-border bg-background/70 text-accent"
-                                }`}
-                              >
+                              <span className="flex h-5 w-5 shrink-0 items-center justify-center">
                                 {item.icon}
                               </span>
                               <span className="min-w-0 flex-1">
@@ -321,8 +311,8 @@ export function CommandPalette({
                                   <span
                                     className={`mt-0.5 block truncate text-xs ${
                                       isActive
-                                        ? "text-accent-foreground/75"
-                                        : "text-muted"
+                                        ? "text-neutral-600 dark:text-neutral-300"
+                                        : "text-neutral-500 dark:text-neutral-400"
                                     }`}
                                   >
                                     {item.subtitle}
@@ -332,7 +322,9 @@ export function CommandPalette({
                               <ArrowRight
                                 size={16}
                                 className={
-                                  isActive ? "text-accent-foreground/75" : "text-muted"
+                                  isActive
+                                    ? "text-neutral-600 dark:text-neutral-300"
+                                    : "text-neutral-400 dark:text-neutral-500"
                                 }
                               />
                             </button>
@@ -345,11 +337,11 @@ export function CommandPalette({
               </div>
             )
           ) : query.trim() && filteredItems.length === 0 ? (
-            <div className="flex min-h-44 flex-col items-center justify-center rounded-[22px] border border-dashed border-border bg-surface-secondary/45 px-6 text-center">
-              <p className="text-sm font-medium text-foreground">
+            <div className="flex min-h-44 flex-col items-center justify-center rounded-[22px] bg-neutral-200/80 px-6 text-center dark:bg-neutral-800/80">
+              <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                 {t("commandPalette.noResults")}
               </p>
-              <p className="mt-2 text-xs text-muted">
+              <p className="mt-2 text-xs text-neutral-500 dark:text-neutral-400">
                 {t("commandPalette.noResultsHint", { query })}
               </p>
             </div>
@@ -357,7 +349,7 @@ export function CommandPalette({
             <div role="listbox" id={listboxId} aria-label={t("commandPalette.resultsLabel")}>
               {groupedItems.map((group) => (
                 <section key={group.category} className="mb-3 last:mb-0">
-                  <div className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-muted">
+                  <div className="px-3 pb-2 pt-1 text-[11px] font-semibold uppercase tracking-[0.16em] text-neutral-500 dark:text-neutral-400">
                     {categoryLabel(group.category)}
                   </div>
                   <div className="space-y-1">
@@ -376,19 +368,13 @@ export function CommandPalette({
                           aria-selected={isActive}
                           onMouseEnter={() => setHighlightedIndex(itemIndex)}
                           onClick={() => handleSelect(item)}
-                          className={`flex w-full items-center gap-3 rounded-2xl px-3 py-3 text-left transition ${
+                          className={`flex w-full items-center gap-3 rounded-xl px-4 py-3 text-left transition ${
                             isActive
-                              ? "bg-accent text-accent-foreground shadow-[0_18px_40px_rgba(15,23,42,0.18)]"
-                              : "text-foreground hover:bg-surface-secondary/80"
+                              ? "bg-neutral-200 text-neutral-900 dark:bg-neutral-800 dark:text-neutral-100"
+                              : "text-neutral-700 hover:bg-neutral-200/60 dark:text-neutral-300/70 dark:hover:bg-neutral-800/70"
                           }`}
                         >
-                          <span
-                            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border ${
-                              isActive
-                                ? "border-accent-foreground/15 bg-accent-foreground/10"
-                                : "border-border bg-background/70 text-accent"
-                            }`}
-                          >
+                          <span className="flex h-5 w-5 shrink-0 items-center justify-center">
                             {item.icon}
                           </span>
                           <span className="min-w-0 flex-1">
@@ -399,8 +385,8 @@ export function CommandPalette({
                               <span
                                 className={`mt-0.5 block truncate text-xs ${
                                   isActive
-                                    ? "text-accent-foreground/75"
-                                    : "text-muted"
+                                    ? "text-neutral-600 dark:text-neutral-300"
+                                    : "text-neutral-500 dark:text-neutral-400"
                                 }`}
                               >
                                 {item.subtitle}
@@ -410,7 +396,9 @@ export function CommandPalette({
                           <ArrowRight
                             size={16}
                             className={
-                              isActive ? "text-accent-foreground/75" : "text-muted"
+                              isActive
+                                ? "text-neutral-600 dark:text-neutral-300"
+                                : "text-neutral-400 dark:text-neutral-500"
                             }
                           />
                         </button>

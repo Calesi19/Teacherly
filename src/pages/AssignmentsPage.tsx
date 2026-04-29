@@ -18,7 +18,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { cn } from "@/lib/utils";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { AddAssignmentModal } from "../components/AddAssignmentModal";
@@ -94,57 +93,56 @@ export function AssignmentsPage({
         ]}
       />
 
-      <div className="mb-1">
-        <h2 className="text-2xl font-bold">{t("assignments.title")}</h2>
-      </div>
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div>
+          <h2 className="text-2xl font-bold">{t("assignments.title")}</h2>
+        </div>
 
-      <div className="mt-4 mb-2 flex flex-wrap gap-2">
-        {(["all", ...TAG_OPTIONS] as string[]).map((tag) => (
-          <Badge
-            key={tag}
-            variant={selectedTag === tag ? "default" : "outline"}
-            className={cn(
-              "cursor-pointer transition-transform active:scale-95",
-              selectedTag === tag ? "" : "text-foreground/60 hover:text-foreground",
-            )}
-            onClick={() => setSelectedTag(tag)}
-          >
-            {tagLabels[tag]}
-          </Badge>
-        ))}
-      </div>
-
-      <div className="mt-4 mb-4 flex items-center justify-between">
-        {!loading && assignments.length > 0 && (
-          <div className="flex items-center gap-2">
-            <Input
-              placeholder={t("assignments.searchPlaceholder")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
-            />
-            {periods.length > 0 && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+          {!loading && assignments.length > 0 && (
+            <>
+              <Input
+                placeholder={t("assignments.searchPlaceholder")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full sm:w-64"
+              />
+              {periods.length > 0 && (
+                <Select
+                  value={selectedPeriod}
+                  onValueChange={(value) => setSelectedPeriod(value ?? "all")}
+                >
+                  <SelectTrigger className="w-full sm:w-44">
+                    <SelectValue placeholder={t("assignments.allPeriods")} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">{t("assignments.allPeriods")}</SelectItem>
+                    {periods.map((period) => (
+                      <SelectItem key={period} value={period}>
+                        {period}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
               <Select
-                value={selectedPeriod}
-                onValueChange={(value) => setSelectedPeriod(value ?? "all")}
+                value={selectedTag}
+                onValueChange={(value) => setSelectedTag(value ?? "all")}
               >
-                <SelectTrigger className="w-44">
-                  <SelectValue placeholder={t("assignments.allPeriods")} />
+                <SelectTrigger className="w-full sm:w-44">
+                  <SelectValue placeholder={t("assignments.tags.all")} />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="all">{t("assignments.allPeriods")}</SelectItem>
-                  {periods.map((period) => (
-                    <SelectItem key={period} value={period}>
-                      {period}
+                  {(["all", ...TAG_OPTIONS] as string[]).map((tag) => (
+                    <SelectItem key={tag} value={tag}>
+                      {tagLabels[tag]}
                     </SelectItem>
                   ))}
                 </SelectContent>
               </Select>
-            )}
-          </div>
-        )}
+            </>
+          )}
 
-        <div className="ml-auto">
           <AddAssignmentModal groupId={group.id} onAdd={addAssignment} />
         </div>
       </div>

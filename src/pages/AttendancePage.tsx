@@ -72,38 +72,37 @@ export function AttendancePage({
         ]}
       />
 
-      <div className="flex items-start justify-between mb-2">
+      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div>
           <h2 className="text-2xl font-bold">{t("attendance.title")}</h2>
         </div>
-      </div>
 
-      <div className="mb-4 flex items-end gap-2">
-        <AppDatePicker
-          label={t("attendance.date")}
-          value={date}
-          onChange={setDate}
-          minValue={group.start_date ?? undefined}
-          maxValue={group.end_date ?? undefined}
-          placeholder={t("attendance.date")}
-          className="w-full max-w-sm"
-        />
-        {!loading &&
-          !error &&
-          (isCanceled ? (
-            <Button variant="secondary" size="sm" onClick={uncancelDay}>
-              {t("attendance.restoreDay")}
-            </Button>
-          ) : (
-            <Button
-              variant="secondary"
-              size="sm"
-              onClick={() => cancelDay()}
-              disabled={periodsForDay.length === 0}
-            >
-              {t("attendance.cancelDay")}
-            </Button>
-          ))}
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          <AppDatePicker
+            value={date}
+            onChange={setDate}
+            minValue={group.start_date ?? undefined}
+            maxValue={group.end_date ?? undefined}
+            placeholder={t("attendance.date")}
+            className="w-full max-w-sm"
+          />
+          {!loading &&
+            !error &&
+            (isCanceled ? (
+              <Button variant="secondary" size="sm" onClick={uncancelDay}>
+                {t("attendance.restoreDay")}
+              </Button>
+            ) : (
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => cancelDay()}
+                disabled={periodsForDay.length === 0}
+              >
+                {t("attendance.cancelDay")}
+              </Button>
+            ))}
+        </div>
       </div>
 
       {loading && (

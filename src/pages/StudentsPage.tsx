@@ -216,38 +216,40 @@ export function StudentsPage({
           ]}
         />
 
-        <div className="mb-1">
-          <h2 className="text-2xl font-bold">{t("students.title")}</h2>
-        </div>
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+          <div>
+            <h2 className="text-2xl font-bold">{t("students.title")}</h2>
+          </div>
 
-        <div className="mt-6 mb-4 flex items-center justify-between">
-          {!loading && students.length > 0 && (
-            <Input
-              placeholder={t("students.searchPlaceholder")}
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="max-w-xs"
-            />
-          )}
-
-          <div className="ml-auto flex items-center gap-2">
-            {hasSelection ? (
-              <>
-                <span className="text-sm text-muted">
-                  {selectedStudents.length} {t("students.selected")}
-                </span>
-                <Button variant="secondary" size="sm" onClick={() => setBulkNoteOpen(true)}>
-                  {t("students.addNote")}
-                </Button>
-                <Button variant="ghost" size="sm" onClick={() => setSelectedKeys(new Set())}>
-                  {t("students.clear")}
-                </Button>
-              </>
-            ) : (
-              <Button size="sm" onClick={() => setAddStudentOpen(true)}>
-                {t("students.addStudent")}
-              </Button>
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-end">
+            {!loading && students.length > 0 && (
+              <Input
+                placeholder={t("students.searchPlaceholder")}
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full sm:w-64"
+              />
             )}
+
+            <div className="flex items-center gap-2 sm:justify-end">
+              {hasSelection ? (
+                <>
+                  <span className="text-sm text-muted">
+                    {selectedStudents.length} {t("students.selected")}
+                  </span>
+                  <Button variant="secondary" size="sm" onClick={() => setBulkNoteOpen(true)}>
+                    {t("students.addNote")}
+                  </Button>
+                  <Button variant="ghost" size="sm" onClick={() => setSelectedKeys(new Set())}>
+                    {t("students.clear")}
+                  </Button>
+                </>
+              ) : (
+                <Button size="sm" onClick={() => setAddStudentOpen(true)}>
+                  {t("students.addStudent")}
+                </Button>
+              )}
+            </div>
           </div>
         </div>
 
