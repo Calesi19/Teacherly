@@ -21,9 +21,10 @@ import {
   DateField,
   Calendar,
   Checkbox,
+  Tooltip,
 } from "@heroui/react";
 import type { Selection } from "@heroui/react";
-import { Inbox } from "lucide-react";
+import { Cake, GraduationCap, Inbox } from "lucide-react";
 import { parseDate } from "@internationalized/date";
 import type { DateValue } from "@internationalized/date";
 import Database from "@tauri-apps/plugin-sql";
@@ -35,6 +36,15 @@ import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 
 const DB_URL = "sqlite:teacherly.db";
+
+function isBirthdaySoon(birthdate: string): boolean {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const birth = new Date(birthdate);
+  const next = new Date(today.getFullYear(), birth.getMonth(), birth.getDate());
+  if (next < today) next.setFullYear(today.getFullYear() + 1);
+  return (next.getTime() - today.getTime()) / 86_400_000 <= 30;
+}
 
 interface StudentsPageProps {
   group: Group;
@@ -238,6 +248,7 @@ export function StudentsPage({
                   <TableColumn>
                     {t("students.tableColumns.birthdate")}
                   </TableColumn>
+                  <TableColumn>{" "}</TableColumn>
                   <TableColumn>
                     {t("students.tableColumns.studentId")}
                   </TableColumn>
@@ -299,6 +310,30 @@ export function StudentsPage({
                               return `${birth.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} (${age})`;
                             })()
                           : "—"}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-1">
+                          {s.has_special_education === 1 && (
+                            <Tooltip>
+                              <Tooltip.Trigger>
+                                <span className="inline-flex items-center justify-center size-5 rounded-full bg-accent/10 text-accent">
+                                  <GraduationCap size={10} />
+                                </span>
+                              </Tooltip.Trigger>
+                              <Tooltip.Content>{t("students.badges.specialEducation")}</Tooltip.Content>
+                            </Tooltip>
+                          )}
+                          {s.birthdate && isBirthdaySoon(s.birthdate) && (
+                            <Tooltip>
+                              <Tooltip.Trigger>
+                                <span className="inline-flex items-center justify-center size-5 rounded-full bg-warning/10 text-warning">
+                                  <Cake size={10} />
+                                </span>
+                              </Tooltip.Trigger>
+                              <Tooltip.Content>{t("students.badges.birthdaySoon")}</Tooltip.Content>
+                            </Tooltip>
+                          )}
+                        </div>
                       </TableCell>
                       <TableCell className="text-sm text-foreground/40">
                         {s.student_number || "—"}

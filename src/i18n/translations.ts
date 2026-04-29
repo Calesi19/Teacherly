@@ -159,6 +159,10 @@ const en = {
       birthdate: "Birthdate",
       studentId: "Student ID",
     },
+    badges: {
+      specialEducation: "Special Education",
+      birthdaySoon: "Birthday within 30 days",
+    },
     addStudentModal: {
       title: "Add Student",
       nameLabel: "Student Name *",
@@ -556,6 +560,7 @@ const en = {
       homework: "Homework",
       extraCredit: "Extra Credit",
       project: "Project",
+      other: "Other",
     },
     addModal: {
       title: "New Assignment",
@@ -1164,6 +1169,10 @@ const es: typeof en = {
       birthdate: "Fecha de nacimiento",
       studentId: "ID del estudiante",
     },
+    badges: {
+      specialEducation: "Educación Especial",
+      birthdaySoon: "Cumpleaños en los próximos 30 días",
+    },
     addStudentModal: {
       title: "Agregar estudiante",
       nameLabel: "Nombre del estudiante *",
@@ -1564,6 +1573,7 @@ const es: typeof en = {
       homework: "Tarea",
       extraCredit: "Crédito Extra",
       project: "Proyecto",
+      other: "Otro",
     },
     addModal: {
       title: "Nueva tarea",

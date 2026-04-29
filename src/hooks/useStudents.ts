@@ -28,7 +28,7 @@ export function useStudents(
       setLoading(true);
       const db = await Database.load(DB_URL);
       const rows = await db.select<Student[]>(
-        "SELECT id, group_id, name, gender, birthdate, student_number, enrollment_date, enrollment_end_date, created_at FROM students WHERE group_id = ? AND is_deleted = 0 ORDER BY name ASC",
+        "SELECT s.id, s.group_id, s.name, s.gender, s.birthdate, s.student_number, s.enrollment_date, s.enrollment_end_date, s.created_at, ss.has_special_education FROM students s LEFT JOIN student_services ss ON ss.student_id = s.id AND ss.is_deleted = 0 WHERE s.group_id = ? AND s.is_deleted = 0 ORDER BY s.name ASC",
         [groupId]
       );
       setStudents(rows);

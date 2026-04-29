@@ -19,7 +19,7 @@ interface AddAssignmentModalProps {
   onAdd: (input: NewAssignmentInput) => Promise<void>;
 }
 
-const TAG_OPTIONS: AssignmentTag[] = ["Exam", "Quiz", "Homework", "Extra Credit", "Project"];
+const TAG_OPTIONS: AssignmentTag[] = ["Exam", "Quiz", "Homework", "Extra Credit", "Project", "Other"];
 
 const emptyForm = { title: "", description: "", max_score: "", period_name: "", tag: "" };
 
@@ -78,6 +78,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
     Homework: t("assignments.tags.homework"),
     "Extra Credit": t("assignments.tags.extraCredit"),
     Project: t("assignments.tags.project"),
+    Other: t("assignments.tags.other"),
   };
 
   return (

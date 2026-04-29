@@ -1,4 +1,4 @@
-export type AssignmentTag = "Exam" | "Quiz" | "Homework" | "Extra Credit" | "Project";
+export type AssignmentTag = "Exam" | "Quiz" | "Homework" | "Extra Credit" | "Project" | "Other";
 
 export interface Assignment {
   id: number;
