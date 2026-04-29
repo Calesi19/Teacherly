@@ -121,15 +121,16 @@ export function Sidebar({
   );
 
   return (
-    <aside className="h-screen rounded-[14px] bg-neutral-200 p-3 dark:bg-neutral-900">
+    <aside className="h-screen p-3">
       <motion.div
         animate={{ width: 248 }}
         transition={{ type: "spring", bounce: 0.28, duration: 0.75 }}
-        className="flex h-full flex-col overflow-hidden rounded-[14px] bg-neutral-100 p-2 text-foreground transition-colors duration-700 ease-out dark:bg-neutral-800"
+        className="relative flex h-full flex-col overflow-hidden rounded-[18px] border border-white/30 bg-white/32 p-2 text-foreground shadow-[0_24px_60px_rgba(15,23,42,0.16),inset_0_1px_0_rgba(255,255,255,0.5),inset_0_-1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl transition-colors duration-700 ease-out dark:border-white/8 dark:bg-white/4 dark:shadow-[0_28px_72px_rgba(0,0,0,0.42),inset_0_1px_0_rgba(255,255,255,0.08),inset_0_-1px_0_rgba(255,255,255,0.03)]"
       >
+        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.24),rgba(255,255,255,0.08)_28%,rgba(255,255,255,0.03)_100%)] dark:bg-[linear-gradient(180deg,rgba(255,255,255,0.04),rgba(255,255,255,0.015)_32%,rgba(255,255,255,0.005)_100%)]" />
         <motion.div
           transition={{ duration: 0.35 }}
-          className="min-h-0 flex-1 rounded-[14px] p-2 pt-1"
+          className="relative min-h-0 flex-1 rounded-[16px] p-2 pt-1"
         >
           <div
             className="flex h-full flex-col gap-1"
@@ -146,7 +147,7 @@ export function Sidebar({
                   onMouseEnter={() => setHoveredIndex(index)}
                   onClick={item.onClick}
                   className={cn(
-                    "relative flex items-center overflow-hidden rounded-md text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                    "relative flex items-center overflow-hidden rounded-md border border-transparent text-left transition-[color,border-color,background-color,box-shadow] duration-250 disabled:cursor-not-allowed disabled:opacity-40",
                     item.active
                       ? "text-accent"
                       : "text-neutral-700 dark:text-neutral-200/70",
@@ -156,7 +157,7 @@ export function Sidebar({
                   <AnimatePresence>
                     {item.active && (
                       <motion.span
-                        className="absolute inset-0 z-0 rounded-sm bg-neutral-200 dark:bg-neutral-700"
+                        className="absolute inset-0 z-0 rounded-md border border-white/35 bg-white/36 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_10px_24px_rgba(37,99,235,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-white/8 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(0,0,0,0.18)]"
                         initial={{ opacity: 0 }}
                         animate={{ opacity: 1 }}
                         exit={{ opacity: 0 }}
@@ -171,7 +172,7 @@ export function Sidebar({
                       !item.disabled && (
                         <motion.span
                           layoutId="sidebar-hover-bg"
-                          className="absolute inset-0 z-0 rounded-md bg-neutral-200/60 dark:bg-neutral-900/50"
+                          className="absolute inset-0 z-0 rounded-md border border-white/22 bg-white/20 backdrop-blur-lg dark:border-white/8 dark:bg-white/5"
                           initial={{ opacity: 0 }}
                           animate={{ opacity: 1 }}
                           exit={{ opacity: 0 }}
@@ -210,7 +211,7 @@ export function Sidebar({
               onMouseEnter={() => setHoveredIndex(navItems.length)}
               onClick={settingsItem.onClick}
               className={cn(
-                "relative mt-auto flex min-h-12 items-center overflow-hidden rounded-md px-3 text-left transition-colors",
+                "relative mt-auto flex min-h-12 items-center overflow-hidden rounded-md border border-transparent px-3 text-left transition-[color,border-color,background-color,box-shadow] duration-250",
                 settingsItem.active
                   ? "text-accent"
                   : "text-neutral-700 dark:text-neutral-200/70",
@@ -219,7 +220,7 @@ export function Sidebar({
               <AnimatePresence>
                 {settingsItem.active && (
                   <motion.span
-                    className="absolute inset-0 z-0 rounded-sm bg-neutral-200 dark:bg-neutral-700"
+                    className="absolute inset-0 z-0 rounded-md border border-white/35 bg-white/36 shadow-[inset_0_1px_0_rgba(255,255,255,0.45),0_10px_24px_rgba(37,99,235,0.12)] backdrop-blur-xl dark:border-white/10 dark:bg-white/8 dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_10px_24px_rgba(0,0,0,0.18)]"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
@@ -232,7 +233,7 @@ export function Sidebar({
                 {hoveredIndex === navItems.length && !settingsItem.active && (
                   <motion.span
                     layoutId="sidebar-hover-bg"
-                    className="absolute inset-0 z-0 rounded-md bg-neutral-200/60 dark:bg-neutral-900/50"
+                    className="absolute inset-0 z-0 rounded-md border border-white/22 bg-white/20 backdrop-blur-lg dark:border-white/8 dark:bg-white/5"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}

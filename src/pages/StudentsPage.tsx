@@ -211,7 +211,7 @@ export function StudentsPage({
 
   return (
     <TooltipProvider>
-      <div className="flex h-full flex-col px-6 pt-6 pb-6 pl-3">
+      <div className="flex h-full flex-col px-6 pt-6 pb-3 pl-3">
         <Breadcrumb
           items={[
             { label: t("groups.breadcrumb"), onClick: onGoToGroups },

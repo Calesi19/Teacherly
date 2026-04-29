@@ -704,7 +704,10 @@ function AppContent() {
       <div className="flex h-screen overflow-hidden">
         {showSidebar && (
           <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
-            <SheetContent side="left" className="p-0 w-64">
+            <SheetContent
+              side="left"
+              className="w-72 border-0 bg-transparent p-2 shadow-none"
+            >
               <Sidebar {...sidebarProps} onClose={() => setDrawerOpen(false)} />
             </SheetContent>
           </Sheet>
