@@ -20,7 +20,7 @@ import {
   FolderOpenIcon,
   GraduationScrollIcon,
   InboxIcon,
-  LegalDocument01Icon,
+  LicenseIcon,
   Loading01Icon,
   MinusSignIcon,
   MonitorDotIcon,
@@ -77,7 +77,7 @@ export const ChevronRight = createIcon(ArrowRight01Icon, "ChevronRight");
 export const Check = createIcon(Tick02Icon, "Check");
 export const CheckCircle = createIcon(CheckmarkCircle03Icon, "CheckCircle");
 export const ClipboardCheck = createIcon(CheckListIcon, "ClipboardCheck");
-export const FileText = createIcon(LegalDocument01Icon, "FileText");
+export const FileText = createIcon(LicenseIcon, "FileText");
 export const FolderOpen = createIcon(FolderOpenIcon, "FolderOpen");
 export const GraduationCap = createIcon(GraduationScrollIcon, "GraduationCap");
 export const Inbox = createIcon(InboxIcon, "Inbox");
