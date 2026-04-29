@@ -1,5 +1,6 @@
 import { Surface } from "@heroui/react";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { PageBackButton } from "../components/PageBackButton";
 import { useTranslation } from "../i18n/LanguageContext";
 
 interface TermsOfServicePageProps {
@@ -29,7 +30,11 @@ export function TermsOfServicePage({
         ]}
       />
 
-      <div className="mb-6">
+      <div className="mb-6 flex items-center gap-3">
+        <PageBackButton
+          label={t("common.back")}
+          onClick={onGoToSettings}
+        />
         <h2 className="text-2xl font-bold">{t("legal.terms.title")}</h2>
       </div>
 

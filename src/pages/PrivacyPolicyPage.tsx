@@ -1,5 +1,6 @@
 import { Surface } from "@heroui/react";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { PageBackButton } from "../components/PageBackButton";
 import { useTranslation } from "../i18n/LanguageContext";
 
 interface PrivacyPolicyPageProps {
@@ -29,11 +30,17 @@ export function PrivacyPolicyPage({
         ]}
       />
 
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold">{t("legal.privacy.title")}</h2>
-        <p className="text-sm text-muted mt-0.5">
-          {t("legal.privacy.description")}
-        </p>
+      <div className="mb-6 flex items-start gap-3">
+        <PageBackButton
+          label={t("common.back")}
+          onClick={onGoToSettings}
+        />
+        <div>
+          <h2 className="text-2xl font-bold">{t("legal.privacy.title")}</h2>
+          <p className="mt-0.5 text-sm text-muted">
+            {t("legal.privacy.description")}
+          </p>
+        </div>
       </div>
 
       <Surface className="rounded-xl px-5 py-5 overflow-y-auto">

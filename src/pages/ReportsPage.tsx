@@ -1249,23 +1249,44 @@ function SectionToggle({
 }: SectionToggleProps) {
   return (
     <div
+      role="button"
+      tabIndex={0}
       className={cn(
-        "rounded-lg border bg-background px-4 py-3 transition-all",
+        "cursor-pointer rounded-lg border bg-background px-4 py-3 transition-all",
         checked ? "ring-1 ring-accent/40" : "opacity-80",
       )}
+      onClick={() => onChange(!checked)}
+      onKeyDown={(event) => {
+        if (event.key === "Enter" || event.key === " ") {
+          event.preventDefault();
+          onChange(!checked);
+        }
+      }}
+      aria-pressed={checked}
+      aria-label={label}
     >
-      <label htmlFor={id} className="flex cursor-pointer items-start gap-3">
+      <div className="flex w-full items-start gap-3 text-left">
         <Checkbox
+          id={id}
           checked={checked}
-          onCheckedChange={(value) => onChange(value === true)}
-          aria-label={label}
+          onCheckedChange={() => undefined}
+          aria-hidden="true"
+          className="pointer-events-none"
         />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-medium">{label}</p>
           <p className="mt-0.5 text-xs text-foreground/50">{description}</p>
         </div>
-      </label>
-      {children ? <div className="mt-2 ml-7">{children}</div> : null}
+      </div>
+      {children ? (
+        <div
+          className="mt-2 ml-7"
+          onClick={(event) => event.stopPropagation()}
+          onKeyDown={(event) => event.stopPropagation()}
+        >
+          {children}
+        </div>
+      ) : null}
     </div>
   );
 }

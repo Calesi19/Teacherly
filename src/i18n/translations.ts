@@ -3,6 +3,7 @@ export type Language = "en" | "es";
 const en = {
   common: {
     add: "Add",
+    back: "Back",
     cancel: "Cancel",
     save: "Save",
     delete: "Delete",
@@ -1029,6 +1030,7 @@ const en = {
 const es: typeof en = {
   common: {
     add: "Agregar",
+    back: "Atrás",
     cancel: "Cancelar",
     save: "Guardar",
     delete: "Eliminar",

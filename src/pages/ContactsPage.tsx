@@ -22,6 +22,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useContacts } from "../hooks/useContacts";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { PageBackButton } from "../components/PageBackButton";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
@@ -61,11 +62,31 @@ function CopyButton({ value }: { value: string }) {
       aria-label="Copy to clipboard"
     >
       {copied ? (
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <polyline points="20 6 9 17 4 12" />
         </svg>
       ) : (
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
@@ -115,7 +136,9 @@ function ContactForm({
   return (
     <div className="flex flex-col gap-4 py-4">
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${prefix}-contact-name`}>{t(`contacts.${prefix}Modal.nameLabel`)}</Label>
+        <Label htmlFor={`${prefix}-contact-name`}>
+          {t(`contacts.${prefix}Modal.nameLabel`)}
+        </Label>
         <Input
           id={`${prefix}-contact-name`}
           value={form.name}
@@ -136,7 +159,9 @@ function ContactForm({
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${prefix}-contact-phone`}>{t(`contacts.${prefix}Modal.phoneLabel`)}</Label>
+        <Label htmlFor={`${prefix}-contact-phone`}>
+          {t(`contacts.${prefix}Modal.phoneLabel`)}
+        </Label>
         <Input
           id={`${prefix}-contact-phone`}
           value={form.phone}
@@ -145,7 +170,9 @@ function ContactForm({
         />
       </div>
       <div className="flex flex-col gap-1.5">
-        <Label htmlFor={`${prefix}-contact-email`}>{t(`contacts.${prefix}Modal.emailLabel`)}</Label>
+        <Label htmlFor={`${prefix}-contact-email`}>
+          {t(`contacts.${prefix}Modal.emailLabel`)}
+        </Label>
         <Input
           id={`${prefix}-contact-email`}
           type="email"
@@ -170,7 +197,10 @@ function ContactForm({
           activeClassName="bg-warning/20 text-warning border-transparent"
           inactiveClassName="text-foreground/40 hover:text-foreground"
           onClick={() =>
-            setForm({ ...form, is_emergency_contact: !form.is_emergency_contact })
+            setForm({
+              ...form,
+              is_emergency_contact: !form.is_emergency_contact,
+            })
           }
         >
           {t(`contacts.${prefix}Modal.primaryEmergency`)}
@@ -187,7 +217,9 @@ export function ContactsPage({
   onGoToStudents,
   onGoToStudentProfile,
 }: ContactsPageProps) {
-  const { contacts, loading, error, addContact, updateContact } = useContacts(student.id);
+  const { contacts, loading, error, addContact, updateContact } = useContacts(
+    student.id,
+  );
   const { t } = useTranslation();
   const [addOpen, setAddOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
@@ -267,10 +299,15 @@ export function ContactsPage({
         ]}
       />
 
-      <div className="mb-6 flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl font-bold">{t("contacts.title")}</h2>
-          <p className="text-sm text-muted">{student.name}</p>
+      <div className="mb-6 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <PageBackButton
+            label={t("common.back")}
+            onClick={onGoToStudentProfile}
+          />
+          <div>
+            <h2 className="text-2xl font-bold">{t("contacts.title")}</h2>
+          </div>
         </div>
         <Button size="sm" onClick={() => setAddOpen(true)}>
           {t("contacts.addContact")}
@@ -284,7 +321,10 @@ export function ContactsPage({
       )}
 
       {error && (
-        <div role="alert" className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div
+          role="alert"
+          className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
           {error}
         </div>
       )}
@@ -307,9 +347,13 @@ export function ContactsPage({
                 <TableBody>
                   {contacts.map((contact) => (
                     <TableRow key={contact.id}>
-                      <TableCell className="font-medium">{contact.name}</TableCell>
+                      <TableCell className="font-medium">
+                        {contact.name}
+                      </TableCell>
                       <TableCell>
-                        {contact.relationship ?? <span className="text-foreground/30">—</span>}
+                        {contact.relationship ?? (
+                          <span className="text-foreground/30">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         {contact.phone ? (
@@ -363,8 +407,12 @@ export function ContactsPage({
               {contacts.length === 0 && (
                 <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
                   <Inbox className="size-6 text-muted" />
-                  <span className="text-sm font-medium text-muted">{t("contacts.noContactsYet")}</span>
-                  <span className="text-xs text-foreground/40">{t("contacts.noContactsHint")}</span>
+                  <span className="text-sm font-medium text-muted">
+                    {t("contacts.noContactsYet")}
+                  </span>
+                  <span className="text-xs text-foreground/40">
+                    {t("contacts.noContactsHint")}
+                  </span>
                 </div>
               )}
             </div>
@@ -383,7 +431,12 @@ export function ContactsPage({
             <DialogHeader>
               <DialogTitle>{t("contacts.editModal.title")}</DialogTitle>
             </DialogHeader>
-            <ContactForm form={editForm} setForm={setEditForm} prefix="edit" t={t} />
+            <ContactForm
+              form={editForm}
+              setForm={setEditForm}
+              prefix="edit"
+              t={t}
+            />
             {editError && <p className="text-sm text-danger">{editError}</p>}
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={closeEditDialog}>

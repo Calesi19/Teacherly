@@ -29,6 +29,7 @@ import { cn } from "@/lib/utils";
 import { useAddresses } from "../hooks/useAddresses";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { PageBackButton } from "../components/PageBackButton";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
@@ -252,10 +253,16 @@ export function AddressesPage({
           ]}
         />
 
-        <div className="mb-6 flex items-center justify-between">
-          <div>
+        <div className="mb-6 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <PageBackButton
+              label={t("common.back")}
+              onClick={onGoToStudentProfile}
+            />
+            <div>
             <h2 className="text-2xl font-bold">{t("addresses.title")}</h2>
             <p className="text-sm text-muted">{student.name}</p>
+            </div>
           </div>
           <Button size="sm" onClick={() => setAddOpen(true)}>
             {t("addresses.addAddress")}

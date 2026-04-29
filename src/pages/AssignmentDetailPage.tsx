@@ -26,6 +26,7 @@ import {
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { ConfirmModal } from "../components/ConfirmModal";
+import { PageBackButton } from "../components/PageBackButton";
 import { useAssignmentDetail } from "../hooks/useAssignmentDetail";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
@@ -195,11 +196,17 @@ export function AssignmentDetailPage({
       />
 
       <div className="mb-6 flex items-start justify-between gap-4">
-        <div>
+        <div className="flex items-start gap-3">
+          <PageBackButton
+            label={t("common.back")}
+            onClick={() => guardedNav(onGoToAssignments)}
+          />
+          <div>
           <h2 className="text-2xl font-bold">{assignment.title}</h2>
           <p className="mt-0.5 text-sm text-muted">
             {assignment.period_name} · {assignment.max_score} {t("assignmentDetail.ptsMax")}
           </p>
+          </div>
         </div>
         {hasChanges && (
           <Button size="sm" onClick={() => setSaveModalOpen(true)}>
