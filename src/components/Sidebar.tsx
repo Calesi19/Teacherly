@@ -1,12 +1,16 @@
-import { Button } from "@/components/ui/button";
+import { useMemo, useState } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  Users,
-  ClipboardCheck,
-  BookOpen,
-  FileText,
-  Settings,
   ArrowLeftRight,
+  BookOpen,
+  ClipboardCheck,
+  FileText,
+  PanelLeftClose,
+  PanelLeftOpen,
+  Settings,
+  Users,
 } from "lucide-react";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
@@ -26,7 +30,12 @@ interface SidebarProps {
 const STUDENTS_PAGES = new Set([
   "students",
   "student-profile",
+  "student-info",
   "contacts",
+  "addresses",
+  "student-services",
+  "student-accommodations",
+  "student-observations",
   "visitations",
   "notes",
 ]);
@@ -53,99 +62,222 @@ export function Sidebar({
   onClose,
 }: SidebarProps) {
   const { t } = useTranslation();
+  const [hoveredIndex, setHoveredIndex] = useState<number | null>(null);
+  const [isOpen, setIsOpen] = useState(true);
 
   const nav = (action: () => void) => () => {
     action();
     onClose?.();
   };
 
-  const navItems = [
-    {
-      id: "students",
-      label: t("sidebar.students"),
-      icon: <Users size={16} />,
-      active: STUDENTS_PAGES.has(currentPage),
-      onClick: nav(onGoToStudents),
-    },
-    {
-      id: "attendance",
-      label: t("sidebar.attendance"),
-      icon: <ClipboardCheck size={16} />,
-      active: currentPage === "attendance",
-      onClick: nav(onGoToAttendance),
-    },
-    {
-      id: "assignments",
-      label: t("sidebar.assignments"),
-      icon: <BookOpen size={16} />,
-      active:
-        currentPage === "assignments" || currentPage === "assignment-detail",
-      onClick: nav(onGoToAssignments),
-    },
-    {
-      id: "reports",
-      label: t("sidebar.reports"),
-      icon: <FileText size={16} />,
-      active: currentPage === "reports",
-      onClick: nav(onGoToReports),
-    },
-  ];
+  const navItems = useMemo(
+    () => [
+      {
+        id: "students",
+        label: t("sidebar.students"),
+        icon: Users,
+        active: STUDENTS_PAGES.has(currentPage),
+        onClick: nav(onGoToStudents),
+        disabled: !currentGroup,
+      },
+      {
+        id: "attendance",
+        label: t("sidebar.attendance"),
+        icon: ClipboardCheck,
+        active: currentPage === "attendance",
+        onClick: nav(onGoToAttendance),
+        disabled: !currentGroup,
+      },
+      {
+        id: "assignments",
+        label: t("sidebar.assignments"),
+        icon: BookOpen,
+        active:
+          currentPage === "assignments" || currentPage === "assignment-detail",
+        onClick: nav(onGoToAssignments),
+        disabled: !currentGroup,
+      },
+      {
+        id: "reports",
+        label: t("sidebar.reports"),
+        icon: FileText,
+        active: currentPage === "reports",
+        onClick: nav(onGoToReports),
+        disabled: !currentGroup,
+      },
+      {
+        id: "change-group",
+        label: t("sidebar.changeGroup"),
+        icon: ArrowLeftRight,
+        active: false,
+        onClick: nav(onGoToGroups),
+        disabled: false,
+      },
+      {
+        id: "settings",
+        label: t("sidebar.settings"),
+        icon: Settings,
+        active: currentPage === "settings",
+        onClick: nav(onGoToSettings),
+        disabled: false,
+      },
+    ],
+    [
+      currentGroup,
+      currentPage,
+      onGoToAssignments,
+      onGoToAttendance,
+      onGoToGroups,
+      onGoToReports,
+      onGoToSettings,
+      onGoToStudents,
+      t,
+    ],
+  );
 
   return (
-    <aside className="bg-surface-secondary h-screen w-64 flex flex-col">
-      <div
-        data-tauri-drag-region
-        className="h-12 shrink-0 bg-surface-secondary/80 backdrop-blur"
-      />
-
-      <div className="p-5 pb-4 flex items-center gap-3">
-        <div>
-          <h1 className="text-xl font-bold text-accent">
-            {currentGroup?.name ?? "Select Group"}
-          </h1>
-          <p className="text-xs text-muted">
-            {formatMonthYear(currentGroup?.start_date ?? undefined)} -{" "}
-            {formatMonthYear(currentGroup?.end_date ?? undefined)}
-          </p>
-        </div>
-      </div>
-
-      <nav className="flex-1 px-2 py-1">
-        <ul className="flex flex-col gap-0.5">
-          {navItems.map((item) => (
-            <li key={item.id}>
-              <Button
-                variant={item.active ? "secondary" : "ghost"}
-                className="w-full justify-start gap-2"
-                disabled={!currentGroup}
-                onClick={item.onClick}
+    <aside className="h-screen bg-transparent p-3">
+      <motion.div
+        animate={{ width: isOpen ? 248 : 72 }}
+        transition={{ type: "spring", bounce: 0.28, duration: 0.75 }}
+        className="flex h-full flex-col overflow-hidden rounded-[28px] bg-neutral-200/85 p-2 text-neutral-800 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur dark:bg-neutral-900/85 dark:text-neutral-100"
+      >
+        <div
+          data-tauri-drag-region
+          className={cn(
+            "flex h-12 shrink-0 items-center px-2",
+            isOpen ? "justify-between gap-3" : "justify-center",
+          )}
+        >
+          <AnimatePresence>
+            {isOpen && (
+              <motion.button
+                type="button"
+                initial={{ opacity: 0, scale: 0.85 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.85 }}
+                transition={{ duration: 0.18 }}
+                onClick={nav(onGoToGroups)}
+                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-black/5 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-white/8 dark:hover:text-white"
+                aria-label={t("sidebar.changeGroup")}
               >
-                {item.icon}
-                {item.label}
-              </Button>
-            </li>
-          ))}
-        </ul>
-      </nav>
+                <ArrowLeftRight size={16} />
+              </motion.button>
+            )}
+          </AnimatePresence>
 
-      <div className="px-2 pb-3 border-t border-border/40 pt-2 flex flex-col gap-0.5">
-        <Button
-          variant="ghost"
-          className="w-full justify-start gap-2"
-          onClick={nav(onGoToGroups)}
+          <button
+            type="button"
+            onClick={() => setIsOpen((open) => !open)}
+            className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-black/5 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-white/8 dark:hover:text-white"
+            aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
+          >
+            {isOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+          </button>
+        </div>
+
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, filter: "blur(4px)" }}
+              animate={{ opacity: 1, filter: "blur(0px)" }}
+              exit={{ opacity: 0, filter: "blur(4px)" }}
+              transition={{ duration: 0.18, ease: "easeOut" }}
+              className="px-3 pb-4 pt-1"
+            >
+              <p className="truncate text-[1.05rem] font-semibold tracking-tight text-neutral-950 dark:text-white">
+                {currentGroup?.name ?? "Select Group"}
+              </p>
+              <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
+                {currentGroup
+                  ? `${formatMonthYear(currentGroup.start_date ?? undefined)} - ${formatMonthYear(
+                      currentGroup.end_date ?? undefined,
+                    )}`
+                  : t("commandPalette.items.selectAGroup")}
+              </p>
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        <motion.div
+          animate={{
+            backgroundColor: isOpen ? "rgba(250, 250, 250, 0.65)" : "rgba(0, 0, 0, 0)",
+          }}
+          transition={{ duration: 0.35 }}
+          className="min-h-0 flex-1 rounded-[22px] p-2 dark:bg-neutral-800/80"
         >
-          <ArrowLeftRight size={16} />
-          {t("sidebar.changeGroup")}
-        </Button>
-        <Button
-          variant={currentPage === "settings" ? "secondary" : "ghost"}
-          className="w-full justify-start gap-2"
-          onClick={nav(onGoToSettings)}
-        >
-          <Settings size={16} />
-          {t("sidebar.settings")}
-        </Button>
-      </div>
+          <div
+            className="flex h-full flex-col gap-1"
+            onMouseLeave={() => setHoveredIndex(null)}
+          >
+            {navItems.map((item, index) => {
+              const Icon = item.icon;
+
+              return (
+                <button
+                  key={item.id}
+                  type="button"
+                  disabled={item.disabled}
+                  onMouseEnter={() => setHoveredIndex(index)}
+                  onClick={item.onClick}
+                  className={cn(
+                    "relative flex items-center overflow-hidden rounded-xl text-left transition-opacity disabled:cursor-not-allowed disabled:opacity-40",
+                    isOpen ? "min-h-12 px-3" : "min-h-12 justify-center px-0",
+                  )}
+                >
+                  <AnimatePresence>
+                    {item.active && (
+                      <motion.span
+                        className="absolute inset-0 z-0 rounded-xl bg-neutral-200 dark:bg-neutral-700"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.18, ease: "easeOut" }}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  <AnimatePresence>
+                    {hoveredIndex === index && !item.active && !item.disabled && (
+                      <motion.span
+                        layoutId="sidebar-hover-bg"
+                        className="absolute inset-0 z-0 rounded-xl bg-neutral-200/60 dark:bg-neutral-900/50"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                      />
+                    )}
+                  </AnimatePresence>
+
+                  <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
+                    <Icon size={18} />
+                  </span>
+
+                  <AnimatePresence>
+                    {isOpen && (
+                      <motion.span
+                        initial={{ opacity: 0, x: -8 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        exit={{ opacity: 0, x: -8 }}
+                        transition={{ duration: 0.16 }}
+                        className={cn(
+                          "relative z-10 truncate pr-3 text-sm tracking-tight",
+                          item.active
+                            ? "font-medium text-neutral-950 dark:text-white"
+                            : "text-neutral-700 dark:text-neutral-200/70",
+                        )}
+                      >
+                        {item.label}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </button>
+              );
+            })}
+          </div>
+        </motion.div>
+      </motion.div>
     </aside>
   );
 }
