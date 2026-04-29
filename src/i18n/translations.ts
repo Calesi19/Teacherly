@@ -139,6 +139,9 @@ const en = {
       deleteDescription: "This will permanently delete the group and remove it from your list. This action cannot be undone.",
       deleteConfirmLabel: 'Type "{phrase}" to confirm',
       confirmPhrase: "confirm deletion",
+      savedConfirmation: "Changes saved.",
+      scheduleDescription: "Manage course periods for this group.",
+      scheduleManage: "Manage",
     },
   },
   students: {
@@ -610,6 +613,7 @@ const en = {
   settings: {
     title: "Settings",
     description: "App preferences and configuration",
+    sectionGroup: "Group",
     sectionPresentation: "Presentation",
     sectionGeneral: "General",
     sectionLegal: "Legal",
@@ -1148,6 +1152,9 @@ const es: typeof en = {
       deleteDescription: "Esto eliminará el grupo permanentemente y lo quitará de tu lista. Esta acción no se puede deshacer.",
       deleteConfirmLabel: 'Escribe "{phrase}" para confirmar',
       confirmPhrase: "confirmar eliminación",
+      savedConfirmation: "Cambios guardados.",
+      scheduleDescription: "Administrar períodos de clase para este grupo.",
+      scheduleManage: "Administrar",
     },
   },
   students: {
@@ -1623,6 +1630,7 @@ const es: typeof en = {
   settings: {
     title: "Configuración",
     description: "Preferencias y configuración de la app",
+    sectionGroup: "Grupo",
     sectionPresentation: "Presentación",
     sectionGeneral: "General",
     sectionLegal: "Legal",

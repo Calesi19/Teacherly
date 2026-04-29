@@ -31,13 +31,11 @@ import { AccommodationsPage } from "./pages/AccommodationsPage";
 import { ObservationsPage } from "./pages/ObservationsPage";
 import { VisitationsPage } from "./pages/VisitationsPage";
 import { NotesPage } from "./pages/NotesPage";
-import { DashboardPage } from "./pages/DashboardPage";
 import { SchedulePage } from "./pages/SchedulePage";
 import { AttendancePage } from "./pages/AttendancePage";
 import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { AssignmentDetailPage } from "./pages/AssignmentDetailPage";
 import { ConfirmModal } from "./components/ConfirmModal";
-import { EditGroupPage } from "./pages/EditGroupPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ReportsPage } from "./pages/ReportsPage";
 import { TermsOfServicePage } from "./pages/TermsOfServicePage";
@@ -57,7 +55,6 @@ import {
   BookOpen,
   ClipboardCheck,
   FileText,
-  LayoutDashboard,
   Monitor,
   Moon,
   Settings,
@@ -150,7 +147,6 @@ function useAppTheme() {
 
 type Route =
   | { page: "groups" }
-  | { page: "dashboard"; group: Group }
   | { page: "students"; group: Group }
   | { page: "student-profile"; group: Group; student: Student }
   | { page: "student-info"; group: Group; student: Student }
@@ -165,7 +161,6 @@ type Route =
   | { page: "attendance"; group: Group }
   | { page: "assignments"; group: Group }
   | { page: "assignment-detail"; group: Group; assignment: Assignment }
-  | { page: "group-edit"; group: Group }
   | { page: "reports"; group: Group }
   | { page: "settings"; group: Group | null }
   | { page: "terms-of-service" }
@@ -195,8 +190,6 @@ function AppContent() {
     setCurrentGroup(null);
     setRoute({ page: "groups" });
   };
-  const goToDashboard = (group: Group) =>
-    setRoute({ page: "dashboard", group });
   const goToStudents = (group: Group) => setRoute({ page: "students", group });
   const goToStudentProfile = (group: Group, student: Student) =>
     setRoute({ page: "student-profile", group, student });
@@ -219,7 +212,6 @@ function AppContent() {
     setRoute({ page: "assignments", group });
   const goToAssignmentDetail = (group: Group, assignment: Assignment) =>
     setRoute({ page: "assignment-detail", group, assignment });
-  const goToEditGroup = (group: Group) => setRoute({ page: "group-edit", group });
   const goToReports = (group: Group) => setRoute({ page: "reports", group });
   const goToSettings = (group: Group | null = null) => setRoute({ page: "settings", group });
   const goToTermsOfService = () => setRoute({ page: "terms-of-service" });
@@ -265,7 +257,7 @@ function AppContent() {
     const group = groups.find((g) => g.id === Number(savedId));
     if (group) {
       setCurrentGroup(group);
-      setRoute({ page: "dashboard", group });
+      setRoute({ page: "students", group });
     }
   }, [groupsLoading, groups]);
 
@@ -304,8 +296,6 @@ function AppContent() {
     localStorage.setItem(LAST_GROUP_KEY, String(group.id));
     setCurrentGroup(group);
     switch (route.page) {
-      case "dashboard":
-        return goToDashboard(group);
       case "attendance":
         return goToAttendance(group);
       case "assignments":
@@ -326,14 +316,11 @@ function AppContent() {
 
   const sidebarProps = {
     currentPage:
-      route.page === "group-edit"
-        ? "dashboard"
-        : route.page === "terms-of-service" || route.page === "privacy-policy"
-          ? "settings"
-          : route.page,
+      route.page === "terms-of-service" || route.page === "privacy-policy"
+        ? "settings"
+        : route.page,
     currentGroup,
     onSelectGroup: handleSelectGroup,
-    onGoToDashboard: () => guardSidebarNav(() => currentGroup && goToDashboard(currentGroup)),
     onGoToStudents: () => guardSidebarNav(() => currentGroup && goToStudents(currentGroup)),
     onGoToAttendance: () => guardSidebarNav(() => currentGroup && goToAttendance(currentGroup)),
     onGoToAssignments: () => guardSidebarNav(() => currentGroup && goToAssignments(currentGroup)),
@@ -399,15 +386,6 @@ function AppContent() {
     if (!currentGroup) return items;
 
     items.unshift(
-      {
-        id: "page:dashboard",
-        title: t("sidebar.dashboard"),
-        subtitle: currentGroup.name,
-        keywords: ["home", "overview"],
-        category: "pages",
-        icon: <LayoutDashboard size={18} />,
-        perform: () => goToDashboard(currentGroup),
-      },
       {
         id: "page:students",
         title: t("sidebar.students"),
@@ -488,7 +466,6 @@ function AppContent() {
     goToAssignmentDetail,
     goToAssignments,
     goToAttendance,
-    goToDashboard,
     goToGroups,
     goToReports,
     goToSchedule,
@@ -525,29 +502,15 @@ function AppContent() {
             currentGroup={currentGroup}
             onSelectGroup={(c) => {
               setCurrentGroup(c);
-              goToDashboard(c);
+              goToStudents(c);
             }}
             onGoToSettings={goToSettings}
-          />
-        );
-      case "dashboard":
-        return (
-          <DashboardPage
-            group={route.group}
-            onGoToGroups={goToGroups}
-            onGoToStudents={() => goToStudents(route.group)}
-            onGoToSchedule={() => goToSchedule(route.group)}
-            onGoToAttendance={() => goToAttendance(route.group)}
-            onGoToAssignments={() => goToAssignments(route.group)}
-            onGoToEditGroup={() => goToEditGroup(route.group)}
-            onGoToReports={() => goToReports(route.group)}
           />
         );
       case "students":
         return (
           <StudentsPage
             group={route.group}
-            onGoToDashboard={() => goToDashboard(route.group)}
             onGoToGroups={goToGroups}
             onSelectStudent={(s) => goToStudentProfile(route.group, s)}
           />
@@ -558,7 +521,6 @@ function AppContent() {
             student={route.student}
             group={route.group}
             onGoToGroups={goToGroups}
-            onGoToDashboard={() => goToDashboard(route.group)}
             onGoToStudents={() => goToStudents(route.group)}
             onGoToContacts={() => goToContacts(route.group, route.student)}
             onGoToAddresses={() => goToAddresses(route.group, route.student)}
@@ -677,7 +639,7 @@ function AppContent() {
           <SchedulePage
             group={route.group}
             onGoToGroups={goToGroups}
-            onGoToEditGroup={() => goToEditGroup(route.group)}
+            onGoToSettings={() => goToSettings(route.group)}
           />
         );
       case "attendance":
@@ -709,15 +671,6 @@ function AppContent() {
             onDirtyChange={setAssignmentDetailDirty}
           />
         );
-      case "group-edit":
-        return (
-          <EditGroupPage
-            group={route.group}
-            onGoToGroups={changeGroup}
-            onGoToDashboard={() => goToDashboard(route.group)}
-            onGoToSchedule={() => goToSchedule(route.group)}
-          />
-        );
       case "reports":
         return <ReportsPage group={route.group} />;
       case "settings":
@@ -729,6 +682,9 @@ function AppContent() {
             onColorThemeChange={setColorTheme}
             onGoToTermsOfService={goToTermsOfService}
             onGoToPrivacyPolicy={goToPrivacyPolicy}
+            group={route.group}
+            onGoToSchedule={route.group ? () => goToSchedule(route.group!) : undefined}
+            onGoToGroups={changeGroup}
           />
         );
       case "terms-of-service":

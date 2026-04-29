@@ -2,6 +2,8 @@ import { Select, ListBox, Surface } from "@heroui/react";
 import { Sun, Moon, Monitor, ChevronRight, FileText, Shield } from "lucide-react";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { LanguagePreference } from "../i18n/LanguageContext";
+import { GroupSettingsSection } from "../components/GroupSettingsSection";
+import type { Group } from "../types/group";
 
 type ThemePreference = "light" | "dark" | "system";
 type ColorTheme = "default" | "ocean" | "forest" | "sunset" | "rose";
@@ -13,10 +15,13 @@ interface SettingsPageProps {
   onColorThemeChange: (colorTheme: ColorTheme) => void;
   onGoToTermsOfService: () => void;
   onGoToPrivacyPolicy: () => void;
+  group?: Group | null;
+  onGoToSchedule?: () => void;
+  onGoToGroups?: () => void;
 }
 
 const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string }[] = [
-  { id: "default", label: "Default", swatch: "oklch(0.6204 0.195 253.83)" },
+  { id: "default", label: "Default", swatch: "oklch(0.60 0.15 260)" },
   { id: "ocean",   label: "Ocean",   swatch: "oklch(0.65 0.17 195)" },
   { id: "forest",  label: "Forest",  swatch: "oklch(0.65 0.17 145)" },
   { id: "sunset",  label: "Sunset",  swatch: "oklch(0.72 0.18 55)" },
@@ -30,17 +35,31 @@ export function SettingsPage({
   onColorThemeChange,
   onGoToTermsOfService,
   onGoToPrivacyPolicy,
+  group,
+  onGoToSchedule,
+  onGoToGroups,
 }: SettingsPageProps) {
   const { t, languagePreference, setLanguage } = useTranslation();
 
   return (
-    <div className="p-6 flex flex-col h-full">
+    <div className="p-6 flex flex-col h-full overflow-y-auto">
       <div className="mb-6">
         <h2 className="text-2xl font-bold">{t("settings.title")}</h2>
         <p className="text-sm text-muted mt-0.5">{t("settings.description")}</p>
       </div>
 
       <div className="flex flex-col gap-6">
+        {group && onGoToSchedule && onGoToGroups && (
+          <div className="flex flex-col gap-3">
+            <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionGroup")}</p>
+            <GroupSettingsSection
+              group={group}
+              onGoToSchedule={onGoToSchedule}
+              onGoToGroups={onGoToGroups}
+            />
+          </div>
+        )}
+
         <div className="flex flex-col gap-3">
           <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionPresentation")}</p>
           <div className="flex flex-col gap-2">

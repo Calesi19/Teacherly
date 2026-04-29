@@ -5,7 +5,6 @@ import {
   BookOpen,
   FileText,
   Settings,
-  LayoutDashboard,
   ArrowLeftRight,
 } from "lucide-react";
 import { useTranslation } from "../i18n/LanguageContext";
@@ -15,7 +14,6 @@ interface SidebarProps {
   currentPage: string;
   currentGroup: Group | null;
   onSelectGroup: (group: Group) => void;
-  onGoToDashboard: () => void;
   onGoToStudents: () => void;
   onGoToAttendance: () => void;
   onGoToAssignments: () => void;
@@ -46,7 +44,6 @@ const formatMonthYear = (dateString: string | undefined) => {
 export function Sidebar({
   currentPage,
   currentGroup,
-  onGoToDashboard,
   onGoToStudents,
   onGoToAttendance,
   onGoToAssignments,
@@ -63,13 +60,6 @@ export function Sidebar({
   };
 
   const navItems = [
-    {
-      id: "dashboard",
-      label: t("sidebar.dashboard"),
-      icon: <LayoutDashboard size={16} />,
-      active: currentPage === "dashboard",
-      onPress: nav(onGoToDashboard),
-    },
     {
       id: "students",
       label: t("sidebar.students"),

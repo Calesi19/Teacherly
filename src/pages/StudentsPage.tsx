@@ -48,14 +48,12 @@ function isBirthdaySoon(birthdate: string): boolean {
 
 interface StudentsPageProps {
   group: Group;
-  onGoToDashboard: () => void;
   onGoToGroups: () => void;
   onSelectStudent: (student: Student) => void;
 }
 
 export function StudentsPage({
   group,
-  onGoToDashboard,
   onGoToGroups,
   onSelectStudent,
 }: StudentsPageProps) {
@@ -155,7 +153,7 @@ export function StudentsPage({
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
-          { label: group.name, onClick: onGoToDashboard },
+          { label: group.name },
           { label: t("attendance.studentsHeader") },
         ]}
       />

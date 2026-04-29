@@ -49,7 +49,6 @@ interface StudentProfilePageProps {
   student: Student;
   group: Group;
   onGoToGroups: () => void;
-  onGoToDashboard: () => void;
   onGoToStudents: () => void;
   onGoToStudentInfo: () => void;
   onGoToContacts: () => void;
@@ -140,7 +139,6 @@ export function StudentProfilePage({
   student,
   group,
   onGoToGroups,
-  onGoToDashboard,
   onGoToStudents,
   onGoToStudentInfo,
   onGoToContacts,
@@ -349,7 +347,7 @@ export function StudentProfilePage({
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
-          { label: group.name, onClick: onGoToDashboard },
+          { label: group.name, onClick: onGoToStudents },
           { label: t("attendance.studentsHeader"), onClick: onGoToStudents },
           { label: student.name },
         ]}

@@ -11,7 +11,7 @@ import type { Group } from "../types/group";
 interface SchedulePageProps {
   group: Group;
   onGoToGroups: () => void;
-  onGoToEditGroup: () => void;
+  onGoToSettings: () => void;
 }
 
 const ORDERED_DAYS: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
@@ -92,7 +92,7 @@ function computeDayLayout(periods: SchedulePeriod[]): Map<number, { lane: number
 export function SchedulePage({
   group,
   onGoToGroups,
-  onGoToEditGroup,
+  onGoToSettings,
 }: SchedulePageProps) {
   const { periods, loading, error, addPeriod, updatePeriod, deletePeriod, periodsByDay } =
     useSchedule(group.id);
@@ -124,7 +124,7 @@ export function SchedulePage({
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
-          { label: group.name, onClick: onGoToEditGroup },
+          { label: group.name, onClick: onGoToSettings },
           { label: t("schedule.breadcrumb") },
         ]}
       />
