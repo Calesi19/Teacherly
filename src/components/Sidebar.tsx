@@ -128,11 +128,14 @@ export function Sidebar({
   );
 
   return (
-    <aside className="h-screen bg-transparent p-3">
+    <aside className="h-screen rounded-[28px] bg-neutral-200 p-3 dark:bg-neutral-900">
       <motion.div
         animate={{ width: isOpen ? 248 : 72 }}
         transition={{ type: "spring", bounce: 0.28, duration: 0.75 }}
-        className="flex h-full flex-col overflow-hidden rounded-[28px] border-r border-border/50 bg-background p-2 text-foreground"
+        className={cn(
+          "flex h-full flex-col overflow-hidden rounded-[28px] p-2 text-foreground transition-colors duration-700 ease-out",
+          isOpen ? "bg-neutral-100 dark:bg-neutral-800" : "bg-transparent",
+        )}
       >
         <div
           data-tauri-drag-region
