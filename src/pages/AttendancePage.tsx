@@ -63,7 +63,7 @@ export function AttendancePage({
   };
 
   return (
-    <div className="flex h-full flex-col px-6 py-6 pl-3">
+    <div className="flex h-full flex-col px-6 py-3 pl-3">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -151,13 +151,13 @@ export function AttendancePage({
             <p className="text-lg font-semibold text-muted">
               {t("attendance.noStudents")}
             </p>
-          <p className="text-sm text-foreground/40">
-            {t("attendance.noStudentsHint")}
-          </p>
-          <Button variant="ghost" size="sm" onClick={onGoToStudents}>
-            {t("attendance.goToStudents")}
-          </Button>
-        </div>
+            <p className="text-sm text-foreground/40">
+              {t("attendance.noStudentsHint")}
+            </p>
+            <Button variant="ghost" size="sm" onClick={onGoToStudents}>
+              {t("attendance.goToStudents")}
+            </Button>
+          </div>
         )}
 
       {!loading &&

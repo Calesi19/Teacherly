@@ -220,7 +220,7 @@ export function StudentsPage({
           ]}
         />
 
-        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+        <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
           <div>
             <h2 className="text-2xl font-bold">{t("students.title")}</h2>
           </div>

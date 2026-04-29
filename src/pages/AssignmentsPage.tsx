@@ -104,28 +104,28 @@ export function AssignmentsPage({
         ]}
       />
 
-      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="mb-4 flex items-center justify-between gap-3">
         <div>
           <h2 className="text-2xl font-bold">{t("assignments.title")}</h2>
         </div>
 
-        <div className="flex flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-end">
+        <div className="flex shrink-0 items-center gap-2">
           {!loading && assignments.length > 0 && (
             <>
               <Input
                 placeholder={t("assignments.searchPlaceholder")}
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full sm:w-64"
+                className="w-40"
               />
               {periods.length > 0 && (
                 <Select
                   value={selectedPeriod}
                   onValueChange={(value) => setSelectedPeriod(value ?? "all")}
                 >
-                  <SelectTrigger className="w-full sm:w-44">
-                    <SelectValue placeholder={t("assignments.allPeriods")} />
-                  </SelectTrigger>
+                    <SelectTrigger className="w-36">
+                      <SelectValue placeholder={t("assignments.allPeriods")} />
+                    </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">
                       {t("assignments.allPeriods")}
@@ -142,9 +142,9 @@ export function AssignmentsPage({
                 value={selectedTag}
                 onValueChange={(value) => setSelectedTag(value ?? "all")}
               >
-                <SelectTrigger className="w-full sm:w-44">
-                  <SelectValue placeholder={t("assignments.tags.all")} />
-                </SelectTrigger>
+                  <SelectTrigger className="w-36">
+                    <SelectValue placeholder={t("assignments.tags.all")} />
+                  </SelectTrigger>
                 <SelectContent>
                   {(["all", ...TAG_OPTIONS] as string[]).map((tag) => (
                     <SelectItem key={tag} value={tag}>
@@ -183,7 +183,7 @@ export function AssignmentsPage({
                 <TableHeader>
                   <TableRow>
                     <TableHead>{t("assignments.tableColumns.title")}</TableHead>
-                    <TableHead>{t("assignments.tags.all")}</TableHead>
+                    <TableHead>{t("assignments.tableColumns.type")}</TableHead>
                     <TableHead>
                       {t("assignments.tableColumns.period")}
                     </TableHead>
