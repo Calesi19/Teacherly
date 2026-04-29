@@ -1,8 +1,21 @@
-import { Select, ListBox, Surface } from "@heroui/react";
-import { Sun, Moon, Monitor, ChevronRight, FileText, Shield } from "lucide-react";
+import {
+  Sun,
+  Moon,
+  Monitor,
+  ChevronRight,
+  FileText,
+  Shield,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { GroupSettingsSection } from "../components/GroupSettingsSection";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { LanguagePreference } from "../i18n/LanguageContext";
-import { GroupSettingsSection } from "../components/GroupSettingsSection";
 import type { Group } from "../types/group";
 
 type ThemePreference = "light" | "dark" | "system";
@@ -22,11 +35,25 @@ interface SettingsPageProps {
 
 const COLOR_THEMES: { id: ColorTheme; label: string; swatch: string }[] = [
   { id: "default", label: "Default", swatch: "oklch(0.60 0.15 260)" },
-  { id: "ocean",   label: "Ocean",   swatch: "oklch(0.65 0.17 195)" },
-  { id: "forest",  label: "Forest",  swatch: "oklch(0.65 0.17 145)" },
-  { id: "sunset",  label: "Sunset",  swatch: "oklch(0.72 0.18 55)" },
-  { id: "rose",    label: "Rose",    swatch: "oklch(0.65 0.22 0)" },
+  { id: "ocean", label: "Ocean", swatch: "oklch(0.65 0.17 195)" },
+  { id: "forest", label: "Forest", swatch: "oklch(0.65 0.17 145)" },
+  { id: "sunset", label: "Sunset", swatch: "oklch(0.72 0.18 55)" },
+  { id: "rose", label: "Rose", swatch: "oklch(0.65 0.22 0)" },
 ];
+
+function SettingsCard({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={`rounded-lg border bg-background px-4 py-3 ${className}`}>
+      {children}
+    </div>
+  );
+}
 
 export function SettingsPage({
   theme,
@@ -42,16 +69,18 @@ export function SettingsPage({
   const { t, languagePreference, setLanguage } = useTranslation();
 
   return (
-    <div className="p-6 flex flex-col h-full overflow-y-auto">
+    <div className="flex h-full flex-col overflow-y-auto p-6">
       <div className="mb-6">
         <h2 className="text-2xl font-bold">{t("settings.title")}</h2>
-        <p className="text-sm text-muted mt-0.5">{t("settings.description")}</p>
+        <p className="mt-0.5 text-sm text-muted">{t("settings.description")}</p>
       </div>
 
       <div className="flex flex-col gap-6">
         {group && onGoToSchedule && onGoToGroups && (
           <div className="flex flex-col gap-3">
-            <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionGroup")}</p>
+            <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
+              {t("settings.sectionGroup")}
+            </p>
             <GroupSettingsSection
               group={group}
               onGoToSchedule={onGoToSchedule}
@@ -61,128 +90,155 @@ export function SettingsPage({
         )}
 
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionPresentation")}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
+            {t("settings.sectionPresentation")}
+          </p>
           <div className="flex flex-col gap-2">
-            <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg">
+            <SettingsCard className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-medium">{t("settings.appearance")}</span>
-                <span className="text-xs text-foreground/50">{t("settings.appearanceDescription")}</span>
+                <span className="text-xs text-foreground/50">
+                  {t("settings.appearanceDescription")}
+                </span>
               </div>
               <Select
-                aria-label="Theme"
-                selectedKey={theme}
-                onSelectionChange={(key) => onThemeChange(String(key) as ThemePreference)}
-                className="w-36 shrink-0"
+                value={theme}
+                onValueChange={(value) =>
+                  onThemeChange((value ?? "system") as ThemePreference)
+                }
               >
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    <ListBox.Item id="light" textValue={t("settings.light")}><span className="flex items-center gap-2"><Sun size={14} />{t("settings.light")}</span></ListBox.Item>
-                    <ListBox.Item id="dark" textValue={t("settings.dark")}><span className="flex items-center gap-2"><Moon size={14} />{t("settings.dark")}</span></ListBox.Item>
-                    <ListBox.Item id="system" textValue={t("settings.system")}><span className="flex items-center gap-2"><Monitor size={14} />{t("settings.system")}</span></ListBox.Item>
-                  </ListBox>
-                </Select.Popover>
+                <SelectTrigger className="w-36 shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="light">
+                    <span className="flex items-center gap-2">
+                      <Sun size={14} />
+                      {t("settings.light")}
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="dark">
+                    <span className="flex items-center gap-2">
+                      <Moon size={14} />
+                      {t("settings.dark")}
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="system">
+                    <span className="flex items-center gap-2">
+                      <Monitor size={14} />
+                      {t("settings.system")}
+                    </span>
+                  </SelectItem>
+                </SelectContent>
               </Select>
-            </Surface>
+            </SettingsCard>
 
-            <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg">
+            <SettingsCard className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-medium">{t("settings.colorTheme")}</span>
-                <span className="text-xs text-foreground/50">{t("settings.colorThemeDescription")}</span>
+                <span className="text-xs text-foreground/50">
+                  {t("settings.colorThemeDescription")}
+                </span>
               </div>
               <div className="flex items-center gap-2">
-                {COLOR_THEMES.map((ct) => (
+                {COLOR_THEMES.map((themeOption) => (
                   <button
-                    key={ct.id}
-                    onClick={() => onColorThemeChange(ct.id)}
-                    aria-label={ct.label}
-                    title={ct.label}
-                    className="w-7 h-7 rounded-full transition-transform hover:scale-110 focus:outline-none"
+                    key={themeOption.id}
+                    onClick={() => onColorThemeChange(themeOption.id)}
+                    aria-label={themeOption.label}
+                    title={themeOption.label}
+                    className="h-7 w-7 rounded-full transition-transform hover:scale-110 focus:outline-none"
                     style={{
-                      backgroundColor: ct.swatch,
-                      boxShadow: colorTheme === ct.id
-                        ? `0 0 0 2px var(--background), 0 0 0 4px ${ct.swatch}`
-                        : undefined,
+                      backgroundColor: themeOption.swatch,
+                      boxShadow:
+                        colorTheme === themeOption.id
+                          ? `0 0 0 2px var(--background), 0 0 0 4px ${themeOption.swatch}`
+                          : undefined,
                     }}
                   />
                 ))}
               </div>
-            </Surface>
+            </SettingsCard>
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionGeneral")}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
+            {t("settings.sectionGeneral")}
+          </p>
           <div className="flex flex-col gap-2">
-            <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg">
+            <SettingsCard className="flex items-center justify-between gap-4">
               <div className="flex flex-col gap-0.5">
                 <span className="text-sm font-medium">{t("settings.language")}</span>
-                <span className="text-xs text-foreground/50">{t("settings.languageDescription")}</span>
+                <span className="text-xs text-foreground/50">
+                  {t("settings.languageDescription")}
+                </span>
               </div>
               <Select
-                aria-label="Language"
-                selectedKey={languagePreference}
-                onSelectionChange={(key) => setLanguage(String(key) as LanguagePreference)}
-                className="w-36 shrink-0"
+                value={languagePreference}
+                onValueChange={(value) =>
+                  setLanguage((value ?? "system") as LanguagePreference)
+                }
               >
-                <Select.Trigger>
-                  <Select.Value />
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    <ListBox.Item id="system" textValue={t("settings.languageSystem")}><span className="flex items-center gap-2"><Monitor size={14} />{t("settings.languageSystem")}</span></ListBox.Item>
-                    <ListBox.Item id="en" textValue="English">English</ListBox.Item>
-                    <ListBox.Item id="es" textValue="Español">Español</ListBox.Item>
-                  </ListBox>
-                </Select.Popover>
+                <SelectTrigger className="w-36 shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="system">
+                    <span className="flex items-center gap-2">
+                      <Monitor size={14} />
+                      {t("settings.languageSystem")}
+                    </span>
+                  </SelectItem>
+                  <SelectItem value="en">English</SelectItem>
+                  <SelectItem value="es">Español</SelectItem>
+                </SelectContent>
               </Select>
-            </Surface>
+            </SettingsCard>
           </div>
         </div>
 
         <div className="flex flex-col gap-3">
-          <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">{t("settings.sectionLegal")}</p>
+          <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
+            {t("settings.sectionLegal")}
+          </p>
           <div className="flex flex-col gap-2">
-            <button
-              type="button"
-              onClick={onGoToTermsOfService}
-              className="w-full text-left"
-            >
-              <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-surface-secondary/60">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-                    <FileText size={16} />
+            <button type="button" onClick={onGoToTermsOfService} className="w-full text-left">
+              <SettingsCard className="transition-colors hover:bg-muted/40">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                      <FileText size={16} />
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <span className="text-sm font-medium">{t("settings.termsOfService")}</span>
+                      <span className="text-xs text-foreground/50">
+                        {t("settings.termsOfServiceDescription")}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-medium">{t("settings.termsOfService")}</span>
-                    <span className="text-xs text-foreground/50">{t("settings.termsOfServiceDescription")}</span>
-                  </div>
+                  <ChevronRight size={16} className="shrink-0 text-foreground/40" />
                 </div>
-                <ChevronRight size={16} className="shrink-0 text-foreground/40" />
-              </Surface>
+              </SettingsCard>
             </button>
 
-            <button
-              type="button"
-              onClick={onGoToPrivacyPolicy}
-              className="w-full text-left"
-            >
-              <Surface className="flex items-center justify-between gap-4 px-4 py-3 rounded-lg transition-colors hover:bg-surface-secondary/60">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
-                    <Shield size={16} />
+            <button type="button" onClick={onGoToPrivacyPolicy} className="w-full text-left">
+              <SettingsCard className="transition-colors hover:bg-muted/40">
+                <div className="flex items-center justify-between gap-4">
+                  <div className="flex min-w-0 items-center gap-3">
+                    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-accent/10 text-accent">
+                      <Shield size={16} />
+                    </div>
+                    <div className="flex min-w-0 flex-col gap-0.5">
+                      <span className="text-sm font-medium">{t("settings.privacyPolicy")}</span>
+                      <span className="text-xs text-foreground/50">
+                        {t("settings.privacyPolicyDescription")}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-0.5 min-w-0">
-                    <span className="text-sm font-medium">{t("settings.privacyPolicy")}</span>
-                    <span className="text-xs text-foreground/50">{t("settings.privacyPolicyDescription")}</span>
-                  </div>
+                  <ChevronRight size={16} className="shrink-0 text-foreground/40" />
                 </div>
-                <ChevronRight size={16} className="shrink-0 text-foreground/40" />
-              </Surface>
+              </SettingsCard>
             </button>
           </div>
         </div>

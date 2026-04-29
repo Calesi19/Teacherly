@@ -1,8 +1,17 @@
 import { useState, useEffect, useRef } from "react";
 import { useTranslation } from "../i18n/LanguageContext";
-import { Button, Surface, Select, ListBox, DatePicker, DateField, Calendar, Label } from "@heroui/react";
-import { parseDate } from "@internationalized/date";
-import type { DateValue } from "@internationalized/date";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Button } from "@/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Badge } from "@/components/ui/badge";
+import { AppDatePicker } from "@/components/ui/app-date-picker";
+import { cn } from "@/lib/utils";
 import { FileText, FolderOpen, CheckCircle, AlertCircle } from "lucide-react";
 import { pdf } from "@react-pdf/renderer";
 import { invoke } from "@tauri-apps/api/core";
@@ -10,11 +19,9 @@ import { dirname } from "@tauri-apps/api/path";
 import { save } from "@tauri-apps/plugin-dialog";
 import { revealItemInDir } from "@tauri-apps/plugin-opener";
 import { PdfDocument } from "../reports/PdfDocument";
-// Group sections
 import { StudentRosterSection } from "../reports/sections/StudentRosterSection";
 import { AttendanceSummarySection } from "../reports/sections/AttendanceSummarySection";
 import { GradeSummarySection } from "../reports/sections/GradeSummarySection";
-// Individual sections
 import { StudentProfileSection } from "../reports/sections/StudentProfileSection";
 import { ContactsSection } from "../reports/sections/ContactsSection";
 import { AddressesSection } from "../reports/sections/AddressesSection";
@@ -26,14 +33,12 @@ import { AttendanceRecordsSection } from "../reports/sections/AttendanceRecordsS
 import { StudentAttendanceSummarySection } from "../reports/sections/StudentAttendanceSummarySection";
 import { GradesSection } from "../reports/sections/GradesSection";
 import { StudentGradeSummarySection } from "../reports/sections/StudentGradeSummarySection";
-// Group data
 import {
   fetchStudentsForReport,
   fetchAttendanceSummary,
   fetchGradeSummary,
   fetchDistinctPeriods,
 } from "../reports/fetchGroupReportData";
-// Individual data
 import {
   fetchStudentProfile,
   fetchStudentContacts,
@@ -52,6 +57,7 @@ import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 import { NOTE_TAG_KEYS } from "../types/note";
 import { REPORTS_LAST_DIR_KEY } from "../appConfig";
+
 const PREVIEW_DEBOUNCE_MS = 700;
 
 type Scope = "group" | "individual";
@@ -74,7 +80,7 @@ interface ReportsPageProps {
   group: Group;
 }
 
-function ReportDatePicker({
+function ReportsDateField({
   label,
   value,
   onChange,
@@ -83,80 +89,35 @@ function ReportDatePicker({
   value: string;
   onChange: (value: string) => void;
 }) {
-  const parsed = value ? parseDate(value) : null;
-
   return (
-    <div className="min-w-0 flex-1 flex flex-col gap-1">
-      <Label className="text-[11px] text-foreground/50">{label}</Label>
-      <DatePicker
-        className="w-full"
-        aria-label={label}
-        value={parsed}
-        onChange={(date: DateValue | null) => onChange(date ? date.toString() : "")}
-      >
-        <DateField.Group fullWidth>
-          <DateField.Input>
-            {(segment) => <DateField.Segment segment={segment} />}
-          </DateField.Input>
-          <DateField.Suffix>
-            <DatePicker.Trigger>
-              <DatePicker.TriggerIndicator />
-            </DatePicker.Trigger>
-          </DateField.Suffix>
-        </DateField.Group>
-        <DatePicker.Popover>
-          <Calendar aria-label={label}>
-            <Calendar.Header>
-              <Calendar.YearPickerTrigger>
-                <Calendar.YearPickerTriggerHeading />
-                <Calendar.YearPickerTriggerIndicator />
-              </Calendar.YearPickerTrigger>
-              <Calendar.NavButton slot="previous" />
-              <Calendar.NavButton slot="next" />
-            </Calendar.Header>
-            <Calendar.Grid>
-              <Calendar.GridHeader>
-                {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-              </Calendar.GridHeader>
-              <Calendar.GridBody>
-                {(date) => <Calendar.Cell date={date} />}
-              </Calendar.GridBody>
-            </Calendar.Grid>
-            <Calendar.YearPickerGrid>
-              <Calendar.YearPickerGridBody>
-                {({ year }) => <Calendar.YearPickerCell year={year} />}
-              </Calendar.YearPickerGridBody>
-            </Calendar.YearPickerGrid>
-          </Calendar>
-        </DatePicker.Popover>
-      </DatePicker>
-    </div>
+    <AppDatePicker
+      label={label}
+      value={value}
+      onChange={onChange}
+      placeholder={label}
+      className="min-w-0 flex-1"
+    />
   );
 }
 
 export function ReportsPage({ group }: ReportsPageProps) {
   const { t, language } = useTranslation();
 
-  // Scope & selection
   const [scope, setScope] = useState<Scope>("group");
   const [groupStudents, setGroupStudents] = useState<Student[]>([]);
   const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
-
-  // Shared section toggle state
   const [sections, setSections] = useState<Set<SectionId>>(new Set());
 
-  // Group section filters
   const [dateFrom, setDateFrom] = useState("");
   const [dateTo, setDateTo] = useState("");
   const [gradesPeriod, setGradesPeriod] = useState("");
   const [availablePeriods, setAvailablePeriods] = useState<string[]>([]);
 
-  // Individual section filters
   const [noteTagFilter, setNoteTagFilter] = useState("");
   const [studentDateFrom, setStudentDateFrom] = useState("");
   const [studentDateTo, setStudentDateTo] = useState("");
   const [studentAttendanceStatuses, setStudentAttendanceStatuses] = useState<Set<string>>(
-    new Set(["present", "absent", "late", "early_pickup"])
+    new Set(["present", "absent", "late", "early_pickup"]),
   );
   const [studentSummaryDateFrom, setStudentSummaryDateFrom] = useState(() => group.start_date ?? "");
   const [studentSummaryDateTo, setStudentSummaryDateTo] = useState(() => {
@@ -166,7 +127,6 @@ export function ReportsPage({ group }: ReportsPageProps) {
   const [studentGradesPeriod, setStudentGradesPeriod] = useState("");
   const [studentAvailablePeriods, setStudentAvailablePeriods] = useState<string[]>([]);
 
-  // UI state
   const [generating, setGenerating] = useState(false);
   const [result, setResult] = useState<{ ok: boolean; message: string; filePath?: string } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -176,21 +136,20 @@ export function ReportsPage({ group }: ReportsPageProps) {
   const previewUrlRef = useRef<string | null>(null);
   const stagedPreviewUrlRef = useRef<string | null>(null);
 
-  // Load group students on mount for the student picker
   useEffect(() => {
     fetchStudentsForReport(group.id).then(setGroupStudents).catch(() => {});
     fetchDistinctPeriods(group.id).then(setAvailablePeriods).catch(() => {});
     setResult(null);
-    // Reset attendance summary date range to the group's default dates
     setStudentSummaryDateFrom(group.start_date ?? "");
     const today = new Date().toISOString().slice(0, 10);
     setStudentSummaryDateTo(group.end_date && today > group.end_date ? group.end_date : today);
-  }, [group.id]);
+  }, [group.id, group.end_date, group.start_date]);
 
-  // Load student-specific periods when a student is selected
   useEffect(() => {
     if (selectedStudentId !== null) {
-      fetchStudentDistinctPeriods(selectedStudentId).then(setStudentAvailablePeriods).catch(() => {});
+      fetchStudentDistinctPeriods(selectedStudentId)
+        .then(setStudentAvailablePeriods)
+        .catch(() => {});
     } else {
       setStudentAvailablePeriods([]);
     }
@@ -205,7 +164,6 @@ export function ReportsPage({ group }: ReportsPageProps) {
     stagedPreviewUrlRef.current = stagedPreviewUrl;
   }, [stagedPreviewUrl]);
 
-  // Revoke blob URL on unmount
   useEffect(() => {
     return () => {
       for (const url of previewUrlsRef.current) {
@@ -215,7 +173,6 @@ export function ReportsPage({ group }: ReportsPageProps) {
     };
   }, []);
 
-  // Debounced live preview
   useEffect(() => {
     const needsStudent = scope === "individual" && !selectedStudentId;
     if (sections.size === 0 || needsStudent) {
@@ -268,40 +225,65 @@ export function ReportsPage({ group }: ReportsPageProps) {
                 />
               ) : null}
               {gradeData ? (
-                <GradeSummarySection assignments={gradeData} periodFilter={gradesPeriod || undefined} language={language} />
+                <GradeSummarySection
+                  assignments={gradeData}
+                  periodFilter={gradesPeriod || undefined}
+                  language={language}
+                />
               ) : null}
             </PdfDocument>
           );
         } else {
           const sid = selectedStudentId!;
-          const [student, contacts, addresses, services, accommodations, observations, notes, attendanceSummary, attendanceRecords, grades, courseSummary] =
-            await Promise.all([
-              fetchStudentProfile(sid),
-              sections.has("contacts") ? fetchStudentContacts(sid) : Promise.resolve(null),
-              sections.has("addresses") ? fetchStudentAddresses(sid) : Promise.resolve(null),
-              sections.has("services") ? fetchStudentServices(sid) : Promise.resolve(null),
-              sections.has("accommodations") ? fetchStudentAccommodations(sid) : Promise.resolve(null),
-              sections.has("observations") ? fetchStudentObservations(sid) : Promise.resolve(null),
-              sections.has("notes")
-                ? fetchStudentNotes(sid, noteTagFilter || undefined)
-                : Promise.resolve(null),
-              sections.has("student-attendance-summary")
-                ? fetchStudentAttendanceSummary(sid, studentSummaryDateFrom || undefined, studentSummaryDateTo || undefined)
-                : Promise.resolve(null),
-              sections.has("student-attendance")
-                ? fetchStudentAttendanceRecords(sid, studentDateFrom || undefined, studentDateTo || undefined)
-                : Promise.resolve(null),
-              sections.has("student-grades")
-                ? fetchStudentGrades(sid, studentGradesPeriod || undefined)
-                : Promise.resolve(null),
-              sections.has("student-grade-summary")
-                ? fetchStudentCourseSummary(sid)
-                : Promise.resolve(null),
-            ]);
+          const [
+            student,
+            contacts,
+            addresses,
+            services,
+            accommodations,
+            observations,
+            notes,
+            attendanceSummary,
+            attendanceRecords,
+            grades,
+            courseSummary,
+          ] = await Promise.all([
+            fetchStudentProfile(sid),
+            sections.has("contacts") ? fetchStudentContacts(sid) : Promise.resolve(null),
+            sections.has("addresses") ? fetchStudentAddresses(sid) : Promise.resolve(null),
+            sections.has("services") ? fetchStudentServices(sid) : Promise.resolve(null),
+            sections.has("accommodations") ? fetchStudentAccommodations(sid) : Promise.resolve(null),
+            sections.has("observations") ? fetchStudentObservations(sid) : Promise.resolve(null),
+            sections.has("notes")
+              ? fetchStudentNotes(sid, noteTagFilter || undefined)
+              : Promise.resolve(null),
+            sections.has("student-attendance-summary")
+              ? fetchStudentAttendanceSummary(
+                  sid,
+                  studentSummaryDateFrom || undefined,
+                  studentSummaryDateTo || undefined,
+                )
+              : Promise.resolve(null),
+            sections.has("student-attendance")
+              ? fetchStudentAttendanceRecords(
+                  sid,
+                  studentDateFrom || undefined,
+                  studentDateTo || undefined,
+                )
+              : Promise.resolve(null),
+            sections.has("student-grades")
+              ? fetchStudentGrades(sid, studentGradesPeriod || undefined)
+              : Promise.resolve(null),
+            sections.has("student-grade-summary")
+              ? fetchStudentCourseSummary(sid)
+              : Promise.resolve(null),
+          ]);
           if (cancelled) return;
+
           const filteredRecords = attendanceRecords
-            ? attendanceRecords.filter((r) => studentAttendanceStatuses.has(r.status))
+            ? attendanceRecords.filter((record) => studentAttendanceStatuses.has(record.status))
             : null;
+
           doc = (
             <PdfDocument
               title={`${student?.name ?? t("reports.pdf.studentFallback")} — ${t("reports.pdf.studentReport")}`}
@@ -310,17 +292,23 @@ export function ReportsPage({ group }: ReportsPageProps) {
               generatedDate={new Date().toLocaleDateString()}
               language={language}
             >
-              {sections.has("profile") && student ? <StudentProfileSection student={student} language={language} /> : null}
+              {sections.has("profile") && student ? (
+                <StudentProfileSection student={student} language={language} />
+              ) : null}
               {contacts ? <ContactsSection contacts={contacts} language={language} /> : null}
               {addresses ? <AddressesSection addresses={addresses} language={language} /> : null}
-              {services !== null && sections.has("services") ? <ServicesSection services={services} language={language} /> : null}
+              {services !== null && sections.has("services") ? (
+                <ServicesSection services={services} language={language} />
+              ) : null}
               {accommodations !== null && sections.has("accommodations") ? (
                 <AccommodationsSection accommodations={accommodations} language={language} />
               ) : null}
               {observations !== null && sections.has("observations") ? (
                 <ObservationsSection observations={observations} language={language} />
               ) : null}
-              {notes ? <NotesSection notes={notes} tagFilter={noteTagFilter || undefined} language={language} /> : null}
+              {notes ? (
+                <NotesSection notes={notes} tagFilter={noteTagFilter || undefined} language={language} />
+              ) : null}
               {attendanceSummary ? (
                 <StudentAttendanceSummarySection
                   summary={attendanceSummary}
@@ -337,8 +325,16 @@ export function ReportsPage({ group }: ReportsPageProps) {
                   language={language}
                 />
               ) : null}
-              {courseSummary ? <StudentGradeSummarySection courses={courseSummary} language={language} /> : null}
-              {grades ? <GradesSection grades={grades} periodFilter={studentGradesPeriod || undefined} language={language} /> : null}
+              {courseSummary ? (
+                <StudentGradeSummarySection courses={courseSummary} language={language} />
+              ) : null}
+              {grades ? (
+                <GradesSection
+                  grades={grades}
+                  periodFilter={studentGradesPeriod || undefined}
+                  language={language}
+                />
+              ) : null}
             </PdfDocument>
           );
         }
@@ -357,9 +353,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
 
         setStagedPreviewUrl(nextUrl);
       } catch {
-        // silent — generation errors show on the Generate button
-        if (!cancelled) setPreviewLoading(false);
+        // silent
       } finally {
+        if (!cancelled) setPreviewLoading(false);
         if (cancelled && nextUrl) {
           URL.revokeObjectURL(nextUrl);
           previewUrlsRef.current.delete(nextUrl);
@@ -372,11 +368,24 @@ export function ReportsPage({ group }: ReportsPageProps) {
       clearTimeout(timer);
     };
   }, [
-    sections, scope, selectedStudentId,
-    dateFrom, dateTo, gradesPeriod,
-    noteTagFilter, studentDateFrom, studentDateTo, studentAttendanceStatuses,
-    studentSummaryDateFrom, studentSummaryDateTo, studentGradesPeriod,
-    group.id, group.name, group.school_name,
+    sections,
+    scope,
+    selectedStudentId,
+    dateFrom,
+    dateTo,
+    gradesPeriod,
+    noteTagFilter,
+    studentDateFrom,
+    studentDateTo,
+    studentAttendanceStatuses,
+    studentSummaryDateFrom,
+    studentSummaryDateTo,
+    studentGradesPeriod,
+    group.id,
+    group.name,
+    group.school_name,
+    language,
+    t,
   ]);
 
   function handleStagedPreviewLoad() {
@@ -397,7 +406,8 @@ export function ReportsPage({ group }: ReportsPageProps) {
   function toggleSection(id: SectionId, on: boolean) {
     setSections((prev) => {
       const next = new Set(prev);
-      on ? next.add(id) : next.delete(id);
+      if (on) next.add(id);
+      else next.delete(id);
       return next;
     });
   }
@@ -430,6 +440,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
             ? fetchGradeSummary(group.id, gradesPeriod || undefined)
             : Promise.resolve(null),
         ]);
+
         doc = (
           <PdfDocument
             title={t("reports.pdf.groupReport")}
@@ -448,7 +459,11 @@ export function ReportsPage({ group }: ReportsPageProps) {
               />
             ) : null}
             {gradeData ? (
-              <GradeSummarySection assignments={gradeData} periodFilter={gradesPeriod || undefined} language={language} />
+              <GradeSummarySection
+                assignments={gradeData}
+                periodFilter={gradesPeriod || undefined}
+                language={language}
+              />
             ) : null}
           </PdfDocument>
         );
@@ -456,33 +471,54 @@ export function ReportsPage({ group }: ReportsPageProps) {
         const ts = new Date().toISOString().slice(0, 10);
         filename = `group-${safeName}-${ts}.pdf`;
       } else {
-        const [student, contacts, addresses, services, accommodations, observations, notes, attendanceSummary, attendanceRecords, grades, courseSummary] =
-          await Promise.all([
-            fetchStudentProfile(sid!),
-            sections.has("contacts") ? fetchStudentContacts(sid!) : Promise.resolve(null),
-            sections.has("addresses") ? fetchStudentAddresses(sid!) : Promise.resolve(null),
-            sections.has("services") ? fetchStudentServices(sid!) : Promise.resolve(null),
-            sections.has("accommodations") ? fetchStudentAccommodations(sid!) : Promise.resolve(null),
-            sections.has("observations") ? fetchStudentObservations(sid!) : Promise.resolve(null),
-            sections.has("notes")
-              ? fetchStudentNotes(sid!, noteTagFilter || undefined)
-              : Promise.resolve(null),
-            sections.has("student-attendance-summary")
-              ? fetchStudentAttendanceSummary(sid!, studentSummaryDateFrom || undefined, studentSummaryDateTo || undefined)
-              : Promise.resolve(null),
-            sections.has("student-attendance")
-              ? fetchStudentAttendanceRecords(sid!, studentDateFrom || undefined, studentDateTo || undefined)
-              : Promise.resolve(null),
-            sections.has("student-grades")
-              ? fetchStudentGrades(sid!, studentGradesPeriod || undefined)
-              : Promise.resolve(null),
-            sections.has("student-grade-summary")
-              ? fetchStudentCourseSummary(sid!)
-              : Promise.resolve(null),
-          ]);
+        const [
+          student,
+          contacts,
+          addresses,
+          services,
+          accommodations,
+          observations,
+          notes,
+          attendanceSummary,
+          attendanceRecords,
+          grades,
+          courseSummary,
+        ] = await Promise.all([
+          fetchStudentProfile(sid!),
+          sections.has("contacts") ? fetchStudentContacts(sid!) : Promise.resolve(null),
+          sections.has("addresses") ? fetchStudentAddresses(sid!) : Promise.resolve(null),
+          sections.has("services") ? fetchStudentServices(sid!) : Promise.resolve(null),
+          sections.has("accommodations") ? fetchStudentAccommodations(sid!) : Promise.resolve(null),
+          sections.has("observations") ? fetchStudentObservations(sid!) : Promise.resolve(null),
+          sections.has("notes")
+            ? fetchStudentNotes(sid!, noteTagFilter || undefined)
+            : Promise.resolve(null),
+          sections.has("student-attendance-summary")
+            ? fetchStudentAttendanceSummary(
+                sid!,
+                studentSummaryDateFrom || undefined,
+                studentSummaryDateTo || undefined,
+              )
+            : Promise.resolve(null),
+          sections.has("student-attendance")
+            ? fetchStudentAttendanceRecords(
+                sid!,
+                studentDateFrom || undefined,
+                studentDateTo || undefined,
+              )
+            : Promise.resolve(null),
+          sections.has("student-grades")
+            ? fetchStudentGrades(sid!, studentGradesPeriod || undefined)
+            : Promise.resolve(null),
+          sections.has("student-grade-summary")
+            ? fetchStudentCourseSummary(sid!)
+            : Promise.resolve(null),
+        ]);
+
         const filteredRecords = attendanceRecords
-          ? attendanceRecords.filter((r) => studentAttendanceStatuses.has(r.status))
+          ? attendanceRecords.filter((record) => studentAttendanceStatuses.has(record.status))
           : null;
+
         doc = (
           <PdfDocument
             title={`${student?.name ?? t("reports.pdf.studentFallback")} — ${t("reports.pdf.studentReport")}`}
@@ -491,17 +527,23 @@ export function ReportsPage({ group }: ReportsPageProps) {
             generatedDate={new Date().toLocaleDateString()}
             language={language}
           >
-            {sections.has("profile") && student ? <StudentProfileSection student={student} language={language} /> : null}
+            {sections.has("profile") && student ? (
+              <StudentProfileSection student={student} language={language} />
+            ) : null}
             {contacts ? <ContactsSection contacts={contacts} language={language} /> : null}
             {addresses ? <AddressesSection addresses={addresses} language={language} /> : null}
-            {services !== null && sections.has("services") ? <ServicesSection services={services} language={language} /> : null}
+            {services !== null && sections.has("services") ? (
+              <ServicesSection services={services} language={language} />
+            ) : null}
             {accommodations !== null && sections.has("accommodations") ? (
               <AccommodationsSection accommodations={accommodations} language={language} />
             ) : null}
             {observations !== null && sections.has("observations") ? (
               <ObservationsSection observations={observations} language={language} />
             ) : null}
-            {notes ? <NotesSection notes={notes} tagFilter={noteTagFilter || undefined} language={language} /> : null}
+            {notes ? (
+              <NotesSection notes={notes} tagFilter={noteTagFilter || undefined} language={language} />
+            ) : null}
             {attendanceSummary ? (
               <StudentAttendanceSummarySection
                 summary={attendanceSummary}
@@ -518,8 +560,16 @@ export function ReportsPage({ group }: ReportsPageProps) {
                 language={language}
               />
             ) : null}
-            {courseSummary ? <StudentGradeSummarySection courses={courseSummary} language={language} /> : null}
-            {grades ? <GradesSection grades={grades} periodFilter={studentGradesPeriod || undefined} language={language} /> : null}
+            {courseSummary ? (
+              <StudentGradeSummarySection courses={courseSummary} language={language} />
+            ) : null}
+            {grades ? (
+              <GradesSection
+                grades={grades}
+                periodFilter={studentGradesPeriod || undefined}
+                language={language}
+              />
+            ) : null}
           </PdfDocument>
         );
         const safeName = (student?.name ?? "student").replace(/[^a-z0-9]/gi, "-").toLowerCase();
@@ -562,45 +612,38 @@ export function ReportsPage({ group }: ReportsPageProps) {
     (scope === "group" || selectedStudentId !== null);
 
   return (
-    <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-border shrink-0">
-        <h2 className="text-2xl font-bold flex items-center gap-2">
+    <div className="flex h-full flex-col">
+      <div className="shrink-0 border-b border-border px-6 pt-6 pb-4">
+        <h2 className="flex items-center gap-2 text-2xl font-bold">
           <FileText size={22} />
           {t("reports.ui.title")}
         </h2>
-        <p className="text-sm text-muted mt-0.5">
-          {t("reports.ui.description")}
-        </p>
+        <p className="mt-0.5 text-sm text-muted">{t("reports.ui.description")}</p>
       </div>
 
-      {/* Split layout */}
-      <div className="flex flex-1 min-h-0">
-        {/* Left: controls */}
-        <div className="w-88 shrink-0 border-r border-border flex flex-col overflow-y-auto">
-          <div className="p-5 flex flex-col gap-4">
-
-            {/* Scope toggle */}
-            <div className="flex gap-1 p-1 bg-foreground/5 rounded-lg">
-              {(["group", "individual"] as Scope[]).map((s) => (
+      <div className="flex min-h-0 flex-1">
+        <div className="flex w-88 shrink-0 flex-col overflow-y-auto border-r border-border">
+          <div className="flex flex-col gap-4 p-5">
+            <div className="flex gap-1 rounded-lg bg-foreground/5 p-1">
+              {(["group", "individual"] as Scope[]).map((value) => (
                 <button
-                  key={s}
-                  onClick={() => switchScope(s)}
-                  className={`flex-1 text-xs py-1.5 rounded-md font-medium transition-all ${
-                    scope === s
-                      ? "bg-background shadow-sm text-foreground"
-                      : "text-foreground/50 hover:text-foreground/70"
-                  }`}
+                  key={value}
+                  onClick={() => switchScope(value)}
+                  className={cn(
+                    "flex-1 rounded-md py-1.5 text-xs font-medium transition-all",
+                    scope === value
+                      ? "bg-background text-foreground shadow-sm"
+                      : "text-foreground/50 hover:text-foreground/70",
+                  )}
                 >
-                  {s === "group" ? t("reports.ui.scopeGroup") : t("reports.ui.scopeStudent")}
+                  {value === "group" ? t("reports.ui.scopeGroup") : t("reports.ui.scopeStudent")}
                 </button>
               ))}
             </div>
 
-            {/* Group scope */}
             {scope === "group" && (
               <>
-                <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">
+                <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
                   {t("reports.ui.sections")}
                 </p>
 
@@ -609,7 +652,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
                   label={t("reports.ui.rosterLabel")}
                   description={t("reports.ui.rosterDescription")}
                   checked={sections.has("roster")}
-                  onChange={(v) => toggleSection("roster", v)}
+                  onChange={(value) => toggleSection("roster", value)}
                 />
 
                 <SectionToggle
@@ -617,15 +660,13 @@ export function ReportsPage({ group }: ReportsPageProps) {
                   label={t("reports.ui.attendanceSummaryLabel")}
                   description={t("reports.ui.attendanceSummaryDescription")}
                   checked={sections.has("attendance")}
-                  onChange={(v) => toggleSection("attendance", v)}
+                  onChange={(value) => toggleSection("attendance", value)}
                 >
                   {sections.has("attendance") && (
-                    <div className="mt-2 flex flex-col gap-1.5">
+                    <div className="mt-2 flex flex-col gap-2">
                       <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
-                      <div className="flex flex-col gap-2">
-                        <ReportDatePicker label={t("reports.ui.dateFrom")} value={dateFrom} onChange={setDateFrom} />
-                        <ReportDatePicker label={t("reports.ui.dateTo")} value={dateTo} onChange={setDateTo} />
-                      </div>
+                      <ReportsDateField label={t("reports.ui.dateFrom")} value={dateFrom} onChange={setDateFrom} />
+                      <ReportsDateField label={t("reports.ui.dateTo")} value={dateTo} onChange={setDateTo} />
                     </div>
                   )}
                 </SectionToggle>
@@ -635,29 +676,26 @@ export function ReportsPage({ group }: ReportsPageProps) {
                   label={t("reports.ui.gradeSummaryLabel")}
                   description={t("reports.ui.gradeSummaryDescription")}
                   checked={sections.has("grades")}
-                  onChange={(v) => toggleSection("grades", v)}
+                  onChange={(value) => toggleSection("grades", value)}
                 >
                   {sections.has("grades") && availablePeriods.length > 0 && (
                     <div className="mt-2 flex flex-col gap-1.5">
                       <span className="text-xs text-foreground/50">{t("reports.ui.period")}</span>
                       <Select
-                        aria-label="Period filter"
-                        selectedKey={gradesPeriod || "__all__"}
-                        onSelectionChange={(k) => setGradesPeriod(k === "__all__" ? "" : String(k))}
-                        className="w-full"
+                        value={gradesPeriod || "__all__"}
+                        onValueChange={(value) => setGradesPeriod(value === "__all__" ? "" : value ?? "")}
                       >
-                        <Select.Trigger>
-                          <Select.Value />
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
-                            <ListBox.Item id="__all__" textValue={t("reports.ui.allPeriods")}>{t("reports.ui.allPeriods")}</ListBox.Item>
-                            {availablePeriods.map((p) => (
-                              <ListBox.Item key={p} id={p} textValue={p}>{p}</ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
+                        <SelectTrigger className="w-full">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="__all__">{t("reports.ui.allPeriods")}</SelectItem>
+                          {availablePeriods.map((period) => (
+                            <SelectItem key={period} value={period}>
+                              {period}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
                       </Select>
                     </div>
                   )}
@@ -665,43 +703,37 @@ export function ReportsPage({ group }: ReportsPageProps) {
               </>
             )}
 
-            {/* Individual scope */}
             {scope === "individual" && (
               <>
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
                     {t("reports.ui.student")}
                   </span>
                   <Select
-                    aria-label="Select student"
-                    selectedKey={selectedStudentId !== null ? String(selectedStudentId) : "__none__"}
-                    onSelectionChange={(k) => {
-                      const next = k === "__none__" ? null : Number(k);
+                    value={selectedStudentId !== null ? String(selectedStudentId) : "__none__"}
+                    onValueChange={(value) => {
+                      const next = value === "__none__" ? null : Number(value);
                       setSelectedStudentId(next);
                       setSections(new Set());
                       setResult(null);
                     }}
-                    className="w-full"
                   >
-                    <Select.Trigger>
-                      <Select.Value />
-                      <Select.Indicator />
-                    </Select.Trigger>
-                    <Select.Popover>
-                      <ListBox>
-                        {groupStudents.map((s) => (
-                          <ListBox.Item key={s.id} id={String(s.id)} textValue={s.name}>
-                            {s.name}
-                          </ListBox.Item>
-                        ))}
-                      </ListBox>
-                    </Select.Popover>
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("reports.ui.student")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {groupStudents.map((student) => (
+                        <SelectItem key={student.id} value={String(student.id)}>
+                          {student.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
                   </Select>
                 </div>
 
                 {selectedStudentId !== null && (
                   <>
-                    <p className="text-xs font-semibold text-foreground/40 uppercase tracking-wide">
+                    <p className="text-xs font-semibold uppercase tracking-wide text-foreground/40">
                       {t("reports.ui.sections")}
                     </p>
 
@@ -710,47 +742,42 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.profileLabel")}
                       description={t("reports.ui.profileDescription")}
                       checked={sections.has("profile")}
-                      onChange={(v) => toggleSection("profile", v)}
+                      onChange={(value) => toggleSection("profile", value)}
                     />
-
                     <SectionToggle
                       id="contacts"
                       label={t("reports.ui.contactsLabel")}
                       description={t("reports.ui.contactsDescription")}
                       checked={sections.has("contacts")}
-                      onChange={(v) => toggleSection("contacts", v)}
+                      onChange={(value) => toggleSection("contacts", value)}
                     />
-
                     <SectionToggle
                       id="addresses"
                       label={t("reports.ui.addressesLabel")}
                       description={t("reports.ui.addressesDescription")}
                       checked={sections.has("addresses")}
-                      onChange={(v) => toggleSection("addresses", v)}
+                      onChange={(value) => toggleSection("addresses", value)}
                     />
-
                     <SectionToggle
                       id="services"
                       label={t("reports.ui.servicesLabel")}
                       description={t("reports.ui.servicesDescription")}
                       checked={sections.has("services")}
-                      onChange={(v) => toggleSection("services", v)}
+                      onChange={(value) => toggleSection("services", value)}
                     />
-
                     <SectionToggle
                       id="accommodations"
                       label={t("reports.ui.accommodationsLabel")}
                       description={t("reports.ui.accommodationsDescription")}
                       checked={sections.has("accommodations")}
-                      onChange={(v) => toggleSection("accommodations", v)}
+                      onChange={(value) => toggleSection("accommodations", value)}
                     />
-
                     <SectionToggle
                       id="observations"
                       label={t("reports.ui.observationsLabel")}
                       description={t("reports.ui.observationsDescription")}
                       checked={sections.has("observations")}
-                      onChange={(v) => toggleSection("observations", v)}
+                      onChange={(value) => toggleSection("observations", value)}
                     />
 
                     <SectionToggle
@@ -758,31 +785,26 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.notesLabel")}
                       description={t("reports.ui.notesDescription")}
                       checked={sections.has("notes")}
-                      onChange={(v) => toggleSection("notes", v)}
+                      onChange={(value) => toggleSection("notes", value)}
                     >
                       {sections.has("notes") && (
                         <div className="mt-2 flex flex-col gap-1.5">
                           <span className="text-xs text-foreground/50">{t("reports.ui.tagFilter")}</span>
                           <Select
-                            aria-label="Tag filter"
-                            selectedKey={noteTagFilter || "__all__"}
-                            onSelectionChange={(k) => setNoteTagFilter(k === "__all__" ? "" : String(k))}
-                            className="w-full"
+                            value={noteTagFilter || "__all__"}
+                            onValueChange={(value) => setNoteTagFilter(value === "__all__" ? "" : value ?? "")}
                           >
-                            <Select.Trigger>
-                              <Select.Value />
-                              <Select.Indicator />
-                            </Select.Trigger>
-                            <Select.Popover>
-                              <ListBox>
-                                <ListBox.Item id="__all__" textValue={t("reports.ui.allTags")}>{t("reports.ui.allTags")}</ListBox.Item>
-                                {NOTE_TAG_KEYS.map((tagKey) => (
-                                  <ListBox.Item key={tagKey} id={tagKey} textValue={tagKey}>
-                                    {tagKey.charAt(0).toUpperCase() + tagKey.slice(1)}
-                                  </ListBox.Item>
-                                ))}
-                              </ListBox>
-                            </Select.Popover>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__all__">{t("reports.ui.allTags")}</SelectItem>
+                              {NOTE_TAG_KEYS.map((tagKey) => (
+                                <SelectItem key={tagKey} value={tagKey}>
+                                  {tagKey.charAt(0).toUpperCase() + tagKey.slice(1)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
                           </Select>
                         </div>
                       )}
@@ -793,23 +815,21 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.studentAttendanceSummaryLabel")}
                       description={t("reports.ui.studentAttendanceSummaryDescription")}
                       checked={sections.has("student-attendance-summary")}
-                      onChange={(v) => toggleSection("student-attendance-summary", v)}
+                      onChange={(value) => toggleSection("student-attendance-summary", value)}
                     >
                       {sections.has("student-attendance-summary") && (
-                        <div className="mt-2 flex flex-col gap-1.5">
+                        <div className="mt-2 flex flex-col gap-2">
                           <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
-                          <div className="flex flex-col gap-2">
-                            <ReportDatePicker
-                              label={t("reports.ui.dateFrom")}
-                              value={studentSummaryDateFrom}
-                              onChange={setStudentSummaryDateFrom}
-                            />
-                            <ReportDatePicker
-                              label={t("reports.ui.dateTo")}
-                              value={studentSummaryDateTo}
-                              onChange={setStudentSummaryDateTo}
-                            />
-                          </div>
+                          <ReportsDateField
+                            label={t("reports.ui.dateFrom")}
+                            value={studentSummaryDateFrom}
+                            onChange={setStudentSummaryDateFrom}
+                          />
+                          <ReportsDateField
+                            label={t("reports.ui.dateTo")}
+                            value={studentSummaryDateTo}
+                            onChange={setStudentSummaryDateTo}
+                          />
                         </div>
                       )}
                     </SectionToggle>
@@ -819,27 +839,27 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.attendanceRecordsLabel")}
                       description={t("reports.ui.attendanceRecordsDescription")}
                       checked={sections.has("student-attendance")}
-                      onChange={(v) => toggleSection("student-attendance", v)}
+                      onChange={(value) => toggleSection("student-attendance", value)}
                     >
                       {sections.has("student-attendance") && (
                         <div className="mt-2 flex flex-col gap-2">
-                          <div className="flex flex-col gap-1.5">
+                          <div className="flex flex-col gap-2">
                             <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
-                            <div className="flex flex-col gap-2">
-                              <ReportDatePicker
-                                label={t("reports.ui.dateFrom")}
-                                value={studentDateFrom}
-                                onChange={setStudentDateFrom}
-                              />
-                              <ReportDatePicker
-                                label={t("reports.ui.dateTo")}
-                                value={studentDateTo}
-                                onChange={setStudentDateTo}
-                              />
-                            </div>
+                            <ReportsDateField
+                              label={t("reports.ui.dateFrom")}
+                              value={studentDateFrom}
+                              onChange={setStudentDateFrom}
+                            />
+                            <ReportsDateField
+                              label={t("reports.ui.dateTo")}
+                              value={studentDateTo}
+                              onChange={setStudentDateTo}
+                            />
                           </div>
                           <div className="flex flex-col gap-1.5">
-                            <span className="text-xs text-foreground/50">{t("reports.ui.attendanceRecordsStatusFilter")}</span>
+                            <span className="text-xs text-foreground/50">
+                              {t("reports.ui.attendanceRecordsStatusFilter")}
+                            </span>
                             <div className="flex flex-wrap gap-1.5">
                               {(["present", "absent", "late", "early_pickup"] as const).map((status) => {
                                 const label = {
@@ -849,25 +869,28 @@ export function ReportsPage({ group }: ReportsPageProps) {
                                   early_pickup: t("reports.pdf.colPartial"),
                                 }[status];
                                 const active = studentAttendanceStatuses.has(status);
+
                                 return (
-                                  <button
+                                  <Badge
                                     key={status}
-                                    type="button"
+                                    variant={active ? "default" : "outline"}
+                                    className={cn(
+                                      "cursor-pointer transition-transform active:scale-95",
+                                      active
+                                        ? "border-accent/40 bg-accent/15 text-accent"
+                                        : "text-foreground/35",
+                                    )}
                                     onClick={() => {
                                       setStudentAttendanceStatuses((prev) => {
                                         const next = new Set(prev);
-                                        next.has(status) ? next.delete(status) : next.add(status);
+                                        if (next.has(status)) next.delete(status);
+                                        else next.add(status);
                                         return next;
                                       });
                                     }}
-                                    className={`px-2.5 py-0.5 rounded-full text-xs font-medium border transition-colors ${
-                                      active
-                                        ? "bg-accent/15 text-accent border-accent/40"
-                                        : "bg-transparent text-foreground/35 border-foreground/15"
-                                    }`}
                                   >
                                     {label}
-                                  </button>
+                                  </Badge>
                                 );
                               })}
                             </div>
@@ -881,7 +904,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.studentGradeSummaryLabel")}
                       description={t("reports.ui.studentGradeSummaryDescription")}
                       checked={sections.has("student-grade-summary")}
-                      onChange={(v) => toggleSection("student-grade-summary", v)}
+                      onChange={(value) => toggleSection("student-grade-summary", value)}
                     />
 
                     <SectionToggle
@@ -889,31 +912,28 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.gradesLabel")}
                       description={t("reports.ui.gradesDescription")}
                       checked={sections.has("student-grades")}
-                      onChange={(v) => toggleSection("student-grades", v)}
+                      onChange={(value) => toggleSection("student-grades", value)}
                     >
                       {sections.has("student-grades") && studentAvailablePeriods.length > 0 && (
                         <div className="mt-2 flex flex-col gap-1.5">
                           <span className="text-xs text-foreground/50">{t("reports.ui.period")}</span>
                           <Select
-                            aria-label="Period filter"
-                            selectedKey={studentGradesPeriod || "__all__"}
-                            onSelectionChange={(k) =>
-                              setStudentGradesPeriod(k === "__all__" ? "" : String(k))
+                            value={studentGradesPeriod || "__all__"}
+                            onValueChange={(value) =>
+                              setStudentGradesPeriod(value === "__all__" ? "" : value ?? "")
                             }
-                            className="w-full"
                           >
-                            <Select.Trigger>
-                              <Select.Value />
-                              <Select.Indicator />
-                            </Select.Trigger>
-                            <Select.Popover>
-                              <ListBox>
-                                <ListBox.Item id="__all__" textValue={t("reports.ui.allPeriods")}>{t("reports.ui.allPeriods")}</ListBox.Item>
-                                {studentAvailablePeriods.map((p) => (
-                                  <ListBox.Item key={p} id={p} textValue={p}>{p}</ListBox.Item>
-                                ))}
-                              </ListBox>
-                            </Select.Popover>
+                            <SelectTrigger className="w-full">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="__all__">{t("reports.ui.allPeriods")}</SelectItem>
+                              {studentAvailablePeriods.map((period) => (
+                                <SelectItem key={period} value={period}>
+                                  {period}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
                           </Select>
                         </div>
                       )}
@@ -923,44 +943,39 @@ export function ReportsPage({ group }: ReportsPageProps) {
               </>
             )}
 
-            {/* Generate button */}
             <div className="flex flex-col gap-2 pt-1">
-              <Button
-                variant="primary"
-                fullWidth
-                isDisabled={!canGenerate}
-                onPress={handleGenerate}
-              >
+              <Button className="w-full" disabled={!canGenerate} onClick={handleGenerate}>
                 {generating ? t("reports.ui.saving") : t("reports.ui.saveToFolder")}
               </Button>
               {sections.size === 0 && (scope === "group" || selectedStudentId !== null) && (
-                <p className="text-xs text-center text-foreground/30">
+                <p className="text-center text-xs text-foreground/30">
                   {t("reports.ui.selectAtLeastOne")}
                 </p>
               )}
               {scope === "individual" && selectedStudentId === null && (
-                <p className="text-xs text-center text-foreground/30">
+                <p className="text-center text-xs text-foreground/30">
                   {t("reports.ui.selectStudentFirst")}
                 </p>
               )}
             </div>
 
             {result && (
-              <Surface
-                className={`flex items-start gap-2 px-3 py-2.5 rounded-lg text-sm ${
-                  result.ok ? "border-success/30 bg-success/5" : "border-danger/30 bg-danger/5"
-                }`}
+              <div
+                className={cn(
+                  "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-sm",
+                  result.ok ? "border-success/30 bg-success/5" : "border-danger/30 bg-danger/5",
+                )}
               >
                 {result.ok ? (
-                  <CheckCircle size={14} className="text-success mt-0.5 shrink-0" />
+                  <CheckCircle size={14} className="mt-0.5 shrink-0 text-success" />
                 ) : (
-                  <AlertCircle size={14} className="text-danger mt-0.5 shrink-0" />
+                  <AlertCircle size={14} className="mt-0.5 shrink-0 text-danger" />
                 )}
-                <div className="flex-1 min-w-0">
+                <div className="min-w-0 flex-1">
                   <p className="break-all text-xs leading-relaxed">{result.message}</p>
                   {result.ok && result.filePath && (
                     <button
-                      className="flex items-center gap-1 mt-1.5 text-xs text-foreground/50 hover:text-foreground/80 transition-colors"
+                      className="mt-1.5 flex items-center gap-1 text-xs text-foreground/50 transition-colors hover:text-foreground/80"
                       onClick={() => revealItemInDir(result.filePath!)}
                     >
                       <FolderOpen size={11} />
@@ -968,30 +983,31 @@ export function ReportsPage({ group }: ReportsPageProps) {
                     </button>
                   )}
                 </div>
-              </Surface>
+              </div>
             )}
           </div>
         </div>
 
-        {/* Right: live preview */}
-        <div className="flex-1 flex flex-col min-w-0 bg-foreground/[0.03]">
-          <div className="flex items-center gap-2 px-4 py-2 border-b border-border bg-background shrink-0">
-            <span className="text-xs font-medium text-foreground/40 uppercase tracking-wide">
-              {t("reports.ui.preview")}
-            </span>
-            {previewLoading && (
-              <span className="flex items-center gap-1.5 text-xs text-foreground/40">
-                <span className="w-3 h-3 border border-foreground/20 border-t-foreground/60 rounded-full animate-spin" />
-                {t("reports.ui.previewUpdating")}
+        <div className="flex min-w-0 flex-1 flex-col bg-foreground/[0.03]">
+          <div className="shrink-0 border-b border-border bg-background px-4 py-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-medium uppercase tracking-wide text-foreground/40">
+                {t("reports.ui.preview")}
               </span>
-            )}
+              {previewLoading && (
+                <span className="flex items-center gap-1.5 text-xs text-foreground/40">
+                  <span className="h-3 w-3 animate-spin rounded-full border border-foreground/20 border-t-foreground/60" />
+                  {t("reports.ui.previewUpdating")}
+                </span>
+              )}
+            </div>
           </div>
 
-          <div className="flex-1 relative">
+          <div className="relative flex-1">
             {previewUrl && (
               <iframe
                 src={previewUrl}
-                className="absolute inset-0 w-full h-full border-0"
+                className="absolute inset-0 h-full w-full border-0"
                 title="PDF Preview"
               />
             )}
@@ -999,7 +1015,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
             {stagedPreviewUrl && (
               <iframe
                 src={stagedPreviewUrl}
-                className="absolute inset-0 w-full h-full border-0 opacity-0 pointer-events-none"
+                className="pointer-events-none absolute inset-0 h-full w-full border-0 opacity-0"
                 title="PDF Preview Loading"
                 onLoad={handleStagedPreviewLoad}
               />
@@ -1018,8 +1034,10 @@ export function ReportsPage({ group }: ReportsPageProps) {
 
             {previewLoading && (
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/35 text-foreground/30 backdrop-blur-[1px]">
-                <span className="w-8 h-8 border-2 border-foreground/10 border-t-foreground/40 rounded-full animate-spin" />
-                <p className="text-sm">{previewUrl ? t("reports.ui.previewRefreshing") : t("reports.ui.previewBuilding")}</p>
+                <span className="h-8 w-8 animate-spin rounded-full border-2 border-foreground/10 border-t-foreground/40" />
+                <p className="text-sm">
+                  {previewUrl ? t("reports.ui.previewRefreshing") : t("reports.ui.previewBuilding")}
+                </p>
               </div>
             )}
           </div>
@@ -1034,33 +1052,37 @@ interface SectionToggleProps {
   label: string;
   description: string;
   checked: boolean;
-  onChange: (v: boolean) => void;
+  onChange: (value: boolean) => void;
   children?: React.ReactNode;
 }
 
-function SectionToggle({ id, label, description, checked, onChange, children }: SectionToggleProps) {
+function SectionToggle({
+  id,
+  label,
+  description,
+  checked,
+  onChange,
+  children,
+}: SectionToggleProps) {
   return (
-    <Surface
-      className={`px-4 py-3 rounded-lg transition-all ${
-        checked ? "ring-1 ring-accent/40" : "opacity-80"
-      }`}
+    <div
+      className={cn(
+        "rounded-lg border bg-background px-4 py-3 transition-all",
+        checked ? "ring-1 ring-accent/40" : "opacity-80",
+      )}
     >
-      <div className="flex items-start gap-3">
-        <label htmlFor={id} className="flex items-start gap-3 flex-1 min-w-0 cursor-pointer">
-          <input
-            id={id}
-            type="checkbox"
-            className="mt-0.5 accent-[var(--color-accent)]"
-            checked={checked}
-            onChange={(e) => onChange(e.target.checked)}
-          />
-          <div className="flex-1 min-w-0">
-            <p className="text-sm font-medium">{label}</p>
-            <p className="text-xs text-foreground/50 mt-0.5">{description}</p>
-          </div>
-        </label>
-      </div>
-      {children ? <div className="mt-2 ml-6">{children}</div> : null}
-    </Surface>
+      <label htmlFor={id} className="flex cursor-pointer items-start gap-3">
+        <Checkbox
+          checked={checked}
+          onCheckedChange={(value) => onChange(value === true)}
+          aria-label={label}
+        />
+        <div className="min-w-0 flex-1">
+          <p className="text-sm font-medium">{label}</p>
+          <p className="mt-0.5 text-xs text-foreground/50">{description}</p>
+        </div>
+      </label>
+      {children ? <div className="mt-2 ml-7">{children}</div> : null}
+    </div>
   );
 }
