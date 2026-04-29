@@ -36,6 +36,7 @@ import { SchedulePage } from "./pages/SchedulePage";
 import { AttendancePage } from "./pages/AttendancePage";
 import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { AssignmentDetailPage } from "./pages/AssignmentDetailPage";
+import { ConfirmModal } from "./components/ConfirmModal";
 import { EditGroupPage } from "./pages/EditGroupPage";
 import { SettingsPage } from "./pages/SettingsPage";
 import { ReportsPage } from "./pages/ReportsPage";
@@ -184,6 +185,8 @@ function AppContent() {
   const { theme, setTheme } = useAppTheme();
   const { colorTheme, setColorTheme } = useAppColorTheme();
   const [route, setRoute] = useState<Route>({ page: "groups" });
+  const [assignmentDetailDirty, setAssignmentDetailDirty] = useState(false);
+  const [pendingSidebarNav, setPendingSidebarNav] = useState<(() => void) | null>(null);
   const { groups, loading: groupsLoading } = useGroups();
 
   const goToGroups = () => setRoute({ page: "groups" });
@@ -313,6 +316,14 @@ function AppContent() {
     }
   };
 
+  const guardSidebarNav = (callback: () => void) => {
+    if (route.page === "assignment-detail" && assignmentDetailDirty) {
+      setPendingSidebarNav(() => callback);
+    } else {
+      callback();
+    }
+  };
+
   const sidebarProps = {
     currentPage:
       route.page === "group-edit"
@@ -322,13 +333,13 @@ function AppContent() {
           : route.page,
     currentGroup,
     onSelectGroup: handleSelectGroup,
-    onGoToDashboard: () => currentGroup && goToDashboard(currentGroup),
-    onGoToStudents: () => currentGroup && goToStudents(currentGroup),
-    onGoToAttendance: () => currentGroup && goToAttendance(currentGroup),
-    onGoToAssignments: () => currentGroup && goToAssignments(currentGroup),
-    onGoToReports: () => currentGroup && goToReports(currentGroup),
-    onGoToSettings: () => goToSettings(currentGroup),
-    onGoToGroups: changeGroup,
+    onGoToDashboard: () => guardSidebarNav(() => currentGroup && goToDashboard(currentGroup)),
+    onGoToStudents: () => guardSidebarNav(() => currentGroup && goToStudents(currentGroup)),
+    onGoToAttendance: () => guardSidebarNav(() => currentGroup && goToAttendance(currentGroup)),
+    onGoToAssignments: () => guardSidebarNav(() => currentGroup && goToAssignments(currentGroup)),
+    onGoToReports: () => guardSidebarNav(() => currentGroup && goToReports(currentGroup)),
+    onGoToSettings: () => guardSidebarNav(() => goToSettings(currentGroup)),
+    onGoToGroups: () => guardSidebarNav(changeGroup),
   };
 
   const commandItems = useMemo<CommandPaletteItem[]>(() => {
@@ -695,6 +706,7 @@ function AppContent() {
             onGoToGroups={goToGroups}
             onGoToStudents={() => goToStudents(route.group)}
             onGoToAssignments={() => goToAssignments(route.group)}
+            onDirtyChange={setAssignmentDetailDirty}
           />
         );
       case "group-edit":
@@ -783,6 +795,19 @@ function AppContent() {
           </main>
         </div>
       </div>
+
+      <ConfirmModal
+        isOpen={pendingSidebarNav !== null}
+        onClose={() => setPendingSidebarNav(null)}
+        onConfirm={() => {
+          pendingSidebarNav?.();
+          setPendingSidebarNav(null);
+          setAssignmentDetailDirty(false);
+        }}
+        title={t("assignmentDetail.leaveModalTitle")}
+        description={t("assignmentDetail.leaveModalDescription")}
+        confirmLabel={t("assignmentDetail.leaveModalConfirm")}
+      />
 
       <CommandPalette
         isOpen={isPaletteOpen}

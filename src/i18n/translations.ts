@@ -596,6 +596,11 @@ const en = {
     editNote: "Edit Note",
     noteModalTitle: "Note",
     noteSave: "Save",
+    saveModalTitle: "Save Changes",
+    saveModalDescription: "Save all pending grade changes for this assignment?",
+    leaveModalTitle: "Unsaved Changes",
+    leaveModalDescription: "You have unsaved changes. Leave and discard them?",
+    leaveModalConfirm: "Leave",
   },
   settings: {
     title: "Settings",
@@ -1599,6 +1604,11 @@ const es: typeof en = {
     editNote: "Editar nota",
     noteModalTitle: "Nota",
     noteSave: "Guardar",
+    saveModalTitle: "Guardar cambios",
+    saveModalDescription: "¿Guardar todos los cambios pendientes para esta tarea?",
+    leaveModalTitle: "Cambios sin guardar",
+    leaveModalDescription: "Tienes cambios sin guardar. ¿Salir y descartarlos?",
+    leaveModalConfirm: "Salir",
   },
   settings: {
     title: "Configuración",

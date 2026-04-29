@@ -19,6 +19,7 @@ import {
 } from "@heroui/react";
 import { Check, Inbox, MoreHorizontal } from "lucide-react";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { ConfirmModal } from "../components/ConfirmModal";
 import { useAssignmentDetail } from "../hooks/useAssignmentDetail";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
@@ -30,6 +31,7 @@ interface AssignmentDetailPageProps {
   onGoToGroups: () => void;
   onGoToStudents: () => void;
   onGoToAssignments: () => void;
+  onDirtyChange?: (isDirty: boolean) => void;
 }
 
 const BAND_COLORS: Record<GradeBand, { bar: string; text: string }> = {
@@ -53,6 +55,7 @@ export function AssignmentDetailPage({
   onGoToGroups,
   onGoToStudents,
   onGoToAssignments,
+  onDirtyChange,
 }: AssignmentDetailPageProps) {
   const { scores, loading, error, upsertScore, setExempt, setLate, setNote, stats } = useAssignmentDetail(
     assignment.id,
@@ -62,14 +65,31 @@ export function AssignmentDetailPage({
   const { t } = useTranslation();
 
   const [pendingScores, setPendingScores] = useState<Map<number, string>>(new Map());
+  const [pendingLate, setPendingLate] = useState<Map<number, boolean>>(new Map());
+  const [pendingExempt, setPendingExempt] = useState<Map<number, boolean>>(new Map());
+
   const [noteModal, setNoteModal] = useState<NoteModalState | null>(null);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
   const noteOverlay = useOverlayState();
 
+  const [saveModalOpen, setSaveModalOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [pendingNav, setPendingNav] = useState<(() => void) | null>(null);
+
+  const hasChanges = pendingScores.size > 0 || pendingLate.size > 0 || pendingExempt.size > 0;
+
   useEffect(() => {
-    setPendingScores(new Map());
-  }, [scores]);
+    onDirtyChange?.(hasChanges);
+  }, [hasChanges]);
+
+  function guardedNav(callback: () => void) {
+    if (hasChanges) {
+      setPendingNav(() => callback);
+    } else {
+      callback();
+    }
+  }
 
   const openNoteModal = (studentId: number, studentName: string, currentNote: string | null) => {
     setNoteModal({ studentId, studentName, currentNote });
@@ -107,29 +127,63 @@ export function AssignmentDetailPage({
     });
   };
 
-  const handleBlur = async (studentId: number, value: string) => {
+  const handleBlur = (studentId: number, value: string) => {
     const trimmed = value.trim();
     const parsed = trimmed === "" ? null : parseFloat(trimmed);
-    if (parsed !== null && isNaN(parsed)) return;
-    await upsertScore(studentId, parsed);
+    if (parsed !== null && isNaN(parsed)) {
+      setPendingScores((prev) => {
+        const next = new Map(prev);
+        next.delete(studentId);
+        return next;
+      });
+    }
+  };
+
+  const saveAll = async () => {
+    setSaving(true);
+    try {
+      for (const [studentId, scoreStr] of pendingScores) {
+        const trimmed = scoreStr.trim();
+        const score = trimmed === "" ? null : parseFloat(trimmed);
+        await upsertScore(studentId, score);
+      }
+      for (const [studentId, late] of pendingLate) {
+        await setLate(studentId, late);
+      }
+      for (const [studentId, exempt] of pendingExempt) {
+        await setExempt(studentId, exempt);
+      }
+      setPendingScores(new Map());
+      setPendingLate(new Map());
+      setPendingExempt(new Map());
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (
     <div className="p-6 flex flex-col h-full">
       <Breadcrumb
         items={[
-          { label: t("groups.breadcrumb"), onClick: onGoToGroups },
-          { label: group.name, onClick: onGoToStudents },
-          { label: t("assignments.breadcrumb"), onClick: onGoToAssignments },
+          { label: t("groups.breadcrumb"), onClick: () => guardedNav(onGoToGroups) },
+          { label: group.name, onClick: () => guardedNav(onGoToStudents) },
+          { label: t("assignments.breadcrumb"), onClick: () => guardedNav(onGoToAssignments) },
           { label: assignment.title },
         ]}
       />
 
-      <div className="mb-6">
-        <h2 className="text-2xl font-bold">{assignment.title}</h2>
-        <p className="text-sm text-muted mt-0.5">
-          {assignment.period_name} · {assignment.max_score} {t("assignmentDetail.ptsMax")}
-        </p>
+      <div className="mb-6 flex items-start justify-between gap-4">
+        <div>
+          <h2 className="text-2xl font-bold">{assignment.title}</h2>
+          <p className="text-sm text-muted mt-0.5">
+            {assignment.period_name} · {assignment.max_score} {t("assignmentDetail.ptsMax")}
+          </p>
+        </div>
+        {hasChanges && (
+          <Button size="sm" variant="primary" onPress={() => setSaveModalOpen(true)}>
+            {t("common.save")}
+          </Button>
+        )}
       </div>
 
       {assignment.description && (
@@ -221,8 +275,12 @@ export function AssignmentDetailPage({
                     {scores.map((row) => {
                       const displayVal = getDisplayValue(row.student_id, row.score);
                       const isExtraCredit = row.score !== null && row.score > assignment.max_score;
-                      const isExempt = row.exempt === 1;
-                      const isLate = Boolean(row.late);
+                      const isExempt = pendingExempt.has(row.student_id)
+                        ? pendingExempt.get(row.student_id)!
+                        : row.exempt === 1;
+                      const isLate = pendingLate.has(row.student_id)
+                        ? pendingLate.get(row.student_id)!
+                        : Boolean(row.late);
 
                       return (
                         <TableRow key={row.student_id} id={row.student_id}>
@@ -242,24 +300,38 @@ export function AssignmentDetailPage({
                                 <Dropdown.Menu>
                                   <Dropdown.Item
                                     id="late"
-                                    onAction={() => setLate(row.student_id, !isLate)}
+                                    onAction={() => {
+                                      const next = !isLate;
+                                      setPendingLate((prev) => {
+                                        const m = new Map(prev);
+                                        m.set(row.student_id, next);
+                                        return m;
+                                      });
+                                    }}
                                   >
-                                    <span className="flex items-center gap-2">
+                                    <span className="flex items-center justify-between gap-2">
+                                      {isLate ? t("assignmentDetail.removeLate") : t("assignmentDetail.markAsLate")}
                                       {isLate
                                         ? <Check size={12} className="text-warning" />
                                         : <span className="w-3" />}
-                                      {isLate ? t("assignmentDetail.removeLate") : t("assignmentDetail.markAsLate")}
                                     </span>
                                   </Dropdown.Item>
                                   <Dropdown.Item
                                     id="exempt"
-                                    onAction={() => setExempt(row.student_id, !isExempt)}
+                                    onAction={() => {
+                                      const next = !isExempt;
+                                      setPendingExempt((prev) => {
+                                        const m = new Map(prev);
+                                        m.set(row.student_id, next);
+                                        return m;
+                                      });
+                                    }}
                                   >
-                                    <span className="flex items-center gap-2">
+                                    <span className="flex items-center justify-between gap-2">
+                                      {isExempt ? t("assignmentDetail.removeExempt") : t("assignmentDetail.markAsExempt")}
                                       {isExempt
                                         ? <Check size={12} className="text-accent" />
                                         : <span className="w-3" />}
-                                      {isExempt ? t("assignmentDetail.removeExempt") : t("assignmentDetail.markAsExempt")}
                                     </span>
                                   </Dropdown.Item>
                                   <Dropdown.Item
@@ -354,6 +426,31 @@ export function AssignmentDetailPage({
           </Modal.Container>
         </Modal.Backdrop>
       </Modal>
+
+      <ConfirmModal
+        isOpen={saveModalOpen}
+        onClose={() => setSaveModalOpen(false)}
+        onConfirm={async () => {
+          await saveAll();
+          setSaveModalOpen(false);
+        }}
+        title={t("assignmentDetail.saveModalTitle")}
+        description={t("assignmentDetail.saveModalDescription")}
+        confirmLabel={t("common.save")}
+        loading={saving}
+      />
+
+      <ConfirmModal
+        isOpen={pendingNav !== null}
+        onClose={() => setPendingNav(null)}
+        onConfirm={() => {
+          pendingNav?.();
+          setPendingNav(null);
+        }}
+        title={t("assignmentDetail.leaveModalTitle")}
+        description={t("assignmentDetail.leaveModalDescription")}
+        confirmLabel={t("assignmentDetail.leaveModalConfirm")}
+      />
     </div>
   );
 }
