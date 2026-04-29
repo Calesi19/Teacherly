@@ -59,7 +59,7 @@ export function SettingsPage({
   const defaultTab = hasGroupTab ? "group" : "presentation";
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto px-6 pt-6 pb-6 pl-3">
+    <div className="flex h-full flex-col overflow-y-auto px-6 pt-8 pb-6 pl-3">
       <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col">
         <div className="mb-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>

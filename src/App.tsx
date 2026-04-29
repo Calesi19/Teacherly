@@ -688,18 +688,10 @@ function AppContent() {
   }
 
   const showSidebar = !(route.page === "settings" && route.group === null);
-  const showWindowsBar = navigator.userAgent.toLowerCase().includes("windows");
 
   return (
     <div className="app-container">
-      {showWindowsBar ? (
-        <WindowBar />
-      ) : (
-        <div
-          data-tauri-drag-region
-          className="fixed top-0 left-0 right-0 h-7 z-50"
-        />
-      )}
+      <WindowBar />
 
       <div className="flex h-screen overflow-hidden">
         {showSidebar && (
