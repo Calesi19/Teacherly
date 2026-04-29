@@ -119,12 +119,16 @@ export function AssignmentsPage({
                 className="w-40"
               />
               {periods.length > 0 && (
-                <Select
-                  value={selectedPeriod}
-                  onValueChange={(value) => setSelectedPeriod(value ?? "all")}
-                >
+                  <Select
+                    value={selectedPeriod}
+                    onValueChange={(value) => setSelectedPeriod(value ?? "all")}
+                  >
                     <SelectTrigger className="w-36">
-                      <SelectValue placeholder={t("assignments.allPeriods")} />
+                      <SelectValue placeholder={t("assignments.allPeriods")}>
+                        {selectedPeriod === "all"
+                          ? t("assignments.allPeriods")
+                          : selectedPeriod}
+                      </SelectValue>
                     </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">
@@ -143,7 +147,9 @@ export function AssignmentsPage({
                 onValueChange={(value) => setSelectedTag(value ?? "all")}
               >
                   <SelectTrigger className="w-36">
-                    <SelectValue placeholder={t("assignments.tags.all")} />
+                    <SelectValue placeholder={t("assignments.tags.all")}>
+                      {tagLabels[selectedTag] ?? t("assignments.tags.all")}
+                    </SelectValue>
                   </SelectTrigger>
                 <SelectContent>
                   {(["all", ...TAG_OPTIONS] as string[]).map((tag) => (

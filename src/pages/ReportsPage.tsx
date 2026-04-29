@@ -102,7 +102,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
 
   const [scope, setScope] = useState<Scope>("group");
   const [groupStudents, setGroupStudents] = useState<Student[]>([]);
-  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState<number | null>(
+    null,
+  );
   const [sections, setSections] = useState<Set<SectionId>>(new Set());
 
   const [dateFrom, setDateFrom] = useState("");
@@ -113,19 +115,27 @@ export function ReportsPage({ group }: ReportsPageProps) {
   const [noteTagFilter, setNoteTagFilter] = useState("");
   const [studentDateFrom, setStudentDateFrom] = useState("");
   const [studentDateTo, setStudentDateTo] = useState("");
-  const [studentAttendanceStatuses, setStudentAttendanceStatuses] = useState<Set<string>>(
-    new Set(["present", "absent", "late", "early_pickup"]),
+  const [studentAttendanceStatuses, setStudentAttendanceStatuses] = useState<
+    Set<string>
+  >(new Set(["present", "absent", "late", "early_pickup"]));
+  const [studentSummaryDateFrom, setStudentSummaryDateFrom] = useState(
+    () => group.start_date ?? "",
   );
-  const [studentSummaryDateFrom, setStudentSummaryDateFrom] = useState(() => group.start_date ?? "");
   const [studentSummaryDateTo, setStudentSummaryDateTo] = useState(() => {
     const today = new Date().toISOString().slice(0, 10);
     return group.end_date && today > group.end_date ? group.end_date : today;
   });
   const [studentGradesPeriod, setStudentGradesPeriod] = useState("");
-  const [studentAvailablePeriods, setStudentAvailablePeriods] = useState<string[]>([]);
+  const [studentAvailablePeriods, setStudentAvailablePeriods] = useState<
+    string[]
+  >([]);
 
   const [generating, setGenerating] = useState(false);
-  const [result, setResult] = useState<{ ok: boolean; message: string; filePath?: string } | null>(null);
+  const [result, setResult] = useState<{
+    ok: boolean;
+    message: string;
+    filePath?: string;
+  } | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [stagedPreviewUrl, setStagedPreviewUrl] = useState<string | null>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
@@ -134,12 +144,18 @@ export function ReportsPage({ group }: ReportsPageProps) {
   const stagedPreviewUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
-    fetchStudentsForReport(group.id).then(setGroupStudents).catch(() => {});
-    fetchDistinctPeriods(group.id).then(setAvailablePeriods).catch(() => {});
+    fetchStudentsForReport(group.id)
+      .then(setGroupStudents)
+      .catch(() => {});
+    fetchDistinctPeriods(group.id)
+      .then(setAvailablePeriods)
+      .catch(() => {});
     setResult(null);
     setStudentSummaryDateFrom(group.start_date ?? "");
     const today = new Date().toISOString().slice(0, 10);
-    setStudentSummaryDateTo(group.end_date && today > group.end_date ? group.end_date : today);
+    setStudentSummaryDateTo(
+      group.end_date && today > group.end_date ? group.end_date : today,
+    );
   }, [group.id, group.end_date, group.start_date]);
 
   useEffect(() => {
@@ -195,9 +211,15 @@ export function ReportsPage({ group }: ReportsPageProps) {
 
         if (scope === "group") {
           const [students, attendanceRows, gradeData] = await Promise.all([
-            sections.has("roster") ? fetchStudentsForReport(group.id) : Promise.resolve(null),
+            sections.has("roster")
+              ? fetchStudentsForReport(group.id)
+              : Promise.resolve(null),
             sections.has("attendance")
-              ? fetchAttendanceSummary(group.id, dateFrom || undefined, dateTo || undefined)
+              ? fetchAttendanceSummary(
+                  group.id,
+                  dateFrom || undefined,
+                  dateTo || undefined,
+                )
               : Promise.resolve(null),
             sections.has("grades")
               ? fetchGradeSummary(group.id, gradesPeriod || undefined)
@@ -212,7 +234,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
               generatedDate={new Date().toLocaleDateString()}
               language={language}
             >
-              {students ? <StudentRosterSection students={students} language={language} /> : null}
+              {students ? (
+                <StudentRosterSection students={students} language={language} />
+              ) : null}
               {attendanceRows ? (
                 <AttendanceSummarySection
                   rows={attendanceRows}
@@ -246,11 +270,21 @@ export function ReportsPage({ group }: ReportsPageProps) {
             courseSummary,
           ] = await Promise.all([
             fetchStudentProfile(sid),
-            sections.has("contacts") ? fetchStudentContacts(sid) : Promise.resolve(null),
-            sections.has("addresses") ? fetchStudentAddresses(sid) : Promise.resolve(null),
-            sections.has("services") ? fetchStudentServices(sid) : Promise.resolve(null),
-            sections.has("accommodations") ? fetchStudentAccommodations(sid) : Promise.resolve(null),
-            sections.has("observations") ? fetchStudentObservations(sid) : Promise.resolve(null),
+            sections.has("contacts")
+              ? fetchStudentContacts(sid)
+              : Promise.resolve(null),
+            sections.has("addresses")
+              ? fetchStudentAddresses(sid)
+              : Promise.resolve(null),
+            sections.has("services")
+              ? fetchStudentServices(sid)
+              : Promise.resolve(null),
+            sections.has("accommodations")
+              ? fetchStudentAccommodations(sid)
+              : Promise.resolve(null),
+            sections.has("observations")
+              ? fetchStudentObservations(sid)
+              : Promise.resolve(null),
             sections.has("notes")
               ? fetchStudentNotes(sid, noteTagFilter || undefined)
               : Promise.resolve(null),
@@ -278,7 +312,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
           if (cancelled) return;
 
           const filteredRecords = attendanceRecords
-            ? attendanceRecords.filter((record) => studentAttendanceStatuses.has(record.status))
+            ? attendanceRecords.filter((record) =>
+                studentAttendanceStatuses.has(record.status),
+              )
             : null;
 
           doc = (
@@ -292,19 +328,33 @@ export function ReportsPage({ group }: ReportsPageProps) {
               {sections.has("profile") && student ? (
                 <StudentProfileSection student={student} language={language} />
               ) : null}
-              {contacts ? <ContactsSection contacts={contacts} language={language} /> : null}
-              {addresses ? <AddressesSection addresses={addresses} language={language} /> : null}
+              {contacts ? (
+                <ContactsSection contacts={contacts} language={language} />
+              ) : null}
+              {addresses ? (
+                <AddressesSection addresses={addresses} language={language} />
+              ) : null}
               {services !== null && sections.has("services") ? (
                 <ServicesSection services={services} language={language} />
               ) : null}
               {accommodations !== null && sections.has("accommodations") ? (
-                <AccommodationsSection accommodations={accommodations} language={language} />
+                <AccommodationsSection
+                  accommodations={accommodations}
+                  language={language}
+                />
               ) : null}
               {observations !== null && sections.has("observations") ? (
-                <ObservationsSection observations={observations} language={language} />
+                <ObservationsSection
+                  observations={observations}
+                  language={language}
+                />
               ) : null}
               {notes ? (
-                <NotesSection notes={notes} tagFilter={noteTagFilter || undefined} language={language} />
+                <NotesSection
+                  notes={notes}
+                  tagFilter={noteTagFilter || undefined}
+                  language={language}
+                />
               ) : null}
               {attendanceSummary ? (
                 <StudentAttendanceSummarySection
@@ -323,7 +373,10 @@ export function ReportsPage({ group }: ReportsPageProps) {
                 />
               ) : null}
               {courseSummary ? (
-                <StudentGradeSummarySection courses={courseSummary} language={language} />
+                <StudentGradeSummarySection
+                  courses={courseSummary}
+                  language={language}
+                />
               ) : null}
               {grades ? (
                 <GradesSection
@@ -429,9 +482,15 @@ export function ReportsPage({ group }: ReportsPageProps) {
 
       if (scope === "group") {
         const [students, attendanceRows, gradeData] = await Promise.all([
-          sections.has("roster") ? fetchStudentsForReport(group.id) : Promise.resolve(null),
+          sections.has("roster")
+            ? fetchStudentsForReport(group.id)
+            : Promise.resolve(null),
           sections.has("attendance")
-            ? fetchAttendanceSummary(group.id, dateFrom || undefined, dateTo || undefined)
+            ? fetchAttendanceSummary(
+                group.id,
+                dateFrom || undefined,
+                dateTo || undefined,
+              )
             : Promise.resolve(null),
           sections.has("grades")
             ? fetchGradeSummary(group.id, gradesPeriod || undefined)
@@ -446,7 +505,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
             generatedDate={new Date().toLocaleDateString()}
             language={language}
           >
-            {students ? <StudentRosterSection students={students} language={language} /> : null}
+            {students ? (
+              <StudentRosterSection students={students} language={language} />
+            ) : null}
             {attendanceRows ? (
               <AttendanceSummarySection
                 rows={attendanceRows}
@@ -482,11 +543,21 @@ export function ReportsPage({ group }: ReportsPageProps) {
           courseSummary,
         ] = await Promise.all([
           fetchStudentProfile(sid!),
-          sections.has("contacts") ? fetchStudentContacts(sid!) : Promise.resolve(null),
-          sections.has("addresses") ? fetchStudentAddresses(sid!) : Promise.resolve(null),
-          sections.has("services") ? fetchStudentServices(sid!) : Promise.resolve(null),
-          sections.has("accommodations") ? fetchStudentAccommodations(sid!) : Promise.resolve(null),
-          sections.has("observations") ? fetchStudentObservations(sid!) : Promise.resolve(null),
+          sections.has("contacts")
+            ? fetchStudentContacts(sid!)
+            : Promise.resolve(null),
+          sections.has("addresses")
+            ? fetchStudentAddresses(sid!)
+            : Promise.resolve(null),
+          sections.has("services")
+            ? fetchStudentServices(sid!)
+            : Promise.resolve(null),
+          sections.has("accommodations")
+            ? fetchStudentAccommodations(sid!)
+            : Promise.resolve(null),
+          sections.has("observations")
+            ? fetchStudentObservations(sid!)
+            : Promise.resolve(null),
           sections.has("notes")
             ? fetchStudentNotes(sid!, noteTagFilter || undefined)
             : Promise.resolve(null),
@@ -513,7 +584,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
         ]);
 
         const filteredRecords = attendanceRecords
-          ? attendanceRecords.filter((record) => studentAttendanceStatuses.has(record.status))
+          ? attendanceRecords.filter((record) =>
+              studentAttendanceStatuses.has(record.status),
+            )
           : null;
 
         doc = (
@@ -527,19 +600,33 @@ export function ReportsPage({ group }: ReportsPageProps) {
             {sections.has("profile") && student ? (
               <StudentProfileSection student={student} language={language} />
             ) : null}
-            {contacts ? <ContactsSection contacts={contacts} language={language} /> : null}
-            {addresses ? <AddressesSection addresses={addresses} language={language} /> : null}
+            {contacts ? (
+              <ContactsSection contacts={contacts} language={language} />
+            ) : null}
+            {addresses ? (
+              <AddressesSection addresses={addresses} language={language} />
+            ) : null}
             {services !== null && sections.has("services") ? (
               <ServicesSection services={services} language={language} />
             ) : null}
             {accommodations !== null && sections.has("accommodations") ? (
-              <AccommodationsSection accommodations={accommodations} language={language} />
+              <AccommodationsSection
+                accommodations={accommodations}
+                language={language}
+              />
             ) : null}
             {observations !== null && sections.has("observations") ? (
-              <ObservationsSection observations={observations} language={language} />
+              <ObservationsSection
+                observations={observations}
+                language={language}
+              />
             ) : null}
             {notes ? (
-              <NotesSection notes={notes} tagFilter={noteTagFilter || undefined} language={language} />
+              <NotesSection
+                notes={notes}
+                tagFilter={noteTagFilter || undefined}
+                language={language}
+              />
             ) : null}
             {attendanceSummary ? (
               <StudentAttendanceSummarySection
@@ -558,7 +645,10 @@ export function ReportsPage({ group }: ReportsPageProps) {
               />
             ) : null}
             {courseSummary ? (
-              <StudentGradeSummarySection courses={courseSummary} language={language} />
+              <StudentGradeSummarySection
+                courses={courseSummary}
+                language={language}
+              />
             ) : null}
             {grades ? (
               <GradesSection
@@ -569,14 +659,20 @@ export function ReportsPage({ group }: ReportsPageProps) {
             ) : null}
           </PdfDocument>
         );
-        const safeName = (student?.name ?? "student").replace(/[^a-z0-9]/gi, "-").toLowerCase();
+        const safeName = (student?.name ?? "student")
+          .replace(/[^a-z0-9]/gi, "-")
+          .toLowerCase();
         const ts = new Date().toISOString().slice(0, 10);
         filename = `student-${safeName}-${ts}.pdf`;
       }
 
       const blob = await pdf(doc).toBlob();
       const bytes = new Uint8Array(await blob.arrayBuffer());
-      const base64 = btoa(Array.from(bytes).map((b) => String.fromCharCode(b)).join(""));
+      const base64 = btoa(
+        Array.from(bytes)
+          .map((b) => String.fromCharCode(b))
+          .join(""),
+      );
 
       const lastDir = localStorage.getItem(REPORTS_LAST_DIR_KEY) ?? undefined;
       const defaultPath = lastDir ? `${lastDir}/${filename}` : filename;
@@ -616,11 +712,11 @@ export function ReportsPage({ group }: ReportsPageProps) {
     <div className="flex h-full flex-col">
       <div className="flex min-h-0 flex-1">
         <div className="flex w-88 shrink-0 flex-col overflow-y-auto border-r border-border">
-          <div className="shrink-0 border-b border-border px-5 pt-6 pb-4">
+          <div className="shrink-0 border-b border-border px-3 pt-3">
             <h2 className="text-2xl font-bold">{t("reports.ui.title")}</h2>
           </div>
 
-          <div className="flex flex-col gap-4 p-5">
+          <div className="flex flex-col gap-4 p-3">
             <div className="flex gap-1 rounded-lg bg-foreground/5 p-1">
               {(["group", "individual"] as Scope[]).map((value) => (
                 <button
@@ -633,7 +729,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       : "text-foreground/50 hover:text-foreground/70",
                   )}
                 >
-                  {value === "group" ? t("reports.ui.scopeGroup") : t("reports.ui.scopeStudent")}
+                  {value === "group"
+                    ? t("reports.ui.scopeGroup")
+                    : t("reports.ui.scopeStudent")}
                 </button>
               ))}
             </div>
@@ -661,9 +759,19 @@ export function ReportsPage({ group }: ReportsPageProps) {
                 >
                   {sections.has("attendance") && (
                     <div className="mt-2 flex flex-col gap-2">
-                      <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
-                      <ReportsDateField label={t("reports.ui.dateFrom")} value={dateFrom} onChange={setDateFrom} />
-                      <ReportsDateField label={t("reports.ui.dateTo")} value={dateTo} onChange={setDateTo} />
+                      <span className="text-xs text-foreground/50">
+                        {t("reports.ui.dateRange")}
+                      </span>
+                      <ReportsDateField
+                        label={t("reports.ui.dateFrom")}
+                        value={dateFrom}
+                        onChange={setDateFrom}
+                      />
+                      <ReportsDateField
+                        label={t("reports.ui.dateTo")}
+                        value={dateTo}
+                        onChange={setDateTo}
+                      />
                     </div>
                   )}
                 </SectionToggle>
@@ -677,16 +785,24 @@ export function ReportsPage({ group }: ReportsPageProps) {
                 >
                   {sections.has("grades") && availablePeriods.length > 0 && (
                     <div className="mt-2 flex flex-col gap-1.5">
-                      <span className="text-xs text-foreground/50">{t("reports.ui.period")}</span>
+                      <span className="text-xs text-foreground/50">
+                        {t("reports.ui.period")}
+                      </span>
                       <Select
                         value={gradesPeriod || "__all__"}
-                        onValueChange={(value) => setGradesPeriod(value === "__all__" ? "" : value ?? "")}
+                        onValueChange={(value) =>
+                          setGradesPeriod(
+                            value === "__all__" ? "" : (value ?? ""),
+                          )
+                        }
                       >
                         <SelectTrigger className="w-full">
                           <SelectValue />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="__all__">{t("reports.ui.allPeriods")}</SelectItem>
+                          <SelectItem value="__all__">
+                            {t("reports.ui.allPeriods")}
+                          </SelectItem>
                           {availablePeriods.map((period) => (
                             <SelectItem key={period} value={period}>
                               {period}
@@ -707,7 +823,11 @@ export function ReportsPage({ group }: ReportsPageProps) {
                     {t("reports.ui.student")}
                   </span>
                   <Select
-                    value={selectedStudentId !== null ? String(selectedStudentId) : "__none__"}
+                    value={
+                      selectedStudentId !== null
+                        ? String(selectedStudentId)
+                        : "__none__"
+                    }
                     onValueChange={(value) => {
                       const next = value === "__none__" ? null : Number(value);
                       setSelectedStudentId(next);
@@ -719,7 +839,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       <SelectValue placeholder={t("reports.ui.student")} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="__none__">{t("reports.ui.selectStudentFirst")}</SelectItem>
+                      <SelectItem value="__none__">
+                        {t("reports.ui.selectStudentFirst")}
+                      </SelectItem>
                       {groupStudents.map((student) => (
                         <SelectItem key={student.id} value={String(student.id)}>
                           {student.name}
@@ -768,7 +890,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.accommodationsLabel")}
                       description={t("reports.ui.accommodationsDescription")}
                       checked={sections.has("accommodations")}
-                      onChange={(value) => toggleSection("accommodations", value)}
+                      onChange={(value) =>
+                        toggleSection("accommodations", value)
+                      }
                     />
                     <SectionToggle
                       id="observations"
@@ -787,19 +911,28 @@ export function ReportsPage({ group }: ReportsPageProps) {
                     >
                       {sections.has("notes") && (
                         <div className="mt-2 flex flex-col gap-1.5">
-                          <span className="text-xs text-foreground/50">{t("reports.ui.tagFilter")}</span>
+                          <span className="text-xs text-foreground/50">
+                            {t("reports.ui.tagFilter")}
+                          </span>
                           <Select
                             value={noteTagFilter || "__all__"}
-                            onValueChange={(value) => setNoteTagFilter(value === "__all__" ? "" : value ?? "")}
+                            onValueChange={(value) =>
+                              setNoteTagFilter(
+                                value === "__all__" ? "" : (value ?? ""),
+                              )
+                            }
                           >
                             <SelectTrigger className="w-full">
                               <SelectValue />
                             </SelectTrigger>
                             <SelectContent>
-                              <SelectItem value="__all__">{t("reports.ui.allTags")}</SelectItem>
+                              <SelectItem value="__all__">
+                                {t("reports.ui.allTags")}
+                              </SelectItem>
                               {NOTE_TAG_KEYS.map((tagKey) => (
                                 <SelectItem key={tagKey} value={tagKey}>
-                                  {tagKey.charAt(0).toUpperCase() + tagKey.slice(1)}
+                                  {tagKey.charAt(0).toUpperCase() +
+                                    tagKey.slice(1)}
                                 </SelectItem>
                               ))}
                             </SelectContent>
@@ -811,13 +944,19 @@ export function ReportsPage({ group }: ReportsPageProps) {
                     <SectionToggle
                       id="student-attendance-summary"
                       label={t("reports.ui.studentAttendanceSummaryLabel")}
-                      description={t("reports.ui.studentAttendanceSummaryDescription")}
+                      description={t(
+                        "reports.ui.studentAttendanceSummaryDescription",
+                      )}
                       checked={sections.has("student-attendance-summary")}
-                      onChange={(value) => toggleSection("student-attendance-summary", value)}
+                      onChange={(value) =>
+                        toggleSection("student-attendance-summary", value)
+                      }
                     >
                       {sections.has("student-attendance-summary") && (
                         <div className="mt-2 flex flex-col gap-2">
-                          <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
+                          <span className="text-xs text-foreground/50">
+                            {t("reports.ui.dateRange")}
+                          </span>
                           <ReportsDateField
                             label={t("reports.ui.dateFrom")}
                             value={studentSummaryDateFrom}
@@ -837,12 +976,16 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.attendanceRecordsLabel")}
                       description={t("reports.ui.attendanceRecordsDescription")}
                       checked={sections.has("student-attendance")}
-                      onChange={(value) => toggleSection("student-attendance", value)}
+                      onChange={(value) =>
+                        toggleSection("student-attendance", value)
+                      }
                     >
                       {sections.has("student-attendance") && (
                         <div className="mt-2 flex flex-col gap-2">
                           <div className="flex flex-col gap-2">
-                            <span className="text-xs text-foreground/50">{t("reports.ui.dateRange")}</span>
+                            <span className="text-xs text-foreground/50">
+                              {t("reports.ui.dateRange")}
+                            </span>
                             <ReportsDateField
                               label={t("reports.ui.dateFrom")}
                               value={studentDateFrom}
@@ -859,14 +1002,22 @@ export function ReportsPage({ group }: ReportsPageProps) {
                               {t("reports.ui.attendanceRecordsStatusFilter")}
                             </span>
                             <div className="flex flex-wrap gap-1.5">
-                              {(["present", "absent", "late", "early_pickup"] as const).map((status) => {
+                              {(
+                                [
+                                  "present",
+                                  "absent",
+                                  "late",
+                                  "early_pickup",
+                                ] as const
+                              ).map((status) => {
                                 const label = {
                                   present: t("reports.pdf.statusPresent"),
                                   absent: t("reports.pdf.statusAbsent"),
                                   late: t("reports.pdf.statusLate"),
                                   early_pickup: t("reports.pdf.colPartial"),
                                 }[status];
-                                const active = studentAttendanceStatuses.has(status);
+                                const active =
+                                  studentAttendanceStatuses.has(status);
 
                                 return (
                                   <Badge
@@ -881,7 +1032,8 @@ export function ReportsPage({ group }: ReportsPageProps) {
                                     onClick={() => {
                                       setStudentAttendanceStatuses((prev) => {
                                         const next = new Set(prev);
-                                        if (next.has(status)) next.delete(status);
+                                        if (next.has(status))
+                                          next.delete(status);
                                         else next.add(status);
                                         return next;
                                       });
@@ -900,9 +1052,13 @@ export function ReportsPage({ group }: ReportsPageProps) {
                     <SectionToggle
                       id="student-grade-summary"
                       label={t("reports.ui.studentGradeSummaryLabel")}
-                      description={t("reports.ui.studentGradeSummaryDescription")}
+                      description={t(
+                        "reports.ui.studentGradeSummaryDescription",
+                      )}
                       checked={sections.has("student-grade-summary")}
-                      onChange={(value) => toggleSection("student-grade-summary", value)}
+                      onChange={(value) =>
+                        toggleSection("student-grade-summary", value)
+                      }
                     />
 
                     <SectionToggle
@@ -910,31 +1066,40 @@ export function ReportsPage({ group }: ReportsPageProps) {
                       label={t("reports.ui.gradesLabel")}
                       description={t("reports.ui.gradesDescription")}
                       checked={sections.has("student-grades")}
-                      onChange={(value) => toggleSection("student-grades", value)}
+                      onChange={(value) =>
+                        toggleSection("student-grades", value)
+                      }
                     >
-                      {sections.has("student-grades") && studentAvailablePeriods.length > 0 && (
-                        <div className="mt-2 flex flex-col gap-1.5">
-                          <span className="text-xs text-foreground/50">{t("reports.ui.period")}</span>
-                          <Select
-                            value={studentGradesPeriod || "__all__"}
-                            onValueChange={(value) =>
-                              setStudentGradesPeriod(value === "__all__" ? "" : value ?? "")
-                            }
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="__all__">{t("reports.ui.allPeriods")}</SelectItem>
-                              {studentAvailablePeriods.map((period) => (
-                                <SelectItem key={period} value={period}>
-                                  {period}
+                      {sections.has("student-grades") &&
+                        studentAvailablePeriods.length > 0 && (
+                          <div className="mt-2 flex flex-col gap-1.5">
+                            <span className="text-xs text-foreground/50">
+                              {t("reports.ui.period")}
+                            </span>
+                            <Select
+                              value={studentGradesPeriod || "__all__"}
+                              onValueChange={(value) =>
+                                setStudentGradesPeriod(
+                                  value === "__all__" ? "" : (value ?? ""),
+                                )
+                              }
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="__all__">
+                                  {t("reports.ui.allPeriods")}
                                 </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      )}
+                                {studentAvailablePeriods.map((period) => (
+                                  <SelectItem key={period} value={period}>
+                                    {period}
+                                  </SelectItem>
+                                ))}
+                              </SelectContent>
+                            </Select>
+                          </div>
+                        )}
                     </SectionToggle>
                   </>
                 )}
@@ -942,14 +1107,21 @@ export function ReportsPage({ group }: ReportsPageProps) {
             )}
 
             <div className="flex flex-col gap-2 pt-1">
-              <Button className="w-full" disabled={!canGenerate} onClick={handleGenerate}>
-                {generating ? t("reports.ui.saving") : t("reports.ui.saveToFolder")}
+              <Button
+                className="w-full"
+                disabled={!canGenerate}
+                onClick={handleGenerate}
+              >
+                {generating
+                  ? t("reports.ui.saving")
+                  : t("reports.ui.saveToFolder")}
               </Button>
-              {sections.size === 0 && (scope === "group" || selectedStudentId !== null) && (
-                <p className="text-center text-xs text-foreground/30">
-                  {t("reports.ui.selectAtLeastOne")}
-                </p>
-              )}
+              {sections.size === 0 &&
+                (scope === "group" || selectedStudentId !== null) && (
+                  <p className="text-center text-xs text-foreground/30">
+                    {t("reports.ui.selectAtLeastOne")}
+                  </p>
+                )}
               {scope === "individual" && selectedStudentId === null && (
                 <p className="text-center text-xs text-foreground/30">
                   {t("reports.ui.selectStudentFirst")}
@@ -961,21 +1133,33 @@ export function ReportsPage({ group }: ReportsPageProps) {
               <div
                 className={cn(
                   "flex items-start gap-2 rounded-lg border px-3 py-2.5 text-sm",
-                  result.ok ? "border-success/30 bg-success/5" : "border-danger/30 bg-danger/5",
+                  result.ok
+                    ? "border-success/30 bg-success/5"
+                    : "border-danger/30 bg-danger/5",
                 )}
               >
                 {result.ok ? (
-                  <CheckCircle size={14} className="mt-0.5 shrink-0 text-success" />
+                  <CheckCircle
+                    size={14}
+                    className="mt-0.5 shrink-0 text-success"
+                  />
                 ) : (
-                  <AlertCircle size={14} className="mt-0.5 shrink-0 text-danger" />
+                  <AlertCircle
+                    size={14}
+                    className="mt-0.5 shrink-0 text-danger"
+                  />
                 )}
                 <div className="min-w-0 flex-1">
-                  <p className="break-all text-xs leading-relaxed">{result.message}</p>
+                  <p className="break-all text-xs leading-relaxed">
+                    {result.message}
+                  </p>
                   {result.ok && result.filePath && (
                     <button
                       className="mt-1.5 flex items-center gap-1 text-xs text-foreground/50 transition-colors hover:text-foreground/80"
                       onClick={async () => {
-                        const { revealItemInDir } = await import("@tauri-apps/plugin-opener");
+                        const { revealItemInDir } = await import(
+                          "@tauri-apps/plugin-opener"
+                        );
                         await revealItemInDir(result.filePath!);
                       }}
                     >
@@ -1023,7 +1207,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
               <div className="absolute inset-0 flex flex-col items-center justify-center gap-3 bg-background/35 text-foreground/30 backdrop-blur-[1px]">
                 <span className="h-8 w-8 animate-spin rounded-full border-2 border-foreground/10 border-t-foreground/40" />
                 <p className="text-sm">
-                  {previewUrl ? t("reports.ui.previewRefreshing") : t("reports.ui.previewBuilding")}
+                  {previewUrl
+                    ? t("reports.ui.previewRefreshing")
+                    : t("reports.ui.previewBuilding")}
                 </p>
               </div>
             )}
