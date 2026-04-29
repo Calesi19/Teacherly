@@ -158,8 +158,11 @@ export function ReportsPage({ group }: ReportsPageProps) {
   const [studentAttendanceStatuses, setStudentAttendanceStatuses] = useState<Set<string>>(
     new Set(["present", "absent", "late", "early_pickup"])
   );
-  const [studentSummaryDateFrom, setStudentSummaryDateFrom] = useState("");
-  const [studentSummaryDateTo, setStudentSummaryDateTo] = useState("");
+  const [studentSummaryDateFrom, setStudentSummaryDateFrom] = useState(() => group.start_date ?? "");
+  const [studentSummaryDateTo, setStudentSummaryDateTo] = useState(() => {
+    const today = new Date().toISOString().slice(0, 10);
+    return group.end_date && today > group.end_date ? group.end_date : today;
+  });
   const [studentGradesPeriod, setStudentGradesPeriod] = useState("");
   const [studentAvailablePeriods, setStudentAvailablePeriods] = useState<string[]>([]);
 
@@ -178,6 +181,10 @@ export function ReportsPage({ group }: ReportsPageProps) {
     fetchStudentsForReport(group.id).then(setGroupStudents).catch(() => {});
     fetchDistinctPeriods(group.id).then(setAvailablePeriods).catch(() => {});
     setResult(null);
+    // Reset attendance summary date range to the group's default dates
+    setStudentSummaryDateFrom(group.start_date ?? "");
+    const today = new Date().toISOString().slice(0, 10);
+    setStudentSummaryDateTo(group.end_date && today > group.end_date ? group.end_date : today);
   }, [group.id]);
 
   // Load student-specific periods when a student is selected
