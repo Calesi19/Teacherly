@@ -161,6 +161,44 @@ export async function fetchStudentGrades(
   }));
 }
 
+export interface StudentCourseSummary {
+  periodName: string;
+  totalScore: number | null;
+  totalMax: number;
+  gradedCount: number;
+  totalCount: number;
+}
+
+export async function fetchStudentCourseSummary(studentId: number): Promise<StudentCourseSummary[]> {
+  const db = await Database.load(DB_URL);
+  interface RawRow {
+    period_name: string;
+    total_score: number | null;
+    total_max: number;
+    graded_count: number;
+    total_count: number;
+  }
+  const rows = await db.select<RawRow[]>(`
+    SELECT a.period_name,
+           SUM(s.score) AS total_score,
+           SUM(CASE WHEN s.score IS NOT NULL THEN a.max_score ELSE 0 END) AS total_max,
+           COUNT(s.score) AS graded_count,
+           COUNT(a.id) AS total_count
+    FROM assignment_scores s
+    JOIN assignments a ON a.id = s.assignment_id
+    WHERE s.student_id = ? AND s.is_deleted = 0 AND a.is_deleted = 0
+    GROUP BY a.period_name
+    ORDER BY a.period_name ASC
+  `, [studentId]);
+  return rows.map((r) => ({
+    periodName: r.period_name,
+    totalScore: r.total_score,
+    totalMax: r.total_max,
+    gradedCount: r.graded_count,
+    totalCount: r.total_count,
+  }));
+}
+
 export async function fetchStudentDistinctPeriods(studentId: number): Promise<string[]> {
   const db = await Database.load(DB_URL);
   const rows = await db.select<{ period_name: string }[]>(

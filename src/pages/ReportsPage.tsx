@@ -24,6 +24,7 @@ import { ObservationsSection } from "../reports/sections/ObservationsSection";
 import { NotesSection } from "../reports/sections/NotesSection";
 import { AttendanceRecordsSection } from "../reports/sections/AttendanceRecordsSection";
 import { GradesSection } from "../reports/sections/GradesSection";
+import { StudentGradeSummarySection } from "../reports/sections/StudentGradeSummarySection";
 // Group data
 import {
   fetchStudentsForReport,
@@ -42,6 +43,7 @@ import {
   fetchStudentNotes,
   fetchStudentAttendanceRecords,
   fetchStudentGrades,
+  fetchStudentCourseSummary,
   fetchStudentDistinctPeriods,
 } from "../reports/fetchStudentReportData";
 import type { Group } from "../types/group";
@@ -61,7 +63,8 @@ type StudentSectionId =
   | "observations"
   | "notes"
   | "student-attendance"
-  | "student-grades";
+  | "student-grades"
+  | "student-grade-summary";
 type SectionId = GroupSectionId | StudentSectionId;
 
 interface ReportsPageProps {
@@ -256,7 +259,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
           );
         } else {
           const sid = selectedStudentId!;
-          const [student, contacts, addresses, services, accommodations, observations, notes, attendanceRecords, grades] =
+          const [student, contacts, addresses, services, accommodations, observations, notes, attendanceRecords, grades, courseSummary] =
             await Promise.all([
               fetchStudentProfile(sid),
               sections.has("contacts") ? fetchStudentContacts(sid) : Promise.resolve(null),
@@ -272,6 +275,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
                 : Promise.resolve(null),
               sections.has("student-grades")
                 ? fetchStudentGrades(sid, studentGradesPeriod || undefined)
+                : Promise.resolve(null),
+              sections.has("student-grade-summary")
+                ? fetchStudentCourseSummary(sid)
                 : Promise.resolve(null),
             ]);
           if (cancelled) return;
@@ -302,6 +308,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
                   language={language}
                 />
               ) : null}
+              {courseSummary ? <StudentGradeSummarySection courses={courseSummary} language={language} /> : null}
               {grades ? <GradesSection grades={grades} periodFilter={studentGradesPeriod || undefined} language={language} /> : null}
             </PdfDocument>
           );
@@ -419,7 +426,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
         const ts = new Date().toISOString().slice(0, 10);
         filename = `group-${safeName}-${ts}.pdf`;
       } else {
-        const [student, contacts, addresses, services, accommodations, observations, notes, attendanceRecords, grades] =
+        const [student, contacts, addresses, services, accommodations, observations, notes, attendanceRecords, grades, courseSummary] =
           await Promise.all([
             fetchStudentProfile(sid!),
             sections.has("contacts") ? fetchStudentContacts(sid!) : Promise.resolve(null),
@@ -435,6 +442,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
               : Promise.resolve(null),
             sections.has("student-grades")
               ? fetchStudentGrades(sid!, studentGradesPeriod || undefined)
+              : Promise.resolve(null),
+            sections.has("student-grade-summary")
+              ? fetchStudentCourseSummary(sid!)
               : Promise.resolve(null),
           ]);
         doc = (
@@ -465,6 +475,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
               />
             ) : null}
             {grades ? <GradesSection grades={grades} periodFilter={studentGradesPeriod || undefined} language={language} /> : null}
+            {courseSummary ? <StudentGradeSummarySection courses={courseSummary} language={language} /> : null}
           </PdfDocument>
         );
         const safeName = (student?.name ?? "student").replace(/[^a-z0-9]/gi, "-").toLowerCase();
@@ -758,6 +769,14 @@ export function ReportsPage({ group }: ReportsPageProps) {
                         </div>
                       )}
                     </SectionToggle>
+
+                    <SectionToggle
+                      id="student-grade-summary"
+                      label={t("reports.ui.studentGradeSummaryLabel")}
+                      description={t("reports.ui.studentGradeSummaryDescription")}
+                      checked={sections.has("student-grade-summary")}
+                      onChange={(v) => toggleSection("student-grade-summary", v)}
+                    />
 
                     <SectionToggle
                       id="student-grades"

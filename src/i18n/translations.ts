@@ -838,8 +838,10 @@ const en = {
       notesDescription: "Chronological student notes with tags.",
       attendanceRecordsLabel: "Attendance Records",
       attendanceRecordsDescription: "Per-course attendance log with status and notes.",
-      gradesLabel: "Grades",
-      gradesDescription: "Assignment scores with grade letters.",
+      gradesLabel: "Assignments",
+      gradesDescription: "All assignment scores, grouped by course.",
+      studentGradeSummaryLabel: "Grades",
+      studentGradeSummaryDescription: "Overall grade and total score per course.",
     },
     pdf: {
       generatedOn: "Generated {date}",
@@ -1000,8 +1002,8 @@ const en = {
       statusEarlyPickup: "Early Pickup",
       recordCount: "{n} record",
       recordCountPlural: "{n} records",
-      // Grades
-      grades: "Grades",
+      // Assignments (detailed list)
+      assignments: "Assignments",
       noGrades: "No grades recorded.",
       noGradesForPeriod: "No grades for course \"{period}\".",
       colAssignment: "Assignment",
@@ -1009,6 +1011,10 @@ const en = {
       assignmentCount: "{n} assignment",
       assignmentCountPlural: "{n} assignments",
       classAvgLine: "Class avg: {pct}%",
+      // Student grade summary (per-course totals)
+      studentGradeSummary: "Grades",
+      noCourseSummary: "No assignments found.",
+      colCourse: "Course",
     },
   },
 };
@@ -1855,8 +1861,10 @@ const es: typeof en = {
       notesDescription: "Notas cronológicas del estudiante con etiquetas.",
       attendanceRecordsLabel: "Registros de Asistencia",
       attendanceRecordsDescription: "Registro de asistencia por curso con estado y notas.",
-      gradesLabel: "Calificaciones",
-      gradesDescription: "Puntuaciones de tareas con letras de calificación.",
+      gradesLabel: "Asignaciones",
+      gradesDescription: "Todas las puntuaciones de tareas, agrupadas por curso.",
+      studentGradeSummaryLabel: "Calificaciones",
+      studentGradeSummaryDescription: "Calificación general y puntaje total por curso.",
     },
     pdf: {
       generatedOn: "Generado el {date}",
@@ -2017,8 +2025,8 @@ const es: typeof en = {
       statusEarlyPickup: "Salida temprana",
       recordCount: "{n} registro",
       recordCountPlural: "{n} registros",
-      // Grades
-      grades: "Calificaciones",
+      // Assignments (detailed list)
+      assignments: "Asignaciones",
       noGrades: "No hay calificaciones registradas.",
       noGradesForPeriod: "No hay calificaciones para el curso \"{period}\".",
       colAssignment: "Tarea",
@@ -2026,6 +2034,10 @@ const es: typeof en = {
       assignmentCount: "{n} tarea",
       assignmentCountPlural: "{n} tareas",
       classAvgLine: "Promedio de clase: {pct}%",
+      // Student grade summary (per-course totals)
+      studentGradeSummary: "Calificaciones",
+      noCourseSummary: "No se encontraron tareas.",
+      colCourse: "Curso",
     },
   },
 };

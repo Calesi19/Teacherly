@@ -5,14 +5,23 @@ import type { Language } from "../../i18n/translations";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
-  title: {
+  sectionTitle: {
     fontFamily: "Helvetica-Bold",
     fontSize: 12,
     color: "#1a202c",
-    marginBottom: 6,
+    marginBottom: 10,
     paddingBottom: 4,
     borderBottomWidth: 1,
     borderBottomColor: "#cbd5e0",
+  },
+  courseBlock: { marginBottom: 14 },
+  courseLabel: {
+    fontFamily: "Helvetica-Bold",
+    fontSize: 8.5,
+    color: "#475569",
+    marginBottom: 3,
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
   },
   thead: {
     flexDirection: "row",
@@ -32,18 +41,19 @@ const S = StyleSheet.create({
     paddingHorizontal: 6,
   },
   hCell: { fontFamily: "Helvetica-Bold", fontSize: 8.5, color: "#374151" },
+  hCellRight: { fontFamily: "Helvetica-Bold", fontSize: 8.5, color: "#374151", textAlign: "right" },
   cell: { fontSize: 8.5, color: "#374151" },
+  cellRight: { fontSize: 8.5, color: "#374151", textAlign: "right" },
   cellBold: { fontFamily: "Helvetica-Bold", fontSize: 8.5, color: "#1a202c" },
-  colTitle: { flex: 3 },
-  colPeriod: { flex: 2 },
-  colScore: { flex: 1.5 },
-  colMax: { flex: 1.5 },
+  cellGrade: { fontFamily: "Helvetica-Bold", fontSize: 8.5, textAlign: "right" },
+  colTitle: { flex: 4 },
+  colScore: { flex: 2 },
   colGrade: { flex: 1 },
-  gradeA: { color: "#15803d", fontFamily: "Helvetica-Bold" },
-  gradeB: { color: "#16a34a", fontFamily: "Helvetica-Bold" },
-  gradeC: { color: "#b45309", fontFamily: "Helvetica-Bold" },
-  gradeD: { color: "#ea580c", fontFamily: "Helvetica-Bold" },
-  gradeF: { color: "#dc2626", fontFamily: "Helvetica-Bold" },
+  gradeA: { color: "#15803d" },
+  gradeB: { color: "#16a34a" },
+  gradeC: { color: "#b45309" },
+  gradeD: { color: "#ea580c" },
+  gradeF: { color: "#dc2626" },
   footer: { paddingTop: 4, paddingHorizontal: 6, fontSize: 8, color: "#94a3b8" },
   empty: { fontSize: 8.5, color: "#94a3b8", paddingVertical: 8, paddingHorizontal: 6 },
 });
@@ -76,54 +86,70 @@ interface Props {
 export function GradesSection({ grades, periodFilter, language }: Props) {
   const L = translations[language].reports.pdf;
 
-  const totalGraded = grades.filter((g) => g.score !== null).length;
-  const avg =
-    totalGraded > 0
-      ? grades
-          .filter((g) => g.score !== null)
-          .reduce((acc, g) => acc + (g.score! / g.maxScore) * 100, 0) / totalGraded
-      : null;
-
-  const countLabel = grades.length === 1
-    ? L.assignmentCount.replace("{n}", String(grades.length))
-    : L.assignmentCountPlural.replace("{n}", String(grades.length));
-
-  return (
-    <View style={S.section}>
-      <Text style={S.title}>
-        {L.grades}{periodFilter ? ` — ${periodFilter}` : ""}
-      </Text>
-      <View style={S.thead}>
-        <Text style={[S.hCell, S.colTitle]}>{L.colAssignment}</Text>
-        <Text style={[S.hCell, S.colPeriod]}>{L.colPeriod}</Text>
-        <Text style={[S.hCell, S.colScore]}>{L.colScore}</Text>
-        <Text style={[S.hCell, S.colMax]}>{L.colMax}</Text>
-        <Text style={[S.hCell, S.colGrade]}>{L.colGrade}</Text>
-      </View>
-      {grades.length === 0 ? (
+  if (grades.length === 0) {
+    return (
+      <View style={S.section}>
+        <Text style={S.sectionTitle}>
+          {L.assignments}{periodFilter ? ` — ${periodFilter}` : ""}
+        </Text>
         <Text style={S.empty}>
           {periodFilter
             ? L.noGradesForPeriod.replace("{period}", periodFilter)
             : L.noGrades}
         </Text>
-      ) : (
-        grades.map((g, i) => {
-          const grade = gradeLetter(g.score, g.maxScore);
-          return (
-            <View key={i} style={S.row}>
-              <Text style={[S.cellBold, S.colTitle]}>{g.assignmentTitle}</Text>
-              <Text style={[S.cell, S.colPeriod]}>{g.periodName}</Text>
-              <Text style={[S.cell, S.colScore]}>{g.score !== null ? String(g.score) : "—"}</Text>
-              <Text style={[S.cell, S.colMax]}>{g.maxScore}</Text>
-              <Text style={[S.cell, S.colGrade, gradeStyle(grade)]}>{grade}</Text>
-            </View>
-          );
-        })
-      )}
-      <Text style={S.footer}>
-        {countLabel}
-        {avg !== null ? ` · ${L.classAvgLine.replace("{pct}", avg.toFixed(1))}` : ""}
+      </View>
+    );
+  }
+
+  // Build course groups: one table per course when showing all, one table when filtered
+  const courseGroups: { name: string; rows: StudentGradeRow[] }[] = [];
+  if (periodFilter) {
+    courseGroups.push({ name: periodFilter, rows: grades });
+  } else {
+    const map = new Map<string, StudentGradeRow[]>();
+    for (const g of grades) {
+      if (!map.has(g.periodName)) map.set(g.periodName, []);
+      map.get(g.periodName)!.push(g);
+    }
+    for (const [name, rows] of map) {
+      courseGroups.push({ name, rows });
+    }
+  }
+
+  return (
+    <View style={S.section}>
+      <Text style={S.sectionTitle}>
+        {L.assignments}{periodFilter ? ` — ${periodFilter}` : ""}
       </Text>
+      {courseGroups.map((group) => (
+        <View key={group.name} style={S.courseBlock} wrap={false}>
+          {!periodFilter && (
+            <Text style={S.courseLabel}>{group.name}</Text>
+          )}
+          <View style={S.thead}>
+            <Text style={[S.hCell, S.colTitle]}>{L.colAssignment}</Text>
+            <Text style={[S.hCellRight, S.colScore]}>{L.colScore}</Text>
+            <Text style={[S.hCellRight, S.colGrade]}>{L.colGrade}</Text>
+          </View>
+          {group.rows.map((g, i) => {
+            const grade = gradeLetter(g.score, g.maxScore);
+            return (
+              <View key={i} style={S.row}>
+                <Text style={[S.cellBold, S.colTitle]}>{g.assignmentTitle}</Text>
+                <Text style={[S.cellRight, S.colScore]}>
+                  {g.score !== null ? `${g.score}/${g.maxScore}` : "—"}
+                </Text>
+                <Text style={[S.cellGrade, S.colGrade, gradeStyle(grade)]}>{grade}</Text>
+              </View>
+            );
+          })}
+          <Text style={S.footer}>
+            {group.rows.length === 1
+              ? L.assignmentCount.replace("{n}", "1")
+              : L.assignmentCountPlural.replace("{n}", String(group.rows.length))}
+          </Text>
+        </View>
+      ))}
     </View>
   );
 }
