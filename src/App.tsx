@@ -682,9 +682,7 @@ function AppContent() {
     }
   }
 
-  const showSidebar =
-    route.page !== "groups" &&
-    !(route.page === "settings" && route.group === null);
+  const showSidebar = !(route.page === "settings" && route.group === null);
   const showWindowsBar = navigator.userAgent.toLowerCase().includes("windows");
 
   return (

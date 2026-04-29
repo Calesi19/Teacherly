@@ -106,14 +106,6 @@ export function Sidebar({
         disabled: !currentGroup,
       },
       {
-        id: "change-group",
-        label: t("sidebar.changeGroup"),
-        icon: ArrowLeftRight,
-        active: false,
-        onClick: nav(onGoToGroups),
-        disabled: false,
-      },
-      {
         id: "settings",
         label: t("sidebar.settings"),
         icon: Settings,
@@ -146,26 +138,9 @@ export function Sidebar({
           data-tauri-drag-region
           className={cn(
             "flex h-12 shrink-0 items-center px-2",
-            isOpen ? "justify-between gap-3" : "justify-center",
+            isOpen ? "justify-end" : "justify-center",
           )}
         >
-          <AnimatePresence>
-            {isOpen && (
-              <motion.button
-                type="button"
-                initial={{ opacity: 0, scale: 0.85 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.85 }}
-                transition={{ duration: 0.18 }}
-                onClick={nav(onGoToGroups)}
-                className="inline-flex h-8 w-8 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-black/5 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-white/8 dark:hover:text-white"
-                aria-label={t("sidebar.changeGroup")}
-              >
-                <ArrowLeftRight size={16} />
-              </motion.button>
-            )}
-          </AnimatePresence>
-
           <button
             type="button"
             onClick={() => setIsOpen((open) => !open)}
@@ -185,9 +160,19 @@ export function Sidebar({
               transition={{ duration: 0.18, ease: "easeOut" }}
               className="px-3 pb-4 pt-1"
             >
-              <p className="truncate text-[1.05rem] font-semibold tracking-tight text-neutral-950 dark:text-white">
-                {currentGroup?.name ?? "Select Group"}
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="truncate text-[1.05rem] font-semibold tracking-tight text-neutral-950 dark:text-white">
+                  {currentGroup?.name ?? "Select Group"}
+                </p>
+                <button
+                  type="button"
+                  onClick={nav(onGoToGroups)}
+                  className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-black/5 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-white/8 dark:hover:text-white"
+                  aria-label={t("sidebar.changeGroup")}
+                >
+                  <ArrowLeftRight size={16} />
+                </button>
+              </div>
               <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
                 {currentGroup
                   ? `${formatMonthYear(currentGroup.start_date ?? undefined)} - ${formatMonthYear(
