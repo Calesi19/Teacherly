@@ -343,7 +343,7 @@ export function StudentsPage({
                           {formatBirthdate(student.birthdate)}
                         </TableCell>
                         <TableCell>
-                          <div className="flex items-center gap-1">
+                          <div className="flex min-h-7 items-center gap-1">
                             {student.has_special_education === 1 && (
                               <Tooltip>
                                 <TooltipTrigger

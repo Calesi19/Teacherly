@@ -26,12 +26,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Tooltip,
   TooltipContent,
@@ -94,11 +89,31 @@ function CopyButton({ value }: { value: string }) {
       aria-label="Copy to clipboard"
     >
       {copied ? (
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2.5"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <polyline points="20 6 9 17 4 12" />
         </svg>
       ) : (
-        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="13"
+          height="13"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
           <rect x="9" y="9" width="13" height="13" rx="2" ry="2" />
           <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" />
         </svg>
@@ -116,7 +131,9 @@ function InfoField({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs uppercase tracking-wide text-muted">{label}</span>
+      <span className="text-xs uppercase tracking-wide text-muted">
+        {label}
+      </span>
       <span className="text-sm font-medium text-foreground">
         {value ?? <span className="text-foreground/30">—</span>}
       </span>
@@ -180,13 +197,7 @@ function LoadingSpinner({ large = false }: { large?: boolean }) {
   );
 }
 
-function TableEmptyState({
-  title,
-  hint,
-}: {
-  title: string;
-  hint?: string;
-}) {
+function TableEmptyState({ title, hint }: { title: string; hint?: string }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
       <Inbox className="size-6 text-muted" />
@@ -201,7 +212,8 @@ function getAge(birthdate: string): number {
   const today = new Date();
   let age = today.getFullYear() - birth.getFullYear();
   const monthDelta = today.getMonth() - birth.getMonth();
-  if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) age--;
+  if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate()))
+    age--;
   return age;
 }
 
@@ -305,7 +317,9 @@ export function StudentProfilePage({
   const [editNoteSubmitting, setEditNoteSubmitting] = useState(false);
   const [editNoteError, setEditNoteError] = useState<string | null>(null);
 
-  const [selectedVisitorKey, setSelectedVisitorKey] = useState<string | null>(null);
+  const [selectedVisitorKey, setSelectedVisitorKey] = useState<string | null>(
+    null,
+  );
   const [newVisitorName, setNewVisitorName] = useState("");
   const [visitNotes, setVisitNotes] = useState("");
   const [visitedAt, setVisitedAt] = useState(todayDateString());
@@ -325,14 +339,24 @@ export function StudentProfilePage({
   const s = freshStudent ?? student;
   const { contacts, loading: loadingContacts } = useContacts(student.id);
   const { addresses, loading: loadingAddresses } = useAddresses(student.id);
-  const { data: services, loading: loadingServices } = useStudentServices(student.id);
+  const { data: services, loading: loadingServices } = useStudentServices(
+    student.id,
+  );
   const { data: accommodations, loading: loadingAccommodations } =
     useStudentAccommodations(student.id);
   const { data: observations, loading: loadingObservations } =
     useStudentObservations(student.id);
-  const { notes, loading: loadingNotes, addNote, updateNote } = useNotes(student.id);
-  const { visitations, loading: loadingVisitations, addVisitation } =
-    useVisitations(student.id);
+  const {
+    notes,
+    loading: loadingNotes,
+    addNote,
+    updateNote,
+  } = useNotes(student.id);
+  const {
+    visitations,
+    loading: loadingVisitations,
+    addVisitation,
+  } = useVisitations(student.id);
   const { previews: assignments, loading: loadingAssignments } =
     useStudentAssignmentPreviews(student.id, group.id);
   const {
@@ -349,7 +373,9 @@ export function StudentProfilePage({
     return day.dayStatus === attendanceFilter;
   });
 
-  const assignmentPeriods = Array.from(new Set(assignments.map((a) => a.period_name))).sort();
+  const assignmentPeriods = Array.from(
+    new Set(assignments.map((a) => a.period_name)),
+  ).sort();
   const filteredAssignments = assignments.filter((assignment) => {
     const matchesSearch = assignment.title
       .toLowerCase()
@@ -363,19 +389,25 @@ export function StudentProfilePage({
   const filteredNotes = notes.filter((note) => {
     const query = noteSearch.toLowerCase();
     const matchesSearch =
-      note.content.toLowerCase().includes(query) || note.tags.toLowerCase().includes(query);
-    const matchesTag = noteTagFilter === "all" || parseTags(note.tags).includes(noteTagFilter);
+      note.content.toLowerCase().includes(query) ||
+      note.tags.toLowerCase().includes(query);
+    const matchesTag =
+      noteTagFilter === "all" || parseTags(note.tags).includes(noteTagFilter);
     return matchesSearch && matchesTag;
   });
 
   const filteredVisitations = visitations.filter((visitation) =>
-    visitation.contact_name.toLowerCase().includes(visitationSearch.toLowerCase()),
+    visitation.contact_name
+      .toLowerCase()
+      .includes(visitationSearch.toLowerCase()),
   );
 
   const isNewVisitor = selectedVisitorKey === "new";
   const matchedContact =
     selectedVisitorKey && selectedVisitorKey !== "new"
-      ? contacts.find((contact) => String(contact.id) === selectedVisitorKey) ?? null
+      ? (contacts.find(
+          (contact) => String(contact.id) === selectedVisitorKey,
+        ) ?? null)
       : null;
 
   const canSubmitVisitation =
@@ -401,7 +433,9 @@ export function StudentProfilePage({
     try {
       await addVisitation({
         contact_id: matchedContact ? matchedContact.id : null,
-        visitor_name: isNewVisitor ? newVisitorName.trim() : matchedContact?.name ?? "",
+        visitor_name: isNewVisitor
+          ? newVisitorName.trim()
+          : (matchedContact?.name ?? ""),
         notes: visitNotes,
         visited_at: visitedAt,
       });
@@ -477,7 +511,10 @@ export function StudentProfilePage({
     setNoteSubmitting(true);
     setNoteError(null);
     try {
-      await addNote({ content: noteContent.trim(), tags: serializeTags(noteTags) });
+      await addNote({
+        content: noteContent.trim(),
+        tags: serializeTags(noteTags),
+      });
       closeNoteDialog();
     } catch (err) {
       setNoteError(String(err));
@@ -491,57 +528,129 @@ export function StudentProfilePage({
         {
           label: t("studentProfile.observations.dyslexia"),
           items: [
-            observations.obs_reading_writing ? t("studentProfile.observations.readingWriting") : "",
-            observations.obs_mirror_numbers ? t("studentProfile.observations.mirrorNumbers") : "",
-            observations.obs_left_right_confusion ? t("studentProfile.observations.leftRightConfusion") : "",
-            observations.obs_sequence_difficulty ? t("studentProfile.observations.sequenceDifficulty") : "",
+            observations.obs_reading_writing
+              ? t("studentProfile.observations.readingWriting")
+              : "",
+            observations.obs_mirror_numbers
+              ? t("studentProfile.observations.mirrorNumbers")
+              : "",
+            observations.obs_left_right_confusion
+              ? t("studentProfile.observations.leftRightConfusion")
+              : "",
+            observations.obs_sequence_difficulty
+              ? t("studentProfile.observations.sequenceDifficulty")
+              : "",
           ].filter(Boolean),
         },
         {
           label: t("studentProfile.observations.addAdhd"),
           items: [
-            observations.obs_disorganized_work ? t("studentProfile.observations.disorganizedWork") : "",
-            observations.obs_inattention_detail ? t("studentProfile.observations.inattentionDetail") : "",
-            observations.obs_sustained_attention ? t("studentProfile.observations.sustainedAttention") : "",
-            observations.obs_doesnt_listen ? t("studentProfile.observations.doesntListen") : "",
-            observations.obs_task_organization ? t("studentProfile.observations.taskOrganization") : "",
-            observations.obs_loses_belongings ? t("studentProfile.observations.losesbelongings") : "",
-            observations.obs_distracted_stimuli ? t("studentProfile.observations.distractedStimuli") : "",
-            observations.obs_forgetful ? t("studentProfile.observations.forgetful") : "",
-            observations.obs_excess_hand_foot ? t("studentProfile.observations.excessHandFoot") : "",
-            observations.obs_gets_up_from_seat ? t("studentProfile.observations.getsUpFromSeat") : "",
-            observations.obs_running_jumping ? t("studentProfile.observations.runningJumping") : "",
-            observations.obs_talks_excessively ? t("studentProfile.observations.talksExcessively") : "",
-            observations.obs_difficulty_quiet ? t("studentProfile.observations.difficultyQuiet") : "",
-            observations.obs_driven_by_motor ? t("studentProfile.observations.drivenByMotor") : "",
-            observations.obs_impulsive_answers ? t("studentProfile.observations.impulsiveAnswers") : "",
-            observations.obs_difficulty_waiting ? t("studentProfile.observations.difficultyWaiting") : "",
-            observations.obs_interrupts_others ? t("studentProfile.observations.interruptsOthers") : "",
+            observations.obs_disorganized_work
+              ? t("studentProfile.observations.disorganizedWork")
+              : "",
+            observations.obs_inattention_detail
+              ? t("studentProfile.observations.inattentionDetail")
+              : "",
+            observations.obs_sustained_attention
+              ? t("studentProfile.observations.sustainedAttention")
+              : "",
+            observations.obs_doesnt_listen
+              ? t("studentProfile.observations.doesntListen")
+              : "",
+            observations.obs_task_organization
+              ? t("studentProfile.observations.taskOrganization")
+              : "",
+            observations.obs_loses_belongings
+              ? t("studentProfile.observations.losesbelongings")
+              : "",
+            observations.obs_distracted_stimuli
+              ? t("studentProfile.observations.distractedStimuli")
+              : "",
+            observations.obs_forgetful
+              ? t("studentProfile.observations.forgetful")
+              : "",
+            observations.obs_excess_hand_foot
+              ? t("studentProfile.observations.excessHandFoot")
+              : "",
+            observations.obs_gets_up_from_seat
+              ? t("studentProfile.observations.getsUpFromSeat")
+              : "",
+            observations.obs_running_jumping
+              ? t("studentProfile.observations.runningJumping")
+              : "",
+            observations.obs_talks_excessively
+              ? t("studentProfile.observations.talksExcessively")
+              : "",
+            observations.obs_difficulty_quiet
+              ? t("studentProfile.observations.difficultyQuiet")
+              : "",
+            observations.obs_driven_by_motor
+              ? t("studentProfile.observations.drivenByMotor")
+              : "",
+            observations.obs_impulsive_answers
+              ? t("studentProfile.observations.impulsiveAnswers")
+              : "",
+            observations.obs_difficulty_waiting
+              ? t("studentProfile.observations.difficultyWaiting")
+              : "",
+            observations.obs_interrupts_others
+              ? t("studentProfile.observations.interruptsOthers")
+              : "",
           ].filter(Boolean),
         },
         {
           label: t("studentProfile.observations.oppositionalSocial"),
           items: [
-            observations.obs_easily_angered ? t("studentProfile.observations.easilyAngered") : "",
-            observations.obs_argues ? t("studentProfile.observations.argues") : "",
-            observations.obs_defies_adults ? t("studentProfile.observations.defiesAdults") : "",
-            observations.obs_annoys_others ? t("studentProfile.observations.annoysOthers") : "",
-            observations.obs_aggressive ? t("studentProfile.observations.aggressive") : "",
-            observations.obs_spiteful ? t("studentProfile.observations.spiteful") : "",
-            observations.obs_blames_others ? t("studentProfile.observations.blamesOthers") : "",
-            observations.obs_breaks_property ? t("studentProfile.observations.breaksProperty") : "",
+            observations.obs_easily_angered
+              ? t("studentProfile.observations.easilyAngered")
+              : "",
+            observations.obs_argues
+              ? t("studentProfile.observations.argues")
+              : "",
+            observations.obs_defies_adults
+              ? t("studentProfile.observations.defiesAdults")
+              : "",
+            observations.obs_annoys_others
+              ? t("studentProfile.observations.annoysOthers")
+              : "",
+            observations.obs_aggressive
+              ? t("studentProfile.observations.aggressive")
+              : "",
+            observations.obs_spiteful
+              ? t("studentProfile.observations.spiteful")
+              : "",
+            observations.obs_blames_others
+              ? t("studentProfile.observations.blamesOthers")
+              : "",
+            observations.obs_breaks_property
+              ? t("studentProfile.observations.breaksProperty")
+              : "",
           ].filter(Boolean),
         },
         {
           label: t("studentProfile.observations.other"),
           items: [
-            observations.obs_incomplete_homework ? t("studentProfile.observations.incompleteHomework") : "",
-            observations.obs_frequent_absences ? t("studentProfile.observations.frequentAbsences") : "",
-            observations.obs_neglected_appearance ? t("studentProfile.observations.neglectedAppearance") : "",
-            observations.obs_uses_profanity ? t("studentProfile.observations.usesProfanity") : "",
-            observations.obs_takes_belongings ? t("studentProfile.observations.takesBelongings") : "",
-            observations.obs_forgets_materials ? t("studentProfile.observations.forgetsMaterials") : "",
-            observations.obs_appears_sad ? t("studentProfile.observations.appearsSad") : "",
+            observations.obs_incomplete_homework
+              ? t("studentProfile.observations.incompleteHomework")
+              : "",
+            observations.obs_frequent_absences
+              ? t("studentProfile.observations.frequentAbsences")
+              : "",
+            observations.obs_neglected_appearance
+              ? t("studentProfile.observations.neglectedAppearance")
+              : "",
+            observations.obs_uses_profanity
+              ? t("studentProfile.observations.usesProfanity")
+              : "",
+            observations.obs_takes_belongings
+              ? t("studentProfile.observations.takesBelongings")
+              : "",
+            observations.obs_forgets_materials
+              ? t("studentProfile.observations.forgetsMaterials")
+              : "",
+            observations.obs_appears_sad
+              ? t("studentProfile.observations.appearsSad")
+              : "",
           ].filter(Boolean),
         },
       ].filter((groupItem) => groupItem.items.length > 0)
@@ -557,10 +666,16 @@ export function StudentProfilePage({
   const therapyLabels = services
     ? [
         services.therapy_speech ? t("servicesPage.speechTherapy") : "",
-        services.therapy_occupational ? t("servicesPage.occupationalTherapy") : "",
-        services.therapy_psychological ? t("servicesPage.psychologicalTherapy") : "",
+        services.therapy_occupational
+          ? t("servicesPage.occupationalTherapy")
+          : "",
+        services.therapy_psychological
+          ? t("servicesPage.psychologicalTherapy")
+          : "",
         services.therapy_physical ? t("servicesPage.physicalTherapy") : "",
-        services.therapy_educational ? t("servicesPage.educationalTherapy") : "",
+        services.therapy_educational
+          ? t("servicesPage.educationalTherapy")
+          : "",
       ].filter(Boolean)
     : [];
 
@@ -575,14 +690,12 @@ export function StudentProfilePage({
 
   const hasAccommodationContent =
     !!accommodations &&
-    (
-      accommodations.desk_placement ||
+    (accommodations.desk_placement ||
       accommodations.extended_time ||
       accommodations.shorter_assignments ||
       accommodations.use_abacus ||
       accommodations.simple_instructions ||
-      accommodations.visual_examples
-    );
+      accommodations.visual_examples);
 
   return (
     <TooltipProvider>
@@ -608,12 +721,26 @@ export function StudentProfilePage({
               </div>
             </div>
 
-            <TabsList variant="line" aria-label="Student sections" className="flex-wrap">
-              <TabsTrigger value="overview">{t("studentProfile.tabs.overview")}</TabsTrigger>
-              <TabsTrigger value="assignments">{t("studentProfile.tabs.assignments")}</TabsTrigger>
-              <TabsTrigger value="attendance">{t("studentProfile.tabs.attendance")}</TabsTrigger>
-              <TabsTrigger value="visitations">{t("studentProfile.tabs.visitations")}</TabsTrigger>
-              <TabsTrigger value="notes">{t("studentProfile.tabs.notes")}</TabsTrigger>
+            <TabsList
+              variant="line"
+              aria-label="Student sections"
+              className="flex-wrap"
+            >
+              <TabsTrigger value="overview">
+                {t("studentProfile.tabs.overview")}
+              </TabsTrigger>
+              <TabsTrigger value="assignments">
+                {t("studentProfile.tabs.assignments")}
+              </TabsTrigger>
+              <TabsTrigger value="attendance">
+                {t("studentProfile.tabs.attendance")}
+              </TabsTrigger>
+              <TabsTrigger value="visitations">
+                {t("studentProfile.tabs.visitations")}
+              </TabsTrigger>
+              <TabsTrigger value="notes">
+                {t("studentProfile.tabs.notes")}
+              </TabsTrigger>
             </TabsList>
           </div>
 
@@ -638,7 +765,10 @@ export function StudentProfilePage({
                       ) : null
                     }
                   />
-                  <InfoField label={t("studentProfile.overview.gender")} value={s.gender} />
+                  <InfoField
+                    label={t("studentProfile.overview.gender")}
+                    value={s.gender}
+                  />
                   <InfoField
                     label={t("studentProfile.overview.birthdate")}
                     value={s.birthdate ? formatShortDate(s.birthdate) : null}
@@ -647,13 +777,19 @@ export function StudentProfilePage({
                     label={t("studentProfile.overview.age")}
                     value={
                       s.birthdate
-                        ? t("studentProfile.overview.ageYears", { age: getAge(s.birthdate) })
+                        ? t("studentProfile.overview.ageYears", {
+                            age: getAge(s.birthdate),
+                          })
                         : null
                     }
                   />
                   <InfoField
                     label={t("studentProfile.overview.enrollmentDate")}
-                    value={s.enrollment_date ? formatShortDate(s.enrollment_date) : null}
+                    value={
+                      s.enrollment_date
+                        ? formatShortDate(s.enrollment_date)
+                        : null
+                    }
                   />
                   <InfoField
                     label={t("studentProfile.overview.enrollmentEndDate")}
@@ -663,7 +799,9 @@ export function StudentProfilePage({
                       ) : group.end_date ? (
                         <span className="text-foreground/40">
                           {formatDateFromLocal(group.end_date)}{" "}
-                          <span className="text-xs">{t("studentProfile.overview.groupDefault")}</span>
+                          <span className="text-xs">
+                            {t("studentProfile.overview.groupDefault")}
+                          </span>
                         </span>
                       ) : null
                     }
@@ -682,16 +820,25 @@ export function StudentProfilePage({
                   {loadingContacts ? (
                     <LoadingSpinner />
                   ) : contacts.length === 0 ? (
-                    <p className="text-sm text-foreground/40">{t("studentProfile.overview.noContacts")}</p>
+                    <p className="text-sm text-foreground/40">
+                      {t("studentProfile.overview.noContacts")}
+                    </p>
                   ) : (
                     <div className="flex flex-col divide-y divide-border">
                       {contacts.slice(0, 3).map((contact) => (
-                        <div key={contact.id} className="flex flex-col gap-0.5 py-2.5 first:pt-0 last:pb-0">
+                        <div
+                          key={contact.id}
+                          className="flex flex-col gap-0.5 py-2.5 first:pt-0 last:pb-0"
+                        >
                           <div className="flex items-center gap-1.5">
-                            <span className="text-sm font-medium">{contact.name}</span>
+                            <span className="text-sm font-medium">
+                              {contact.name}
+                            </span>
                             {contact.is_primary_guardian && (
                               <IconTooltip
-                                label={t("studentProfile.overview.primaryGuardian")}
+                                label={t(
+                                  "studentProfile.overview.primaryGuardian",
+                                )}
                                 className="bg-accent/10 text-accent"
                               >
                                 <ShieldUser size={10} />
@@ -699,7 +846,9 @@ export function StudentProfilePage({
                             )}
                             {contact.is_emergency_contact && (
                               <IconTooltip
-                                label={t("studentProfile.overview.emergencyContact")}
+                                label={t(
+                                  "studentProfile.overview.emergencyContact",
+                                )}
                                 className="bg-warning/10 text-warning"
                               >
                                 <Ambulance size={10} />
@@ -707,7 +856,9 @@ export function StudentProfilePage({
                             )}
                           </div>
                           {contact.relationship && (
-                            <span className="text-xs text-muted">{contact.relationship}</span>
+                            <span className="text-xs text-muted">
+                              {contact.relationship}
+                            </span>
                           )}
                           {contact.phone && (
                             <span className="inline-flex items-center text-xs text-foreground/60">
@@ -737,13 +888,22 @@ export function StudentProfilePage({
                   {loadingAddresses ? (
                     <LoadingSpinner />
                   ) : addresses.length === 0 ? (
-                    <p className="text-sm text-foreground/40">{t("studentProfile.overview.noAddresses")}</p>
+                    <p className="text-sm text-foreground/40">
+                      {t("studentProfile.overview.noAddresses")}
+                    </p>
                   ) : (
                     <div className="flex flex-col divide-y divide-border">
                       {addresses.slice(0, 3).map((address) => (
-                        <div key={address.id} className="flex flex-col gap-0.5 py-2.5 first:pt-0 last:pb-0">
+                        <div
+                          key={address.id}
+                          className="flex flex-col gap-0.5 py-2.5 first:pt-0 last:pb-0"
+                        >
                           <div className="flex items-center gap-1.5">
-                            {address.label && <span className="text-sm font-medium">{address.label}</span>}
+                            {address.label && (
+                              <span className="text-sm font-medium">
+                                {address.label}
+                              </span>
+                            )}
                             {address.is_student_home && (
                               <IconTooltip
                                 label={t("addresses.studentLivesHere")}
@@ -753,13 +913,23 @@ export function StudentProfilePage({
                               </IconTooltip>
                             )}
                           </div>
-                          <span className="text-xs text-foreground/60">{address.street}</span>
-                          {(address.city || address.state || address.zip_code) && (
+                          <span className="text-xs text-foreground/60">
+                            {address.street}
+                          </span>
+                          {(address.city ||
+                            address.state ||
+                            address.zip_code) && (
                             <span className="text-xs text-foreground/60">
-                              {[address.city, address.state, address.zip_code].filter(Boolean).join(", ")}
+                              {[address.city, address.state, address.zip_code]
+                                .filter(Boolean)
+                                .join(", ")}
                             </span>
                           )}
-                          {address.country && <span className="text-xs text-muted">{address.country}</span>}
+                          {address.country && (
+                            <span className="text-xs text-muted">
+                              {address.country}
+                            </span>
+                          )}
                         </div>
                       ))}
                     </div>
@@ -777,7 +947,9 @@ export function StudentProfilePage({
                 {loadingServices ? (
                   <LoadingSpinner />
                 ) : !hasHealthContent ? (
-                  <p className="text-sm text-foreground/40">{t("studentProfile.overview.noHealth")}</p>
+                  <p className="text-sm text-foreground/40">
+                    {t("studentProfile.overview.noHealth")}
+                  </p>
                 ) : (
                   <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
                     {services?.has_special_education && (
@@ -797,7 +969,9 @@ export function StudentProfilePage({
                         </span>
                         <div className="flex flex-wrap gap-1">
                           {therapyLabels.map((label) => (
-                            <Badge key={label} variant="secondary">{label}</Badge>
+                            <Badge key={label} variant="secondary">
+                              {label}
+                            </Badge>
                           ))}
                         </div>
                       </div>
@@ -829,7 +1003,9 @@ export function StudentProfilePage({
                         <span className="text-xs uppercase tracking-wide text-muted">
                           {t("studentProfile.health.allergies")}
                         </span>
-                        <span className="text-sm font-medium text-foreground">{services.allergies}</span>
+                        <span className="text-sm font-medium text-foreground">
+                          {services.allergies}
+                        </span>
                       </div>
                     )}
                     {services?.conditions && (
@@ -837,7 +1013,9 @@ export function StudentProfilePage({
                         <span className="text-xs uppercase tracking-wide text-muted">
                           {t("servicesPage.conditionsLabel")}
                         </span>
-                        <span className="text-sm font-medium text-foreground">{services.conditions}</span>
+                        <span className="text-sm font-medium text-foreground">
+                          {services.conditions}
+                        </span>
                       </div>
                     )}
                   </div>
@@ -854,26 +1032,40 @@ export function StudentProfilePage({
                 {loadingAccommodations ? (
                   <LoadingSpinner />
                 ) : !hasAccommodationContent ? (
-                  <p className="text-sm text-foreground/40">{t("studentProfile.overview.noAccommodations")}</p>
+                  <p className="text-sm text-foreground/40">
+                    {t("studentProfile.overview.noAccommodations")}
+                  </p>
                 ) : (
                   <div className="flex flex-wrap gap-1.5">
                     {accommodations?.desk_placement && (
-                      <Badge variant="secondary">{t("studentProfile.accommodations.deskPlacement")}</Badge>
+                      <Badge variant="secondary">
+                        {t("studentProfile.accommodations.deskPlacement")}
+                      </Badge>
                     )}
                     {accommodations?.extended_time && (
-                      <Badge variant="secondary">{t("studentProfile.accommodations.extendedTime")}</Badge>
+                      <Badge variant="secondary">
+                        {t("studentProfile.accommodations.extendedTime")}
+                      </Badge>
                     )}
                     {accommodations?.shorter_assignments && (
-                      <Badge variant="secondary">{t("studentProfile.accommodations.shorterAssignments")}</Badge>
+                      <Badge variant="secondary">
+                        {t("studentProfile.accommodations.shorterAssignments")}
+                      </Badge>
                     )}
                     {accommodations?.use_abacus && (
-                      <Badge variant="secondary">{t("studentProfile.accommodations.abacus")}</Badge>
+                      <Badge variant="secondary">
+                        {t("studentProfile.accommodations.abacus")}
+                      </Badge>
                     )}
                     {accommodations?.simple_instructions && (
-                      <Badge variant="secondary">{t("studentProfile.accommodations.simpleInstructions")}</Badge>
+                      <Badge variant="secondary">
+                        {t("studentProfile.accommodations.simpleInstructions")}
+                      </Badge>
                     )}
                     {accommodations?.visual_examples && (
-                      <Badge variant="secondary">{t("studentProfile.accommodations.visualExamples")}</Badge>
+                      <Badge variant="secondary">
+                        {t("studentProfile.accommodations.visualExamples")}
+                      </Badge>
                     )}
                   </div>
                 )}
@@ -889,17 +1081,24 @@ export function StudentProfilePage({
                 {loadingObservations ? (
                   <LoadingSpinner />
                 ) : observationGroups.length === 0 ? (
-                  <p className="text-sm text-foreground/40">{t("studentProfile.overview.noObservations")}</p>
+                  <p className="text-sm text-foreground/40">
+                    {t("studentProfile.overview.noObservations")}
+                  </p>
                 ) : (
                   <div className="flex flex-col gap-3">
                     {observationGroups.map((groupItem) => (
-                      <div key={groupItem.label} className="flex flex-col gap-1.5">
+                      <div
+                        key={groupItem.label}
+                        className="flex flex-col gap-1.5"
+                      >
                         <span className="text-xs font-semibold uppercase tracking-wide text-muted">
                           {groupItem.label}
                         </span>
                         <div className="flex flex-wrap gap-1.5">
                           {groupItem.items.map((item) => (
-                            <Badge key={item} variant="secondary">{item}</Badge>
+                            <Badge key={item} variant="secondary">
+                              {item}
+                            </Badge>
                           ))}
                         </div>
                       </div>
@@ -910,7 +1109,10 @@ export function StudentProfilePage({
             </div>
           </TabsContent>
 
-          <TabsContent value="assignments" className="flex min-h-0 flex-1 flex-col pt-4">
+          <TabsContent
+            value="assignments"
+            className="flex min-h-0 flex-1 flex-col pt-4"
+          >
             {loadingAssignments ? (
               <LoadingSpinner large />
             ) : (
@@ -918,20 +1120,30 @@ export function StudentProfilePage({
                 {assignments.length > 0 && (
                   <div className="mb-4 flex items-center gap-3">
                     <Input
-                      placeholder={t("studentProfile.assignments.searchPlaceholder")}
+                      placeholder={t(
+                        "studentProfile.assignments.searchPlaceholder",
+                      )}
                       value={assignmentSearch}
                       onChange={(e) => setAssignmentSearch(e.target.value)}
                       className="max-w-xs"
                     />
                     <Select
                       value={assignmentPeriodFilter}
-                      onValueChange={(value) => setAssignmentPeriodFilter(value ?? "all")}
+                      onValueChange={(value) =>
+                        setAssignmentPeriodFilter(value ?? "all")
+                      }
                     >
                       <SelectTrigger className="w-44">
-                        <SelectValue placeholder={t("studentProfile.assignments.allPeriods")} />
+                        <SelectValue
+                          placeholder={t(
+                            "studentProfile.assignments.allPeriods",
+                          )}
+                        />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="all">{t("studentProfile.assignments.allPeriods")}</SelectItem>
+                        <SelectItem value="all">
+                          {t("studentProfile.assignments.allPeriods")}
+                        </SelectItem>
                         {assignmentPeriods.map((period) => (
                           <SelectItem key={period} value={period}>
                             {period}
@@ -941,33 +1153,51 @@ export function StudentProfilePage({
                     </Select>
                   </div>
                 )}
-                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-xl border bg-background">
+                <div className="flex min-h-0 flex-1 flex-col overflow-hidden rounded-lg border bg-background">
                   <div className="min-h-0 flex-1 overflow-auto">
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>{t("studentProfile.assignments.columns.assignment")}</TableHead>
-                          <TableHead>{t("studentProfile.assignments.columns.period")}</TableHead>
-                          <TableHead>{t("studentProfile.assignments.columns.score")}</TableHead>
-                          <TableHead>{t("studentProfile.assignments.columns.date")}</TableHead>
+                          <TableHead>
+                            {t("studentProfile.assignments.columns.assignment")}
+                          </TableHead>
+                          <TableHead>
+                            {t("studentProfile.assignments.columns.period")}
+                          </TableHead>
+                          <TableHead>
+                            {t("studentProfile.assignments.columns.score")}
+                          </TableHead>
+                          <TableHead>
+                            {t("studentProfile.assignments.columns.date")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
                         {filteredAssignments.map((assignment) => (
                           <TableRow key={assignment.assignment_id}>
-                            <TableCell className="font-medium">{assignment.title}</TableCell>
+                            <TableCell className="font-medium">
+                              {assignment.title}
+                            </TableCell>
                             <TableCell className="text-sm text-foreground/50">
                               {assignment.period_name}
                             </TableCell>
                             <TableCell className="text-sm">
                               {assignment.score !== null ? (
-                                <span className={assignment.score > assignment.max_score ? "text-warning" : "text-foreground"}>
+                                <span
+                                  className={
+                                    assignment.score > assignment.max_score
+                                      ? "text-warning"
+                                      : "text-foreground"
+                                  }
+                                >
                                   {assignment.score}
                                 </span>
                               ) : (
                                 <span className="text-foreground/30">—</span>
                               )}
-                              <span className="ml-0.5 text-xs text-muted">/ {assignment.max_score}</span>
+                              <span className="ml-0.5 text-xs text-muted">
+                                / {assignment.max_score}
+                              </span>
                             </TableCell>
                             <TableCell className="whitespace-nowrap text-sm text-foreground/50">
                               {formatShortDate(assignment.created_at)}
@@ -996,7 +1226,10 @@ export function StudentProfilePage({
             )}
           </TabsContent>
 
-          <TabsContent value="attendance" className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
+          <TabsContent
+            value="attendance"
+            className="flex min-h-0 flex-1 flex-col gap-4 pt-4"
+          >
             {loadingAttendance ? (
               <LoadingSpinner large />
             ) : (
@@ -1005,11 +1238,31 @@ export function StudentProfilePage({
                   <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
                     {(
                       [
-                        { key: "totalDays", value: attendanceSummary.totalDays, color: "text-foreground" },
-                        { key: "present", value: attendanceSummary.present, color: "text-success" },
-                        { key: "absent", value: attendanceSummary.absent, color: "text-danger" },
-                        { key: "late", value: attendanceSummary.late, color: "text-warning" },
-                        { key: "partial", value: attendanceSummary.partial, color: "text-secondary-foreground" },
+                        {
+                          key: "totalDays",
+                          value: attendanceSummary.totalDays,
+                          color: "text-foreground",
+                        },
+                        {
+                          key: "present",
+                          value: attendanceSummary.present,
+                          color: "text-success",
+                        },
+                        {
+                          key: "absent",
+                          value: attendanceSummary.absent,
+                          color: "text-danger",
+                        },
+                        {
+                          key: "late",
+                          value: attendanceSummary.late,
+                          color: "text-warning",
+                        },
+                        {
+                          key: "partial",
+                          value: attendanceSummary.partial,
+                          color: "text-secondary-foreground",
+                        },
                       ] as const
                     ).map(({ key, value, color }) => {
                       const isActive = attendanceFilter === key;
@@ -1017,12 +1270,16 @@ export function StudentProfilePage({
                         <div
                           key={key}
                           className={cn(
-                            "cursor-pointer rounded-xl border bg-background p-3 text-center transition-all select-none hover:ring-1 hover:ring-foreground/10",
+                            "cursor-pointer rounded-lg border bg-background p-3 text-center transition-all select-none hover:ring-1 hover:ring-foreground/10",
                             isActive && "ring-2 ring-foreground/30",
                           )}
-                          onClick={() => setAttendanceFilter(isActive ? null : key)}
+                          onClick={() =>
+                            setAttendanceFilter(isActive ? null : key)
+                          }
                         >
-                          <span className={cn("text-xl font-bold", color)}>{value}</span>
+                          <span className={cn("text-xl font-bold", color)}>
+                            {value}
+                          </span>
                           <div className="text-xs text-muted">
                             {t(`studentProfile.attendance.summary.${key}`)}
                           </div>
@@ -1037,10 +1294,18 @@ export function StudentProfilePage({
                     <Table>
                       <TableHeader>
                         <TableRow>
-                          <TableHead>{t("studentProfile.attendance.columns.date")}</TableHead>
-                          <TableHead>{t("studentProfile.attendance.columns.status")}</TableHead>
-                          <TableHead>{t("studentProfile.attendance.columns.time")}</TableHead>
-                          <TableHead>{t("studentProfile.attendance.columns.periods")}</TableHead>
+                          <TableHead>
+                            {t("studentProfile.attendance.columns.date")}
+                          </TableHead>
+                          <TableHead>
+                            {t("studentProfile.attendance.columns.status")}
+                          </TableHead>
+                          <TableHead>
+                            {t("studentProfile.attendance.columns.time")}
+                          </TableHead>
+                          <TableHead>
+                            {t("studentProfile.attendance.columns.periods")}
+                          </TableHead>
                         </TableRow>
                       </TableHeader>
                       <TableBody>
@@ -1050,13 +1315,24 @@ export function StudentProfilePage({
                               {formatDateFromLocal(day.date)}
                             </TableCell>
                             <TableCell>
-                              <span className={cn("text-sm font-medium", statusColors[day.dayStatus])}>
-                                {t(`studentProfile.attendance.status.${day.dayStatus}`)}
+                              <span
+                                className={cn(
+                                  "text-sm font-medium",
+                                  statusColors[day.dayStatus],
+                                )}
+                              >
+                                {t(
+                                  `studentProfile.attendance.status.${day.dayStatus}`,
+                                )}
                               </span>
                             </TableCell>
-                            <TableCell className="text-sm text-foreground/50">—</TableCell>
                             <TableCell className="text-sm text-foreground/50">
-                              {day.records.map((record) => record.period_name).join(", ")}
+                              —
+                            </TableCell>
+                            <TableCell className="text-sm text-foreground/50">
+                              {day.records
+                                .map((record) => record.period_name)
+                                .join(", ")}
                             </TableCell>
                           </TableRow>
                         ))}
@@ -1074,7 +1350,10 @@ export function StudentProfilePage({
             )}
           </TabsContent>
 
-          <TabsContent value="visitations" className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
+          <TabsContent
+            value="visitations"
+            className="flex min-h-0 flex-1 flex-col gap-4 pt-4"
+          >
             <div className="flex items-center justify-between">
               <Input
                 placeholder={t("studentProfile.visitations.searchPlaceholder")}
@@ -1095,10 +1374,18 @@ export function StudentProfilePage({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("studentProfile.visitations.columns.notes")}</TableHead>
-                        <TableHead>{t("studentProfile.visitations.columns.visitor")}</TableHead>
-                        <TableHead>{t("studentProfile.visitations.columns.relationship")}</TableHead>
-                        <TableHead>{t("studentProfile.visitations.columns.date")}</TableHead>
+                        <TableHead>
+                          {t("studentProfile.visitations.columns.notes")}
+                        </TableHead>
+                        <TableHead>
+                          {t("studentProfile.visitations.columns.visitor")}
+                        </TableHead>
+                        <TableHead>
+                          {t("studentProfile.visitations.columns.relationship")}
+                        </TableHead>
+                        <TableHead>
+                          {t("studentProfile.visitations.columns.date")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1107,7 +1394,9 @@ export function StudentProfilePage({
                           <TableCell className="text-sm text-foreground/50">
                             {visitation.notes || "—"}
                           </TableCell>
-                          <TableCell className="font-medium">{visitation.contact_name}</TableCell>
+                          <TableCell className="font-medium">
+                            {visitation.contact_name}
+                          </TableCell>
                           <TableCell className="text-sm text-foreground/50">
                             {visitation.contact_relationship || "—"}
                           </TableCell>
@@ -1128,7 +1417,9 @@ export function StudentProfilePage({
                       hint={
                         visitations.length === 0
                           ? t("studentProfile.visitations.noVisitationsHint")
-                          : t("studentProfile.visitations.noResultsHint", { search: visitationSearch })
+                          : t("studentProfile.visitations.noResultsHint", {
+                              search: visitationSearch,
+                            })
                       }
                     />
                   )}
@@ -1137,7 +1428,10 @@ export function StudentProfilePage({
             )}
           </TabsContent>
 
-          <TabsContent value="notes" className="flex min-h-0 flex-1 flex-col gap-4 pt-4">
+          <TabsContent
+            value="notes"
+            className="flex min-h-0 flex-1 flex-col gap-4 pt-4"
+          >
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <Input
@@ -1148,13 +1442,21 @@ export function StudentProfilePage({
                 />
                 <Select
                   value={noteTagFilter}
-                  onValueChange={(value) => setNoteTagFilter((value as "all" | NoteTagKey | null) ?? "all")}
+                  onValueChange={(value) =>
+                    setNoteTagFilter(
+                      (value as "all" | NoteTagKey | null) ?? "all",
+                    )
+                  }
                 >
                   <SelectTrigger className="w-36">
-                    <SelectValue placeholder={t("studentProfile.notes.tags.all")} />
+                    <SelectValue
+                      placeholder={t("studentProfile.notes.tags.all")}
+                    />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("studentProfile.notes.tags.all")}</SelectItem>
+                    <SelectItem value="all">
+                      {t("studentProfile.notes.tags.all")}
+                    </SelectItem>
                     {NOTE_TAG_KEYS.map((tag) => (
                       <SelectItem key={tag} value={tag}>
                         {t(`studentProfile.notes.tags.${tag}`)}
@@ -1176,8 +1478,12 @@ export function StudentProfilePage({
                   <Table>
                     <TableHeader>
                       <TableRow>
-                        <TableHead>{t("studentProfile.notes.columns.note")}</TableHead>
-                        <TableHead>{t("studentProfile.notes.columns.date")}</TableHead>
+                        <TableHead>
+                          {t("studentProfile.notes.columns.note")}
+                        </TableHead>
+                        <TableHead>
+                          {t("studentProfile.notes.columns.date")}
+                        </TableHead>
                       </TableRow>
                     </TableHeader>
                     <TableBody>
@@ -1214,11 +1520,17 @@ export function StudentProfilePage({
                   </Table>
                   {filteredNotes.length === 0 && (
                     <TableEmptyState
-                      title={notes.length === 0 ? t("studentProfile.notes.noNotes") : t("studentProfile.notes.noResults")}
+                      title={
+                        notes.length === 0
+                          ? t("studentProfile.notes.noNotes")
+                          : t("studentProfile.notes.noResults")
+                      }
                       hint={
                         notes.length === 0
                           ? t("studentProfile.notes.noNotesHint")
-                          : t("studentProfile.notes.noResultsHint", { search: noteSearch })
+                          : t("studentProfile.notes.noResultsHint", {
+                              search: noteSearch,
+                            })
                       }
                     />
                   )}
@@ -1240,9 +1552,11 @@ export function StudentProfilePage({
                 <DialogHeader>
                   <DialogTitle>{t("notes.viewModal.editTitle")}</DialogTitle>
                 </DialogHeader>
-                <div className="flex flex-col gap-4 py-4">
+                <div className="flex flex-col gap-4 py-3">
                   <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-note-content">{t("studentProfile.addNoteModal.noteLabel")}</Label>
+                    <Label htmlFor="edit-note-content">
+                      {t("studentProfile.addNoteModal.noteLabel")}
+                    </Label>
                     <textarea
                       id="edit-note-content"
                       value={editNoteContent}
@@ -1253,7 +1567,9 @@ export function StudentProfilePage({
                     />
                   </div>
                   <div className="flex flex-col gap-1.5">
-                    <span className="text-sm font-medium">{t("studentProfile.addNoteModal.tagsLabel")}</span>
+                    <span className="text-sm font-medium">
+                      {t("studentProfile.addNoteModal.tagsLabel")}
+                    </span>
                     <div className="flex flex-wrap gap-2">
                       {NOTE_TAG_KEYS.map((tag) => {
                         const isActive = editNoteTags.includes(tag);
@@ -1263,11 +1579,15 @@ export function StudentProfilePage({
                             variant={isActive ? "default" : "outline"}
                             className={cn(
                               "cursor-pointer transition-transform active:scale-95",
-                              isActive ? NOTE_TAG_COLORS[tag].active : NOTE_TAG_COLORS[tag].inactive,
+                              isActive
+                                ? NOTE_TAG_COLORS[tag].active
+                                : NOTE_TAG_COLORS[tag].inactive,
                             )}
                             onClick={() =>
                               setEditNoteTags((prev) =>
-                                isActive ? prev.filter((item) => item !== tag) : [...prev, tag],
+                                isActive
+                                  ? prev.filter((item) => item !== tag)
+                                  : [...prev, tag],
                               )
                             }
                           >
@@ -1277,7 +1597,9 @@ export function StudentProfilePage({
                       })}
                     </div>
                   </div>
-                  {editNoteError && <p className="text-sm text-danger">{editNoteError}</p>}
+                  {editNoteError && (
+                    <p className="text-sm text-danger">{editNoteError}</p>
+                  )}
                 </div>
                 <DialogFooter>
                   <Button
@@ -1288,7 +1610,10 @@ export function StudentProfilePage({
                   >
                     {t("common.cancel")}
                   </Button>
-                  <Button type="submit" disabled={editNoteSubmitting || !editNoteContent.trim()}>
+                  <Button
+                    type="submit"
+                    disabled={editNoteSubmitting || !editNoteContent.trim()}
+                  >
                     {editNoteSubmitting ? (
                       <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                     ) : (
@@ -1312,16 +1637,28 @@ export function StudentProfilePage({
                       ))}
                     </div>
                   )}
-                  <p className="whitespace-pre-wrap text-sm text-foreground">{viewingNote?.content}</p>
+                  <p className="whitespace-pre-wrap text-sm text-foreground">
+                    {viewingNote?.content}
+                  </p>
                   <p className="text-xs text-muted">
-                    {viewingNote ? formatNoteTimestamp(viewingNote.created_at) : ""}
+                    {viewingNote
+                      ? formatNoteTimestamp(viewingNote.created_at)
+                      : ""}
                   </p>
                 </div>
                 <DialogFooter>
-                  <Button type="button" variant="ghost" onClick={closeViewNoteDialog}>
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    onClick={closeViewNoteDialog}
+                  >
                     {t("common.cancel")}
                   </Button>
-                  <Button type="button" variant="secondary" onClick={startEditingNote}>
+                  <Button
+                    type="button"
+                    variant="secondary"
+                    onClick={startEditingNote}
+                  >
                     <Pencil size={14} />
                     {t("notes.viewModal.edit")}
                   </Button>
@@ -1340,23 +1677,31 @@ export function StudentProfilePage({
           <DialogContent>
             <form onSubmit={handleAddNote}>
               <DialogHeader>
-                <DialogTitle>{t("studentProfile.addNoteModal.title")}</DialogTitle>
+                <DialogTitle>
+                  {t("studentProfile.addNoteModal.title")}
+                </DialogTitle>
               </DialogHeader>
               <div className="flex flex-col gap-4 py-4">
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="note-content">{t("studentProfile.addNoteModal.noteLabel")}</Label>
+                  <Label htmlFor="note-content">
+                    {t("studentProfile.addNoteModal.noteLabel")}
+                  </Label>
                   <textarea
                     id="note-content"
                     value={noteContent}
                     onChange={(e) => setNoteContent(e.target.value)}
-                    placeholder={t("studentProfile.addNoteModal.notePlaceholder")}
+                    placeholder={t(
+                      "studentProfile.addNoteModal.notePlaceholder",
+                    )}
                     rows={4}
                     required
                     className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                   />
                 </div>
                 <div className="flex flex-col gap-1.5">
-                  <span className="text-sm font-medium">{t("studentProfile.addNoteModal.tagsLabel")}</span>
+                  <span className="text-sm font-medium">
+                    {t("studentProfile.addNoteModal.tagsLabel")}
+                  </span>
                   <div className="flex flex-wrap gap-2">
                     {NOTE_TAG_KEYS.map((tag) => {
                       const isActive = noteTags.includes(tag);
@@ -1366,11 +1711,15 @@ export function StudentProfilePage({
                           variant={isActive ? "default" : "outline"}
                           className={cn(
                             "cursor-pointer transition-transform active:scale-95",
-                            isActive ? NOTE_TAG_COLORS[tag].active : NOTE_TAG_COLORS[tag].inactive,
+                            isActive
+                              ? NOTE_TAG_COLORS[tag].active
+                              : NOTE_TAG_COLORS[tag].inactive,
                           )}
                           onClick={() =>
                             setNoteTags((prev) =>
-                              isActive ? prev.filter((item) => item !== tag) : [...prev, tag],
+                              isActive
+                                ? prev.filter((item) => item !== tag)
+                                : [...prev, tag],
                             )
                           }
                         >
@@ -1380,13 +1729,18 @@ export function StudentProfilePage({
                     })}
                   </div>
                 </div>
-                {noteError && <p className="text-sm text-danger">{noteError}</p>}
+                {noteError && (
+                  <p className="text-sm text-danger">{noteError}</p>
+                )}
               </div>
               <DialogFooter>
                 <Button type="button" variant="ghost" onClick={closeNoteDialog}>
                   {t("common.cancel")}
                 </Button>
-                <Button type="submit" disabled={noteSubmitting || !noteContent.trim()}>
+                <Button
+                  type="submit"
+                  disabled={noteSubmitting || !noteContent.trim()}
+                >
                   {noteSubmitting ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   ) : (
@@ -1407,11 +1761,15 @@ export function StudentProfilePage({
           <DialogContent className="overflow-visible">
             <form onSubmit={handleAddVisitation}>
               <DialogHeader>
-                <DialogTitle>{t("studentProfile.logVisitationModal.title")}</DialogTitle>
+                <DialogTitle>
+                  {t("studentProfile.logVisitationModal.title")}
+                </DialogTitle>
               </DialogHeader>
               <div className="flex flex-col gap-4 py-4">
                 <div className="flex flex-col gap-1.5">
-                  <Label>{t("studentProfile.logVisitationModal.visitorLabel")}</Label>
+                  <Label>
+                    {t("studentProfile.logVisitationModal.visitorLabel")}
+                  </Label>
                   <Select
                     value={selectedVisitorKey ?? undefined}
                     onValueChange={(value) => {
@@ -1421,7 +1779,9 @@ export function StudentProfilePage({
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue
-                        placeholder={t("studentProfile.logVisitationModal.selectVisitor")}
+                        placeholder={t(
+                          "studentProfile.logVisitationModal.selectVisitor",
+                        )}
                       />
                     </SelectTrigger>
                     <SelectContent>
@@ -1430,7 +1790,9 @@ export function StudentProfilePage({
                           <div className="flex flex-col">
                             <span className="text-sm">{contact.name}</span>
                             {contact.relationship && (
-                              <span className="text-xs text-foreground/50">{contact.relationship}</span>
+                              <span className="text-xs text-foreground/50">
+                                {contact.relationship}
+                              </span>
                             )}
                           </div>
                         </SelectItem>
@@ -1453,7 +1815,9 @@ export function StudentProfilePage({
                       id="visit-new-name"
                       value={newVisitorName}
                       onChange={(e) => setNewVisitorName(e.target.value)}
-                      placeholder={t("studentProfile.logVisitationModal.visitorNamePlaceholder")}
+                      placeholder={t(
+                        "studentProfile.logVisitationModal.visitorNamePlaceholder",
+                      )}
                       autoFocus
                     />
                     <p className="text-xs text-accent">
@@ -1470,21 +1834,31 @@ export function StudentProfilePage({
                 />
 
                 <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="visit-notes">{t("studentProfile.logVisitationModal.notesLabel")}</Label>
+                  <Label htmlFor="visit-notes">
+                    {t("studentProfile.logVisitationModal.notesLabel")}
+                  </Label>
                   <textarea
                     id="visit-notes"
                     value={visitNotes}
                     onChange={(e) => setVisitNotes(e.target.value)}
-                    placeholder={t("studentProfile.logVisitationModal.notesPlaceholder")}
+                    placeholder={t(
+                      "studentProfile.logVisitationModal.notesPlaceholder",
+                    )}
                     rows={4}
                     className="w-full resize-none rounded-lg border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
                   />
                 </div>
 
-                {visitError && <p className="text-sm text-danger">{visitError}</p>}
+                {visitError && (
+                  <p className="text-sm text-danger">{visitError}</p>
+                )}
               </div>
               <DialogFooter>
-                <Button type="button" variant="ghost" onClick={closeVisitationDialog}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={closeVisitationDialog}
+                >
                   {t("common.cancel")}
                 </Button>
                 <Button type="submit" disabled={!canSubmitVisitation}>
