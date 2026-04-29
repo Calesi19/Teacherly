@@ -152,7 +152,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
                 ) : (
                   <Select
                     value={form.period_name || undefined}
-                    onValueChange={(val) => setForm({ ...form, period_name: val })}
+                    onValueChange={(val) => setForm({ ...form, period_name: val ?? "" })}
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue placeholder={t("assignments.addModal.selectPeriod")} />

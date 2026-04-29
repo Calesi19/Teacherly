@@ -1,22 +1,24 @@
 import { useState, useMemo } from "react";
-import {
-  Button,
-  Chip,
-  EmptyState,
-  Input,
-  Spinner,
-  TableColumn,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContent,
-  TableScrollContainer,
-  TableRoot,
-  Select,
-  ListBox,
-} from "@heroui/react";
 import { Inbox, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { AddAssignmentModal } from "../components/AddAssignmentModal";
@@ -32,7 +34,13 @@ interface AssignmentsPageProps {
   onSelectAssignment: (assignment: Assignment) => void;
 }
 
-const TAG_OPTIONS: AssignmentTag[] = ["Exam", "Quiz", "Homework", "Extra Credit", "Project"];
+const TAG_OPTIONS: AssignmentTag[] = [
+  "Exam",
+  "Quiz",
+  "Homework",
+  "Extra Credit",
+  "Project",
+];
 
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString(undefined, {
@@ -56,14 +64,14 @@ export function AssignmentsPage({
   const [deletingAssignment, setDeletingAssignment] = useState<Assignment | null>(null);
 
   const periods = useMemo(
-    () => Array.from(new Set(assignments.map((a) => a.period_name).filter(Boolean))).sort(),
+    () => Array.from(new Set(assignments.map((assignment) => assignment.period_name).filter(Boolean))).sort(),
     [assignments],
   );
 
-  const filtered = assignments.filter((a) => {
-    const matchesSearch = a.title.toLowerCase().includes(search.toLowerCase());
-    const matchesPeriod = selectedPeriod === "all" || a.period_name === selectedPeriod;
-    const matchesTag = selectedTag === "all" || a.tag === selectedTag;
+  const filtered = assignments.filter((assignment) => {
+    const matchesSearch = assignment.title.toLowerCase().includes(search.toLowerCase());
+    const matchesPeriod = selectedPeriod === "all" || assignment.period_name === selectedPeriod;
+    const matchesTag = selectedTag === "all" || assignment.tag === selectedTag;
     return matchesSearch && matchesPeriod && matchesTag;
   });
 
@@ -77,7 +85,7 @@ export function AssignmentsPage({
   };
 
   return (
-    <div className="p-6 flex flex-col h-full">
+    <div className="flex h-full flex-col p-6">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -90,21 +98,23 @@ export function AssignmentsPage({
         <h2 className="text-2xl font-bold">{t("assignments.title")}</h2>
       </div>
 
-      <div className="flex flex-wrap gap-2 mt-4 mb-2">
+      <div className="mt-4 mb-2 flex flex-wrap gap-2">
         {(["all", ...TAG_OPTIONS] as string[]).map((tag) => (
-          <Chip
+          <Badge
             key={tag}
-            variant={selectedTag === tag ? "primary" : "soft"}
-            color={selectedTag === tag ? "accent" : "default"}
-            className="cursor-pointer transition-transform active:scale-95"
+            variant={selectedTag === tag ? "default" : "outline"}
+            className={cn(
+              "cursor-pointer transition-transform active:scale-95",
+              selectedTag === tag ? "" : "text-foreground/60 hover:text-foreground",
+            )}
             onClick={() => setSelectedTag(tag)}
           >
             {tagLabels[tag]}
-          </Chip>
+          </Badge>
         ))}
       </div>
 
-      <div className="flex items-center justify-between mt-4 mb-4">
+      <div className="mt-4 mb-4 flex items-center justify-between">
         {!loading && assignments.length > 0 && (
           <div className="flex items-center gap-2">
             <Input
@@ -115,35 +125,25 @@ export function AssignmentsPage({
             />
             {periods.length > 0 && (
               <Select
-                aria-label={t("assignments.filterByPeriod")}
-                selectedKey={selectedPeriod}
-                onSelectionChange={(key) => setSelectedPeriod(String(key ?? "all"))}
-                className="w-44"
+                value={selectedPeriod}
+                onValueChange={(value) => setSelectedPeriod(value ?? "all")}
               >
-                <Select.Trigger>
-                  <Select.Value>
-                    {({ selectedText, isPlaceholder }) =>
-                      isPlaceholder ? t("assignments.allPeriods") : selectedText
-                    }
-                  </Select.Value>
-                  <Select.Indicator />
-                </Select.Trigger>
-                <Select.Popover>
-                  <ListBox>
-                    <ListBox.Item id="all" textValue={t("assignments.allPeriods")}>
-                      {t("assignments.allPeriods")}
-                    </ListBox.Item>
-                    {periods.map((p) => (
-                      <ListBox.Item key={p} id={p} textValue={p}>
-                        {p}
-                      </ListBox.Item>
-                    ))}
-                  </ListBox>
-                </Select.Popover>
+                <SelectTrigger className="w-44">
+                  <SelectValue placeholder={t("assignments.allPeriods")} />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">{t("assignments.allPeriods")}</SelectItem>
+                  {periods.map((period) => (
+                    <SelectItem key={period} value={period}>
+                      {period}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
               </Select>
             )}
           </div>
         )}
+
         <div className="ml-auto">
           <AddAssignmentModal groupId={group.id} onAdd={addAssignment} />
         </div>
@@ -151,81 +151,59 @@ export function AssignmentsPage({
 
       {loading && (
         <div className="flex justify-center py-12">
-          <Spinner size="lg" color="accent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         </div>
       )}
 
       {error && (
-        <div role="alert" className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm">
+        <div role="alert" className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">
           {error}
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex min-h-0 flex-1 flex-col">
         {!loading && !error && (
-          <TableRoot variant="primary" className="flex-1 h-full">
-            <TableScrollContainer className="h-full">
-              <TableContent
-                aria-label={t("assignments.title")}
-                onRowAction={(key) => {
-                  const assignment = assignments.find((a) => a.id === key);
-                  if (assignment) onSelectAssignment(assignment);
-                }}
-              >
+          <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
+            <div className="min-h-0 flex-1 overflow-auto">
+              <Table>
                 <TableHeader>
-                  <TableColumn isRowHeader>
-                    {t("assignments.tableColumns.title")}
-                  </TableColumn>
-                  <TableColumn>
-                    {t("assignments.tableColumns.period")}
-                  </TableColumn>
-                  <TableColumn>
-                    {t("assignments.tableColumns.maxScore")}
-                  </TableColumn>
-                  <TableColumn>
-                    {t("assignments.tableColumns.date")}
-                  </TableColumn>
-                  <TableColumn>{" "}</TableColumn>
+                  <TableRow>
+                    <TableHead>{t("assignments.tableColumns.title")}</TableHead>
+                    <TableHead>{t("assignments.tableColumns.period")}</TableHead>
+                    <TableHead>{t("assignments.tableColumns.maxScore")}</TableHead>
+                    <TableHead>{t("assignments.tableColumns.date")}</TableHead>
+                    <TableHead />
+                  </TableRow>
                 </TableHeader>
-                <TableBody
-                  renderEmptyState={() => (
-                    <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-2 py-12 text-center">
-                      <Inbox className="size-6 text-muted" />
-                      <span className="text-sm font-medium text-muted">
-                        {assignments.length === 0
-                          ? t("assignments.noAssignmentsYet")
-                          : t("students.noResultsTitle")}
-                      </span>
-                      <span className="text-xs text-foreground/40">
-                        {assignments.length === 0
-                          ? t("assignments.noAssignmentsHint")
-                          : t("students.noResultsHint", { search })}
-                      </span>
-                    </EmptyState>
-                  )}
-                >
-                  {filtered.map((a) => (
-                    <TableRow key={a.id} id={a.id} className="cursor-pointer">
+                <TableBody>
+                  {filtered.map((assignment) => (
+                    <TableRow
+                      key={assignment.id}
+                      className="cursor-pointer"
+                      onClick={() => onSelectAssignment(assignment)}
+                    >
                       <TableCell className="font-medium">
                         <div className="flex items-center gap-2">
-                          {a.title}
-                          <Chip size="sm" variant="soft" color="default">
-                            {tagLabels[a.tag] ?? a.tag}
-                          </Chip>
+                          {assignment.title}
+                          <Badge variant="secondary">
+                            {tagLabels[assignment.tag] ?? assignment.tag}
+                          </Badge>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-foreground/50">{a.period_name}</TableCell>
                       <TableCell className="text-sm text-foreground/50">
-                        {a.max_score} {t("assignments.pts")}
+                        {assignment.period_name}
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
-                        {formatDate(a.created_at)}
+                        {assignment.max_score} {t("assignments.pts")}
                       </TableCell>
-                      <TableCell>
+                      <TableCell className="text-sm text-foreground/50">
+                        {formatDate(assignment.created_at)}
+                      </TableCell>
+                      <TableCell onClick={(e) => e.stopPropagation()}>
                         <Button
                           variant="ghost"
                           size="sm"
-                          onPress={() => setDeletingAssignment(a)}
+                          onClick={() => setDeletingAssignment(assignment)}
                           aria-label={t("assignments.deleteModal.title")}
                           className="p-1.5 text-foreground/30 hover:text-danger"
                         >
@@ -235,9 +213,25 @@ export function AssignmentsPage({
                     </TableRow>
                   ))}
                 </TableBody>
-              </TableContent>
-            </TableScrollContainer>
-          </TableRoot>
+              </Table>
+
+              {filtered.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                  <Inbox className="size-6 text-muted" />
+                  <span className="text-sm font-medium text-muted">
+                    {assignments.length === 0
+                      ? t("assignments.noAssignmentsYet")
+                      : t("students.noResultsTitle")}
+                  </span>
+                  <span className="text-xs text-foreground/40">
+                    {assignments.length === 0
+                      ? t("assignments.noAssignmentsHint")
+                      : t("students.noResultsHint", { search })}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
 

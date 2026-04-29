@@ -72,10 +72,12 @@ export function DateNavigator({ date, onChange, minDate, maxDate }: DateNavigato
       </Button>
 
       <Popover open={open} onOpenChange={setOpen}>
-        <PopoverTrigger asChild>
-          <button className="flex-1 font-semibold text-sm px-2 py-1 rounded-lg hover:bg-foreground/5 transition-colors select-none cursor-pointer">
-            {formatDisplay(date, language)}
-          </button>
+        <PopoverTrigger
+          render={
+            <button className="flex-1 cursor-pointer rounded-lg px-2 py-1 text-sm font-semibold transition-colors select-none hover:bg-foreground/5" />
+          }
+        >
+          {formatDisplay(date, language)}
         </PopoverTrigger>
         <PopoverContent className="w-auto p-0" align="center">
           <Calendar

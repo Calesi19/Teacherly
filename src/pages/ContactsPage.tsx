@@ -1,22 +1,25 @@
 import { useState, useCallback } from "react";
-import {
-  Button,
-  EmptyState,
-  Modal,
-  Label,
-  Input,
-  Spinner,
-  TableRoot,
-  TableScrollContainer,
-  TableContent,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
-  useOverlayState,
-} from "@heroui/react";
 import { Inbox, Pencil } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { useContacts } from "../hooks/useContacts";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { useTranslation } from "../i18n/LanguageContext";
@@ -32,7 +35,14 @@ interface ContactsPageProps {
   onGoToStudentProfile: () => void;
 }
 
-const emptyForm: NewContactInput = { name: "", relationship: "", phone: "", email: "", is_emergency_contact: false, is_primary_guardian: false };
+const emptyForm: NewContactInput = {
+  name: "",
+  relationship: "",
+  phone: "",
+  email: "",
+  is_emergency_contact: false,
+  is_primary_guardian: false,
+};
 
 function CopyButton({ value }: { value: string }) {
   const [copied, setCopied] = useState(false);
@@ -47,7 +57,7 @@ function CopyButton({ value }: { value: string }) {
     <button
       type="button"
       onClick={handleCopy}
-      className="ml-1.5 inline-flex items-center text-foreground/30 hover:text-foreground/70 transition-colors"
+      className="ml-1.5 inline-flex items-center text-foreground/30 transition-colors hover:text-foreground/70"
       aria-label="Copy to clipboard"
     >
       {copied ? (
@@ -64,6 +74,112 @@ function CopyButton({ value }: { value: string }) {
   );
 }
 
+function ToggleBadge({
+  active,
+  activeClassName,
+  inactiveClassName,
+  onClick,
+  children,
+}: {
+  active: boolean;
+  activeClassName: string;
+  inactiveClassName: string;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <Badge
+      variant={active ? "default" : "outline"}
+      className={cn(
+        "cursor-pointer transition-transform active:scale-95",
+        active ? activeClassName : inactiveClassName,
+      )}
+      onClick={onClick}
+    >
+      {children}
+    </Badge>
+  );
+}
+
+function ContactForm({
+  form,
+  setForm,
+  prefix,
+  t,
+}: {
+  form: NewContactInput;
+  setForm: (form: NewContactInput) => void;
+  prefix: string;
+  t: (key: string) => string;
+}) {
+  return (
+    <div className="flex flex-col gap-4 py-4">
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={`${prefix}-contact-name`}>{t(`contacts.${prefix}Modal.nameLabel`)}</Label>
+        <Input
+          id={`${prefix}-contact-name`}
+          value={form.name}
+          onChange={(e) => setForm({ ...form, name: e.target.value })}
+          placeholder={t(`contacts.${prefix}Modal.namePlaceholder`)}
+          required
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={`${prefix}-contact-relationship`}>
+          {t(`contacts.${prefix}Modal.relationshipLabel`)}
+        </Label>
+        <Input
+          id={`${prefix}-contact-relationship`}
+          value={form.relationship}
+          onChange={(e) => setForm({ ...form, relationship: e.target.value })}
+          placeholder={t(`contacts.${prefix}Modal.relationshipPlaceholder`)}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={`${prefix}-contact-phone`}>{t(`contacts.${prefix}Modal.phoneLabel`)}</Label>
+        <Input
+          id={`${prefix}-contact-phone`}
+          value={form.phone}
+          onChange={(e) => setForm({ ...form, phone: e.target.value })}
+          placeholder={t(`contacts.${prefix}Modal.phonePlaceholder`)}
+        />
+      </div>
+      <div className="flex flex-col gap-1.5">
+        <Label htmlFor={`${prefix}-contact-email`}>{t(`contacts.${prefix}Modal.emailLabel`)}</Label>
+        <Input
+          id={`${prefix}-contact-email`}
+          type="email"
+          value={form.email}
+          onChange={(e) => setForm({ ...form, email: e.target.value })}
+          placeholder={t(`contacts.${prefix}Modal.emailPlaceholder`)}
+        />
+      </div>
+      <div className="flex gap-2">
+        <ToggleBadge
+          active={form.is_primary_guardian}
+          activeClassName="bg-accent/20 text-accent border-transparent"
+          inactiveClassName="text-foreground/40 hover:text-foreground"
+          onClick={() =>
+            setForm({ ...form, is_primary_guardian: !form.is_primary_guardian })
+          }
+        >
+          {t(`contacts.${prefix}Modal.primaryGuardian`)}
+        </ToggleBadge>
+        <ToggleBadge
+          active={form.is_emergency_contact}
+          activeClassName="bg-warning/20 text-warning border-transparent"
+          inactiveClassName="text-foreground/40 hover:text-foreground"
+          onClick={() =>
+            setForm({ ...form, is_emergency_contact: !form.is_emergency_contact })
+          }
+        >
+          {t(`contacts.${prefix}Modal.primaryEmergency`)}
+        </ToggleBadge>
+      </div>
+    </div>
+  );
+}
+
 export function ContactsPage({
   student,
   group,
@@ -73,8 +189,8 @@ export function ContactsPage({
 }: ContactsPageProps) {
   const { contacts, loading, error, addContact, updateContact } = useContacts(student.id);
   const { t } = useTranslation();
-  const modalState = useOverlayState();
-  const editModalState = useOverlayState();
+  const [addOpen, setAddOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
   const [form, setForm] = useState<NewContactInput>(emptyForm);
   const [editingContact, setEditingContact] = useState<Contact | null>(null);
   const [editForm, setEditForm] = useState<NewContactInput>(emptyForm);
@@ -82,13 +198,13 @@ export function ContactsPage({
   const [addError, setAddError] = useState<string | null>(null);
   const [editError, setEditError] = useState<string | null>(null);
 
-  const closeModal = () => {
+  const closeAddDialog = () => {
     setForm(emptyForm);
     setAddError(null);
-    modalState.close();
+    setAddOpen(false);
   };
 
-  const openEditModal = (contact: Contact) => {
+  const openEditDialog = (contact: Contact) => {
     setEditingContact(contact);
     setEditForm({
       name: contact.name,
@@ -99,14 +215,14 @@ export function ContactsPage({
       is_primary_guardian: contact.is_primary_guardian === 1,
     });
     setEditError(null);
-    editModalState.open();
+    setEditOpen(true);
   };
 
-  const closeEditModal = () => {
+  const closeEditDialog = () => {
     setEditingContact(null);
     setEditForm(emptyForm);
     setEditError(null);
-    editModalState.close();
+    setEditOpen(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -116,8 +232,7 @@ export function ContactsPage({
     setAddError(null);
     try {
       await addContact(form);
-      setForm(emptyForm);
-      modalState.close();
+      closeAddDialog();
     } catch (err) {
       setAddError(String(err));
     } finally {
@@ -132,7 +247,7 @@ export function ContactsPage({
     setEditError(null);
     try {
       await updateContact(editingContact.id, editForm);
-      closeEditModal();
+      closeEditDialog();
     } catch (err) {
       setEditError(String(err));
     } finally {
@@ -141,7 +256,7 @@ export function ContactsPage({
   };
 
   return (
-    <div className="p-6 flex flex-col h-full">
+    <div className="flex h-full flex-col p-6">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -152,83 +267,89 @@ export function ContactsPage({
         ]}
       />
 
-      <div className="flex items-center justify-between mb-6">
+      <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold">{t("contacts.title")}</h2>
           <p className="text-sm text-muted">{student.name}</p>
         </div>
-        <Button variant="primary" size="sm" onPress={modalState.open}>
+        <Button size="sm" onClick={() => setAddOpen(true)}>
           {t("contacts.addContact")}
         </Button>
       </div>
 
       {loading && (
         <div className="flex justify-center py-12">
-          <Spinner size="lg" color="accent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         </div>
       )}
 
       {error && (
-        <div role="alert" className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm">
+        <div role="alert" className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">
           {error}
         </div>
       )}
 
-      <div className="flex-1 flex flex-col min-h-0">
+      <div className="flex min-h-0 flex-1 flex-col">
         {!loading && !error && (
-          <TableRoot variant="primary" className="flex-1 h-full">
-            <TableScrollContainer className="h-full">
-              <TableContent aria-label={t("contacts.title")} selectionMode="none">
+          <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
+            <div className="min-h-0 flex-1 overflow-auto">
+              <Table>
                 <TableHeader>
-                  <TableColumn isRowHeader>{t("contacts.columns.name")}</TableColumn>
-                  <TableColumn>{t("contacts.columns.relationship")}</TableColumn>
-                  <TableColumn>{t("contacts.columns.phone")}</TableColumn>
-                  <TableColumn>{t("contacts.columns.email")}</TableColumn>
-                  <TableColumn> </TableColumn>
-                  <TableColumn> </TableColumn>
+                  <TableRow>
+                    <TableHead>{t("contacts.columns.name")}</TableHead>
+                    <TableHead>{t("contacts.columns.relationship")}</TableHead>
+                    <TableHead>{t("contacts.columns.phone")}</TableHead>
+                    <TableHead>{t("contacts.columns.email")}</TableHead>
+                    <TableHead />
+                    <TableHead />
+                  </TableRow>
                 </TableHeader>
-                <TableBody
-                  renderEmptyState={() => (
-                    <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-2 py-12 text-center">
-                      <Inbox className="size-6 text-muted" />
-                      <span className="text-sm font-medium text-muted">{t("contacts.noContactsYet")}</span>
-                      <span className="text-xs text-foreground/40">{t("contacts.noContactsHint")}</span>
-                    </EmptyState>
-                  )}
-                >
+                <TableBody>
                   {contacts.map((contact) => (
-                    <TableRow key={contact.id} id={contact.id}>
+                    <TableRow key={contact.id}>
                       <TableCell className="font-medium">{contact.name}</TableCell>
-                      <TableCell>{contact.relationship ?? <span className="text-foreground/30">—</span>}</TableCell>
                       <TableCell>
-                        {contact.phone
-                          ? <span className="inline-flex items-center">{contact.phone}<CopyButton value={contact.phone} /></span>
-                          : <span className="text-foreground/30">—</span>}
+                        {contact.relationship ?? <span className="text-foreground/30">—</span>}
                       </TableCell>
                       <TableCell>
-                        {contact.email
-                          ? <span className="inline-flex items-center">{contact.email}<CopyButton value={contact.email} /></span>
-                          : <span className="text-foreground/30">—</span>}
+                        {contact.phone ? (
+                          <span className="inline-flex items-center">
+                            {contact.phone}
+                            <CopyButton value={contact.phone} />
+                          </span>
+                        ) : (
+                          <span className="text-foreground/30">—</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {contact.email ? (
+                          <span className="inline-flex items-center">
+                            {contact.email}
+                            <CopyButton value={contact.email} />
+                          </span>
+                        ) : (
+                          <span className="text-foreground/30">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
                         <div className="flex flex-wrap gap-1.5">
-                          {contact.is_primary_guardian ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-accent/10 text-accent">
+                          {contact.is_primary_guardian === 1 && (
+                            <Badge className="bg-accent/10 text-accent border-transparent">
                               {t("contacts.columns.primaryGuardian")}
-                            </span>
-                          ) : null}
-                          {contact.is_emergency_contact ? (
-                            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-warning/10 text-warning">
+                            </Badge>
+                          )}
+                          {contact.is_emergency_contact === 1 && (
+                            <Badge className="bg-warning/10 text-warning border-transparent">
                               {t("contacts.columns.emergencyContact")}
-                            </span>
-                          ) : null}
+                            </Badge>
+                          )}
                         </div>
                       </TableCell>
                       <TableCell>
                         <button
                           type="button"
-                          onClick={() => openEditModal(contact)}
-                          className="inline-flex items-center text-foreground/30 hover:text-foreground/70 transition-colors"
+                          onClick={() => openEditDialog(contact)}
+                          className="inline-flex items-center text-foreground/30 transition-colors hover:text-foreground/70"
                           aria-label={t("contacts.editModal.title")}
                         >
                           <Pencil size={14} />
@@ -237,169 +358,77 @@ export function ContactsPage({
                     </TableRow>
                   ))}
                 </TableBody>
-              </TableContent>
-            </TableScrollContainer>
-          </TableRoot>
+              </Table>
+
+              {contacts.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                  <Inbox className="size-6 text-muted" />
+                  <span className="text-sm font-medium text-muted">{t("contacts.noContactsYet")}</span>
+                  <span className="text-xs text-foreground/40">{t("contacts.noContactsHint")}</span>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
 
-      <Modal state={editModalState}>
-        <Modal.Backdrop isDismissable={!submitting}>
-          <Modal.Container>
-            <Modal.Dialog>
-              <form onSubmit={handleEditSubmit}>
-                <Modal.Header>{t("contacts.editModal.title")}</Modal.Header>
-                <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-contact-name">{t("contacts.editModal.nameLabel")}</Label>
-                    <Input
-                      id="edit-contact-name"
-                      value={editForm.name}
-                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                      placeholder={t("contacts.editModal.namePlaceholder")}
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-contact-relationship">{t("contacts.editModal.relationshipLabel")}</Label>
-                    <Input
-                      id="edit-contact-relationship"
-                      value={editForm.relationship}
-                      onChange={(e) => setEditForm({ ...editForm, relationship: e.target.value })}
-                      placeholder={t("contacts.editModal.relationshipPlaceholder")}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-contact-phone">{t("contacts.editModal.phoneLabel")}</Label>
-                    <Input
-                      id="edit-contact-phone"
-                      value={editForm.phone}
-                      onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                      placeholder={t("contacts.editModal.phonePlaceholder")}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-contact-email">{t("contacts.editModal.emailLabel")}</Label>
-                    <Input
-                      id="edit-contact-email"
-                      type="email"
-                      value={editForm.email}
-                      onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                      placeholder={t("contacts.editModal.emailPlaceholder")}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setEditForm({ ...editForm, is_primary_guardian: !editForm.is_primary_guardian })}
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${editForm.is_primary_guardian ? "bg-accent/20 text-accent" : "bg-foreground/8 text-foreground/40 hover:bg-foreground/12"}`}
-                    >
-                      {t("contacts.editModal.primaryGuardian")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setEditForm({ ...editForm, is_emergency_contact: !editForm.is_emergency_contact })}
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${editForm.is_emergency_contact ? "bg-warning/20 text-warning" : "bg-foreground/8 text-foreground/40 hover:bg-foreground/12"}`}
-                    >
-                      {t("contacts.editModal.primaryEmergency")}
-                    </button>
-                  </div>
-                  {editError && (
-                    <p className="text-danger text-sm">{editError}</p>
-                  )}
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button type="button" variant="ghost" onPress={closeEditModal}>
-                    {t("common.cancel")}
-                  </Button>
-                  <Button type="submit" variant="primary" isDisabled={submitting}>
-                    {submitting ? <Spinner size="sm" /> : t("common.save")}
-                  </Button>
-                </Modal.Footer>
-              </form>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+      <Dialog
+        open={editOpen}
+        onOpenChange={(open) => {
+          if (!open && !submitting) closeEditDialog();
+        }}
+      >
+        <DialogContent>
+          <form onSubmit={handleEditSubmit}>
+            <DialogHeader>
+              <DialogTitle>{t("contacts.editModal.title")}</DialogTitle>
+            </DialogHeader>
+            <ContactForm form={editForm} setForm={setEditForm} prefix="edit" t={t} />
+            {editError && <p className="text-sm text-danger">{editError}</p>}
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={closeEditDialog}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  t("common.save")
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
-      <Modal state={modalState}>
-        <Modal.Backdrop isDismissable={!submitting}>
-          <Modal.Container>
-            <Modal.Dialog>
-              <form onSubmit={handleSubmit}>
-                <Modal.Header>{t("contacts.addModal.title")}</Modal.Header>
-                <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="contact-name">{t("contacts.addModal.nameLabel")}</Label>
-                    <Input
-                      id="contact-name"
-                      value={form.name}
-                      onChange={(e) => setForm({ ...form, name: e.target.value })}
-                      placeholder={t("contacts.addModal.namePlaceholder")}
-                      required
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="contact-relationship">{t("contacts.addModal.relationshipLabel")}</Label>
-                    <Input
-                      id="contact-relationship"
-                      value={form.relationship}
-                      onChange={(e) => setForm({ ...form, relationship: e.target.value })}
-                      placeholder={t("contacts.addModal.relationshipPlaceholder")}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="contact-phone">{t("contacts.addModal.phoneLabel")}</Label>
-                    <Input
-                      id="contact-phone"
-                      value={form.phone}
-                      onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      placeholder={t("contacts.addModal.phonePlaceholder")}
-                    />
-                  </div>
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="contact-email">{t("contacts.addModal.emailLabel")}</Label>
-                    <Input
-                      id="contact-email"
-                      type="email"
-                      value={form.email}
-                      onChange={(e) => setForm({ ...form, email: e.target.value })}
-                      placeholder={t("contacts.addModal.emailPlaceholder")}
-                    />
-                  </div>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() => setForm({ ...form, is_primary_guardian: !form.is_primary_guardian })}
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${form.is_primary_guardian ? "bg-accent/20 text-accent" : "bg-foreground/8 text-foreground/40 hover:bg-foreground/12"}`}
-                    >
-                      {t("contacts.addModal.primaryGuardian")}
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => setForm({ ...form, is_emergency_contact: !form.is_emergency_contact })}
-                      className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition-colors ${form.is_emergency_contact ? "bg-warning/20 text-warning" : "bg-foreground/8 text-foreground/40 hover:bg-foreground/12"}`}
-                    >
-                      {t("contacts.addModal.primaryEmergency")}
-                    </button>
-                  </div>
-                  {addError && (
-                    <p className="text-danger text-sm">{addError}</p>
-                  )}
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button type="button" variant="ghost" onPress={closeModal}>
-                    {t("common.cancel")}
-                  </Button>
-                  <Button type="submit" variant="primary" isDisabled={submitting}>
-                    {submitting ? <Spinner size="sm" /> : t("common.add")}
-                  </Button>
-                </Modal.Footer>
-              </form>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+      <Dialog
+        open={addOpen}
+        onOpenChange={(open) => {
+          if (!open && !submitting) closeAddDialog();
+        }}
+      >
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle>{t("contacts.addModal.title")}</DialogTitle>
+            </DialogHeader>
+            <ContactForm form={form} setForm={setForm} prefix="add" t={t} />
+            {addError && <p className="text-sm text-danger">{addError}</p>}
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={closeAddDialog}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  t("common.add")
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

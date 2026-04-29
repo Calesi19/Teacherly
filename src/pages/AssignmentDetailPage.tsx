@@ -1,23 +1,29 @@
 import { useState, useEffect } from "react";
-import {
-  Button,
-  Chip,
-  Dropdown,
-  Modal,
-  Spinner,
-  Surface,
-  TableColumn,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableCell,
-  TableContent,
-  TableScrollContainer,
-  TableRoot,
-  EmptyState,
-  useOverlayState,
-} from "@heroui/react";
 import { Check, Inbox, MoreHorizontal } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { cn } from "@/lib/utils";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useAssignmentDetail } from "../hooks/useAssignmentDetail";
@@ -49,6 +55,20 @@ interface NoteModalState {
   currentNote: string | null;
 }
 
+function SectionCard({
+  children,
+  className,
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  return (
+    <div className={cn("rounded-2xl border bg-background p-5", className)}>
+      {children}
+    </div>
+  );
+}
+
 export function AssignmentDetailPage({
   assignment,
   group,
@@ -57,11 +77,8 @@ export function AssignmentDetailPage({
   onGoToAssignments,
   onDirtyChange,
 }: AssignmentDetailPageProps) {
-  const { scores, loading, error, upsertScore, setExempt, setLate, setNote, stats } = useAssignmentDetail(
-    assignment.id,
-    group.id,
-    assignment.max_score
-  );
+  const { scores, loading, error, upsertScore, setExempt, setLate, setNote, stats } =
+    useAssignmentDetail(assignment.id, group.id, assignment.max_score);
   const { t } = useTranslation();
 
   const [pendingScores, setPendingScores] = useState<Map<number, string>>(new Map());
@@ -71,17 +88,18 @@ export function AssignmentDetailPage({
   const [noteModal, setNoteModal] = useState<NoteModalState | null>(null);
   const [noteText, setNoteText] = useState("");
   const [savingNote, setSavingNote] = useState(false);
-  const noteOverlay = useOverlayState();
+  const [noteOpen, setNoteOpen] = useState(false);
 
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pendingNav, setPendingNav] = useState<(() => void) | null>(null);
 
-  const hasChanges = pendingScores.size > 0 || pendingLate.size > 0 || pendingExempt.size > 0;
+  const hasChanges =
+    pendingScores.size > 0 || pendingLate.size > 0 || pendingExempt.size > 0;
 
   useEffect(() => {
     onDirtyChange?.(hasChanges);
-  }, [hasChanges]);
+  }, [hasChanges, onDirtyChange]);
 
   function guardedNav(callback: () => void) {
     if (hasChanges) {
@@ -91,14 +109,18 @@ export function AssignmentDetailPage({
     }
   }
 
-  const openNoteModal = (studentId: number, studentName: string, currentNote: string | null) => {
+  const openNoteModal = (
+    studentId: number,
+    studentName: string,
+    currentNote: string | null,
+  ) => {
     setNoteModal({ studentId, studentName, currentNote });
     setNoteText(currentNote ?? "");
-    noteOverlay.open();
+    setNoteOpen(true);
   };
 
   const closeNoteModal = () => {
-    noteOverlay.close();
+    setNoteOpen(false);
     setNoteModal(null);
     setNoteText("");
   };
@@ -115,7 +137,7 @@ export function AssignmentDetailPage({
   };
 
   const getDisplayValue = (studentId: number, dbScore: number | null): string => {
-    if (pendingScores.has(studentId)) return pendingScores.get(studentId)!;
+    if (pendingScores.has(studentId)) return pendingScores.get(studentId) ?? "";
     return dbScore !== null ? String(dbScore) : "";
   };
 
@@ -130,7 +152,7 @@ export function AssignmentDetailPage({
   const handleBlur = (studentId: number, value: string) => {
     const trimmed = value.trim();
     const parsed = trimmed === "" ? null : parseFloat(trimmed);
-    if (parsed !== null && isNaN(parsed)) {
+    if (parsed !== null && Number.isNaN(parsed)) {
       setPendingScores((prev) => {
         const next = new Map(prev);
         next.delete(studentId);
@@ -162,7 +184,7 @@ export function AssignmentDetailPage({
   };
 
   return (
-    <div className="p-6 flex flex-col h-full">
+    <div className="flex h-full flex-col p-6">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: () => guardedNav(onGoToGroups) },
@@ -175,50 +197,59 @@ export function AssignmentDetailPage({
       <div className="mb-6 flex items-start justify-between gap-4">
         <div>
           <h2 className="text-2xl font-bold">{assignment.title}</h2>
-          <p className="text-sm text-muted mt-0.5">
+          <p className="mt-0.5 text-sm text-muted">
             {assignment.period_name} · {assignment.max_score} {t("assignmentDetail.ptsMax")}
           </p>
         </div>
         {hasChanges && (
-          <Button size="sm" variant="primary" onPress={() => setSaveModalOpen(true)}>
+          <Button size="sm" onClick={() => setSaveModalOpen(true)}>
             {t("common.save")}
           </Button>
         )}
       </div>
 
       {assignment.description && (
-        <Surface variant="secondary" className="rounded-2xl p-4 mb-6">
-          <p className="text-sm text-foreground/80 whitespace-pre-wrap">{assignment.description}</p>
-        </Surface>
+        <SectionCard className="mb-6 bg-muted/40">
+          <p className="whitespace-pre-wrap text-sm text-foreground/80">
+            {assignment.description}
+          </p>
+        </SectionCard>
       )}
 
       {loading ? (
         <div className="flex justify-center py-16">
-          <Spinner size="lg" color="accent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         </div>
       ) : error ? (
-        <div role="alert" className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm mb-6">
+        <div role="alert" className="mb-6 rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">
           {error}
         </div>
       ) : (
-        <div className="flex-1 min-h-0 flex flex-col">
-          <Surface variant="secondary" className="rounded-2xl p-5 mb-6 flex flex-col gap-4">
+        <div className="flex min-h-0 flex-1 flex-col">
+          <SectionCard className="mb-6 flex flex-col gap-4 bg-muted/40">
             <div className="grid grid-cols-2 gap-4">
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-muted uppercase tracking-wide">{t("assignmentDetail.average")}</span>
+                <span className="text-xs uppercase tracking-wide text-muted">
+                  {t("assignmentDetail.average")}
+                </span>
                 <span className="text-2xl font-bold">
                   {stats.average !== null ? stats.average.toFixed(1) : "—"}
-                  <span className="text-sm font-normal text-muted ml-1">
+                  <span className="ml-1 text-sm font-normal text-muted">
                     / {assignment.max_score}
                   </span>
                 </span>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs text-muted uppercase tracking-wide">{t("assignmentDetail.graded")}</span>
+                <span className="text-xs uppercase tracking-wide text-muted">
+                  {t("assignmentDetail.graded")}
+                </span>
                 <span className="text-2xl font-bold">
                   {stats.gradedCount}
-                  <span className="text-sm font-normal text-muted ml-1">
-                    / {scores.length} {scores.length !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}
+                  <span className="ml-1 text-sm font-normal text-muted">
+                    / {scores.length}{" "}
+                    {scores.length !== 1
+                      ? t("assignmentDetail.studentsSuffix")
+                      : t("assignmentDetail.studentSuffix")}
                   </span>
                 </span>
               </div>
@@ -226,144 +257,149 @@ export function AssignmentDetailPage({
 
             {stats.distribution.length > 0 && (
               <div className="flex flex-col gap-2">
-                <div className="flex rounded-full overflow-hidden h-3">
-                  {stats.distribution.map((d) => (
+                <div className="flex h-3 overflow-hidden rounded-full">
+                  {stats.distribution.map((distribution) => (
                     <div
-                      key={d.band}
-                      className={`${BAND_COLORS[d.band].bar} h-full`}
-                      style={{ width: `${d.percentage}%` }}
-                      title={`${d.band === "N" ? t("assignmentDetail.notScored") : d.band}: ${d.count} ${d.count !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}`}
+                      key={distribution.band}
+                      className={cn(BAND_COLORS[distribution.band].bar, "h-full")}
+                      style={{ width: `${distribution.percentage}%` }}
+                      title={`${distribution.band === "N" ? t("assignmentDetail.notScored") : distribution.band}: ${distribution.count} ${distribution.count !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}`}
                     />
                   ))}
                 </div>
-                <div className="flex gap-3 flex-wrap">
-                  {stats.distribution.map((d) => (
-                    <div key={d.band} className="flex items-center gap-1">
-                      <span className={`text-xs font-semibold ${BAND_COLORS[d.band].text}`}>
-                        {d.band === "N" ? t("assignmentDetail.notScored") : d.band}
+                <div className="flex flex-wrap gap-3">
+                  {stats.distribution.map((distribution) => (
+                    <div key={distribution.band} className="flex items-center gap-1">
+                      <span className={cn("text-xs font-semibold", BAND_COLORS[distribution.band].text)}>
+                        {distribution.band === "N"
+                          ? t("assignmentDetail.notScored")
+                          : distribution.band}
                       </span>
                       <span className="text-xs text-muted">
-                        {d.count} ({Math.round(d.percentage)}%)
+                        {distribution.count} ({Math.round(distribution.percentage)}%)
                       </span>
                     </div>
                   ))}
                 </div>
               </div>
             )}
-          </Surface>
+          </SectionCard>
 
-          <div className="flex-1 flex flex-col min-h-0">
-            <TableRoot variant="primary" className="flex-1 h-full">
-              <TableScrollContainer className="h-full">
-                <TableContent aria-label={t("assignmentDetail.studentsTableLabel")}>
+          <div className="flex min-h-0 flex-1 flex-col">
+            <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
+              <div className="min-h-0 flex-1 overflow-auto">
+                <Table>
                   <TableHeader>
-                    <TableColumn>{" "}</TableColumn>
-                    <TableColumn isRowHeader>{t("students.tableColumns.name")}</TableColumn>
-                    <TableColumn>{" "}</TableColumn>
-                    <TableColumn className="text-right">{t("assignmentDetail.scoreColumn")}</TableColumn>
+                    <TableRow>
+                      <TableHead>{" "}</TableHead>
+                      <TableHead>{t("students.tableColumns.name")}</TableHead>
+                      <TableHead>{" "}</TableHead>
+                      <TableHead className="text-right">{t("assignmentDetail.scoreColumn")}</TableHead>
+                    </TableRow>
                   </TableHeader>
-                  <TableBody
-                    renderEmptyState={() => (
-                      <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-2 py-12 text-center">
-                        <Inbox className="size-6 text-muted" />
-                        <span className="text-sm font-medium text-muted">
-                          {t("assignmentDetail.noStudents")}
-                        </span>
-                      </EmptyState>
-                    )}
-                  >
+                  <TableBody>
                     {scores.map((row) => {
                       const displayVal = getDisplayValue(row.student_id, row.score);
-                      const isExtraCredit = row.score !== null && row.score > assignment.max_score;
+                      const isExtraCredit =
+                        row.score !== null && row.score > assignment.max_score;
                       const isExempt = pendingExempt.has(row.student_id)
-                        ? pendingExempt.get(row.student_id)!
+                        ? pendingExempt.get(row.student_id) ?? false
                         : row.exempt === 1;
                       const isLate = pendingLate.has(row.student_id)
-                        ? pendingLate.get(row.student_id)!
+                        ? pendingLate.get(row.student_id) ?? false
                         : Boolean(row.late);
 
                       return (
-                        <TableRow key={row.student_id} id={row.student_id}>
+                        <TableRow key={row.student_id}>
                           <TableCell className="w-8">
-                            <Dropdown>
-                              <Dropdown.Trigger>
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  className="p-1.5 text-foreground/40 hover:text-foreground"
-                                  aria-label="Student options"
+                            <DropdownMenu>
+                              <DropdownMenuTrigger
+                                render={
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    className="p-1.5 text-foreground/40 hover:text-foreground"
+                                    aria-label="Student options"
+                                  />
+                                }
+                              >
+                                <MoreHorizontal size={14} />
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="start" sideOffset={4} className="w-52">
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    const next = !isLate;
+                                    setPendingLate((prev) => {
+                                      const map = new Map(prev);
+                                      map.set(row.student_id, next);
+                                      return map;
+                                    });
+                                  }}
                                 >
-                                  <MoreHorizontal size={14} />
-                                </Button>
-                              </Dropdown.Trigger>
-                              <Dropdown.Popover>
-                                <Dropdown.Menu>
-                                  <Dropdown.Item
-                                    id="late"
-                                    onAction={() => {
-                                      const next = !isLate;
-                                      setPendingLate((prev) => {
-                                        const m = new Map(prev);
-                                        m.set(row.student_id, next);
-                                        return m;
-                                      });
-                                    }}
-                                  >
-                                    <span className="flex items-center justify-between gap-2">
-                                      {isLate ? t("assignmentDetail.removeLate") : t("assignmentDetail.markAsLate")}
-                                      {isLate
-                                        ? <Check size={12} className="text-warning" />
-                                        : <span className="w-3" />}
-                                    </span>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    id="exempt"
-                                    onAction={() => {
-                                      const next = !isExempt;
-                                      setPendingExempt((prev) => {
-                                        const m = new Map(prev);
-                                        m.set(row.student_id, next);
-                                        return m;
-                                      });
-                                    }}
-                                  >
-                                    <span className="flex items-center justify-between gap-2">
-                                      {isExempt ? t("assignmentDetail.removeExempt") : t("assignmentDetail.markAsExempt")}
-                                      {isExempt
-                                        ? <Check size={12} className="text-accent" />
-                                        : <span className="w-3" />}
-                                    </span>
-                                  </Dropdown.Item>
-                                  <Dropdown.Item
-                                    id="note"
-                                    onAction={() => openNoteModal(row.student_id, row.student_name, row.note)}
-                                  >
-                                    {row.note ? t("assignmentDetail.editNote") : t("assignmentDetail.addNote")}
-                                  </Dropdown.Item>
-                                </Dropdown.Menu>
-                              </Dropdown.Popover>
-                            </Dropdown>
+                                  <span className="flex w-full items-center justify-between gap-2">
+                                    {isLate
+                                      ? t("assignmentDetail.removeLate")
+                                      : t("assignmentDetail.markAsLate")}
+                                    {isLate ? (
+                                      <Check size={12} className="text-warning" />
+                                    ) : (
+                                      <span className="w-3" />
+                                    )}
+                                  </span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    const next = !isExempt;
+                                    setPendingExempt((prev) => {
+                                      const map = new Map(prev);
+                                      map.set(row.student_id, next);
+                                      return map;
+                                    });
+                                  }}
+                                >
+                                  <span className="flex w-full items-center justify-between gap-2">
+                                    {isExempt
+                                      ? t("assignmentDetail.removeExempt")
+                                      : t("assignmentDetail.markAsExempt")}
+                                    {isExempt ? (
+                                      <Check size={12} className="text-accent" />
+                                    ) : (
+                                      <span className="w-3" />
+                                    )}
+                                  </span>
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                  onClick={() =>
+                                    openNoteModal(row.student_id, row.student_name, row.note)
+                                  }
+                                >
+                                  {row.note
+                                    ? t("assignmentDetail.editNote")
+                                    : t("assignmentDetail.addNote")}
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
                           </TableCell>
                           <TableCell>
                             <span className="font-medium">{row.student_name}</span>
                           </TableCell>
                           <TableCell className="w-24">
                             {isExempt ? (
-                              <Chip size="sm" variant="soft" color="accent">
+                              <Badge className="border-transparent bg-accent/10 text-accent">
                                 {t("assignmentDetail.exempt")}
-                              </Chip>
+                              </Badge>
                             ) : isLate ? (
-                              <Chip size="sm" variant="soft" color="warning">
+                              <Badge className="border-transparent bg-warning/10 text-warning">
                                 {t("assignmentDetail.late")}
-                              </Chip>
+                              </Badge>
                             ) : null}
                           </TableCell>
                           <TableCell>
                             <div className="flex items-center justify-end gap-2">
                               {isExtraCredit && (
-                                <Chip size="sm" color="warning" variant="secondary">
+                                <Badge className="border-transparent bg-warning/10 text-warning">
                                   {t("assignmentDetail.extraCredit")}
-                                </Chip>
+                                </Badge>
                               )}
                               {row.score !== null && (
                                 <span className="text-sm text-muted">
@@ -379,53 +415,74 @@ export function AssignmentDetailPage({
                                 disabled={isExempt}
                                 onChange={(e) => handleChange(row.student_id, e.target.value)}
                                 onBlur={(e) => handleBlur(row.student_id, e.target.value)}
-                                className={`w-20 flex h-9 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring ${isExempt ? "opacity-50 cursor-not-allowed" : ""}`}
+                                className={cn(
+                                  "flex h-9 w-20 rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none",
+                                  isExempt && "cursor-not-allowed opacity-50",
+                                )}
                               />
-                              <span className="text-xs text-muted w-12 shrink-0">/ {assignment.max_score}</span>
+                              <span className="w-12 shrink-0 text-xs text-muted">
+                                / {assignment.max_score}
+                              </span>
                             </div>
                           </TableCell>
                         </TableRow>
                       );
                     })}
                   </TableBody>
-                </TableContent>
-              </TableScrollContainer>
-            </TableRoot>
+                </Table>
+
+                {scores.length === 0 && (
+                  <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                    <Inbox className="size-6 text-muted" />
+                    <span className="text-sm font-medium text-muted">
+                      {t("assignmentDetail.noStudents")}
+                    </span>
+                  </div>
+                )}
+              </div>
+            </div>
           </div>
         </div>
       )}
 
-      <Modal state={noteOverlay}>
-        <Modal.Backdrop isDismissable={!savingNote}>
-          <Modal.Container>
-            <Modal.Dialog>
-              <Modal.Header>
-                {noteModal
-                  ? `${t("assignmentDetail.noteModalTitle")} — ${noteModal.studentName}`
-                  : t("assignmentDetail.noteModalTitle")}
-              </Modal.Header>
-              <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-                <textarea
-                  rows={4}
-                  value={noteText}
-                  onChange={(e) => setNoteText(e.target.value)}
-                  placeholder={t("assignmentDetail.notePlaceholder")}
-                  autoFocus
-                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
-                />
-              </Modal.Body>
-              <Modal.Footer>
-                <Button type="button" variant="ghost" onPress={closeNoteModal} isDisabled={savingNote}>
-                  {t("common.cancel")}
-                </Button>
-                <Button type="button" variant="primary" onPress={handleNoteSave} isDisabled={savingNote}>
-                  {savingNote ? <Spinner size="sm" /> : t("assignmentDetail.noteSave")}
-                </Button>
-              </Modal.Footer>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+      <Dialog
+        open={noteOpen}
+        onOpenChange={(open) => {
+          if (!open && !savingNote) closeNoteModal();
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {noteModal
+                ? `${t("assignmentDetail.noteModalTitle")} - ${noteModal.studentName}`
+                : t("assignmentDetail.noteModalTitle")}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 py-4">
+            <textarea
+              rows={4}
+              value={noteText}
+              onChange={(e) => setNoteText(e.target.value)}
+              placeholder={t("assignmentDetail.notePlaceholder")}
+              autoFocus
+              className="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+            />
+          </div>
+          <DialogFooter>
+            <Button type="button" variant="ghost" onClick={closeNoteModal} disabled={savingNote}>
+              {t("common.cancel")}
+            </Button>
+            <Button type="button" onClick={handleNoteSave} disabled={savingNote}>
+              {savingNote ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                t("assignmentDetail.noteSave")
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmModal
         isOpen={saveModalOpen}
