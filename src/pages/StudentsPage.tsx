@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Cake, GraduationCap, Inbox } from "lucide-react";
+import { Cake, Inbox, Star } from "lucide-react";
 import Database from "@tauri-apps/plugin-sql";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -67,7 +67,10 @@ function formatBirthdate(birthdate: string | null): string {
   let age = today.getFullYear() - birth.getFullYear();
   const monthDelta = today.getMonth() - birth.getMonth();
 
-  if (monthDelta < 0 || (monthDelta === 0 && today.getDate() < birth.getDate())) {
+  if (
+    monthDelta < 0 ||
+    (monthDelta === 0 && today.getDate() < birth.getDate())
+  ) {
     age--;
   }
 
@@ -150,7 +153,8 @@ export function StudentsPage({
   const selectedStudents = filtered.filter((s) => selectedKeys.has(s.id));
   const hasSelection = selectedStudents.length > 0;
   const allFilteredSelected =
-    filtered.length > 0 && filtered.every((student) => selectedKeys.has(student.id));
+    filtered.length > 0 &&
+    filtered.every((student) => selectedKeys.has(student.id));
 
   const handleSelectionChange = (studentId: number, checked: boolean) => {
     setSelectedKeys((prev) => {
@@ -207,7 +211,7 @@ export function StudentsPage({
 
   return (
     <TooltipProvider>
-      <div className="flex h-full flex-col px-6 py-6 pl-3">
+      <div className="flex h-full flex-col px-6 py-3 pl-3">
         <Breadcrumb
           items={[
             { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -237,10 +241,18 @@ export function StudentsPage({
                   <span className="text-sm text-muted">
                     {selectedStudents.length} {t("students.selected")}
                   </span>
-                  <Button variant="secondary" size="sm" onClick={() => setBulkNoteOpen(true)}>
+                  <Button
+                    variant="secondary"
+                    size="sm"
+                    onClick={() => setBulkNoteOpen(true)}
+                  >
                     {t("students.addNote")}
                   </Button>
-                  <Button variant="ghost" size="sm" onClick={() => setSelectedKeys(new Set())}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setSelectedKeys(new Set())}
+                  >
                     {t("students.clear")}
                   </Button>
                 </>
@@ -279,15 +291,21 @@ export function StudentsPage({
                         <Checkbox
                           aria-label="Select all"
                           checked={allFilteredSelected}
-                          onCheckedChange={(checked) => handleSelectAll(checked === true)}
+                          onCheckedChange={(checked) =>
+                            handleSelectAll(checked === true)
+                          }
                           disabled={filtered.length === 0}
                         />
                       </TableHead>
                       <TableHead>{t("students.tableColumns.name")}</TableHead>
                       <TableHead>{t("students.tableColumns.gender")}</TableHead>
-                      <TableHead>{t("students.tableColumns.birthdate")}</TableHead>
+                      <TableHead>
+                        {t("students.tableColumns.birthdate")}
+                      </TableHead>
                       <TableHead />
-                      <TableHead>{t("students.tableColumns.studentId")}</TableHead>
+                      <TableHead>
+                        {t("students.tableColumns.studentId")}
+                      </TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -295,19 +313,29 @@ export function StudentsPage({
                       <TableRow
                         key={student.id}
                         className="cursor-pointer"
-                        data-state={selectedKeys.has(student.id) ? "selected" : undefined}
+                        data-state={
+                          selectedKeys.has(student.id) ? "selected" : undefined
+                        }
                         onClick={() => onSelectStudent(student)}
                       >
-                        <TableCell className="pr-0" onClick={(e) => e.stopPropagation()}>
+                        <TableCell
+                          className="pr-0"
+                          onClick={(e) => e.stopPropagation()}
+                        >
                           <Checkbox
                             aria-label={`Select ${student.name}`}
                             checked={selectedKeys.has(student.id)}
                             onCheckedChange={(checked) =>
-                              handleSelectionChange(student.id, checked === true)
+                              handleSelectionChange(
+                                student.id,
+                                checked === true,
+                              )
                             }
                           />
                         </TableCell>
-                        <TableCell className="font-medium">{student.name}</TableCell>
+                        <TableCell className="font-medium">
+                          {student.name}
+                        </TableCell>
                         <TableCell className="text-sm text-foreground/50">
                           {student.gender || "—"}
                         </TableCell>
@@ -322,34 +350,35 @@ export function StudentsPage({
                                   render={
                                     <button
                                       type="button"
-                                      className="inline-flex size-5 items-center justify-center rounded-full bg-accent/10 text-accent"
+                                      className="inline-flex size-7 items-center justify-center rounded-full bg-accent/10 text-accent"
                                     />
                                   }
                                 >
-                                  <GraduationCap size={10} />
+                                  <Star className="size-4 shrink-0" />
                                 </TooltipTrigger>
                                 <TooltipContent>
                                   {t("students.badges.specialEducation")}
                                 </TooltipContent>
                               </Tooltip>
                             )}
-                            {student.birthdate && isBirthdaySoon(student.birthdate) && (
-                              <Tooltip>
-                                <TooltipTrigger
-                                  render={
-                                    <button
-                                      type="button"
-                                      className="inline-flex size-5 items-center justify-center rounded-full bg-warning/10 text-warning"
-                                    />
-                                  }
-                                >
-                                  <Cake size={10} />
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                  {t("students.badges.birthdaySoon")}
-                                </TooltipContent>
-                              </Tooltip>
-                            )}
+                            {student.birthdate &&
+                              isBirthdaySoon(student.birthdate) && (
+                                <Tooltip>
+                                  <TooltipTrigger
+                                    render={
+                                      <button
+                                        type="button"
+                                        className="inline-flex size-7 items-center justify-center rounded-full bg-warning/10 text-warning"
+                                      />
+                                    }
+                                  >
+                                    <Cake className="size-4 shrink-0" />
+                                  </TooltipTrigger>
+                                  <TooltipContent>
+                                    {t("students.badges.birthdaySoon")}
+                                  </TooltipContent>
+                                </Tooltip>
+                              )}
                           </div>
                         </TableCell>
                         <TableCell className="text-sm text-foreground/40">
@@ -410,7 +439,9 @@ export function StudentsPage({
                   <Label>{t("students.addStudentModal.genderLabel")}</Label>
                   <Select
                     value={form.gender || undefined}
-                    onValueChange={(gender) => setForm({ ...form, gender: gender ?? "" })}
+                    onValueChange={(gender) =>
+                      setForm({ ...form, gender: gender ?? "" })
+                    }
                   >
                     <SelectTrigger className="w-full">
                       <SelectValue
@@ -445,8 +476,12 @@ export function StudentsPage({
                   <Input
                     id="add-student-number"
                     value={form.student_number}
-                    onChange={(e) => setForm({ ...form, student_number: e.target.value })}
-                    placeholder={t("students.addStudentModal.studentIdPlaceholder")}
+                    onChange={(e) =>
+                      setForm({ ...form, student_number: e.target.value })
+                    }
+                    placeholder={t(
+                      "students.addStudentModal.studentIdPlaceholder",
+                    )}
                   />
                 </div>
 
@@ -454,7 +489,11 @@ export function StudentsPage({
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="ghost" onClick={closeAddStudentDialog}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={closeAddStudentDialog}
+                >
                   {t("common.cancel")}
                 </Button>
                 <Button type="submit" disabled={submitting}>
@@ -517,26 +556,41 @@ export function StudentsPage({
                           onClick={() =>
                             setNoteTags((prev) =>
                               isActive
-                                ? prev.filter((currentTag) => currentTag !== tag)
+                                ? prev.filter(
+                                    (currentTag) => currentTag !== tag,
+                                  )
                                 : [...prev, tag],
                             )
                           }
                         >
-                          {t(`studentProfile.notes.tags.${tag}` as Parameters<typeof t>[0])}
+                          {t(
+                            `studentProfile.notes.tags.${tag}` as Parameters<
+                              typeof t
+                            >[0],
+                          )}
                         </Badge>
                       );
                     })}
                   </div>
                 </div>
 
-                {noteError && <p className="text-sm text-danger">{noteError}</p>}
+                {noteError && (
+                  <p className="text-sm text-danger">{noteError}</p>
+                )}
               </div>
 
               <DialogFooter>
-                <Button type="button" variant="ghost" onClick={closeBulkNoteDialog}>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  onClick={closeBulkNoteDialog}
+                >
                   {t("common.cancel")}
                 </Button>
-                <Button type="submit" disabled={noteSubmitting || !noteContent.trim()}>
+                <Button
+                  type="submit"
+                  disabled={noteSubmitting || !noteContent.trim()}
+                >
                   {noteSubmitting ? (
                     <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
                   ) : (

@@ -133,7 +133,7 @@ export function Sidebar({
         animate={{ width: isOpen ? 248 : 72 }}
         transition={{ type: "spring", bounce: 0.28, duration: 0.75 }}
         className={cn(
-          "flex h-full flex-col overflow-hidden rounded-[28px] p-2 text-foreground transition-colors duration-700 ease-out",
+          "flex h-full flex-col overflow-hidden rounded-[14px] p-2 text-foreground transition-colors duration-700 ease-out",
           isOpen ? "bg-neutral-100 dark:bg-neutral-800" : "bg-transparent",
         )}
       >
@@ -150,7 +150,11 @@ export function Sidebar({
             className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-black/5 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-white/8 dark:hover:text-white"
             aria-label={isOpen ? "Collapse sidebar" : "Expand sidebar"}
           >
-            {isOpen ? <PanelLeftClose size={18} /> : <PanelLeftOpen size={18} />}
+            {isOpen ? (
+              <PanelLeftClose size={18} />
+            ) : (
+              <PanelLeftOpen size={18} />
+            )}
           </button>
         </div>
 
@@ -226,16 +230,22 @@ export function Sidebar({
                   </AnimatePresence>
 
                   <AnimatePresence>
-                    {hoveredIndex === index && !item.active && !item.disabled && (
-                      <motion.span
-                        layoutId="sidebar-hover-bg"
-                        className="absolute inset-0 z-0 rounded-lg bg-neutral-200/60 dark:bg-neutral-900/50"
-                        initial={{ opacity: 0 }}
-                        animate={{ opacity: 1 }}
-                        exit={{ opacity: 0 }}
-                        transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                      />
-                    )}
+                    {hoveredIndex === index &&
+                      !item.active &&
+                      !item.disabled && (
+                        <motion.span
+                          layoutId="sidebar-hover-bg"
+                          className="absolute inset-0 z-0 rounded-lg bg-neutral-200/60 dark:bg-neutral-900/50"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                          transition={{
+                            type: "spring",
+                            stiffness: 350,
+                            damping: 30,
+                          }}
+                        />
+                      )}
                   </AnimatePresence>
 
                   <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">

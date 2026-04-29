@@ -54,21 +54,33 @@ export function AssignmentsPage({
   onGoToStudents,
   onSelectAssignment,
 }: AssignmentsPageProps) {
-  const { assignments, loading, error, addAssignment, deleteAssignment } = useAssignments(group.id);
+  const { assignments, loading, error, addAssignment, deleteAssignment } =
+    useAssignments(group.id);
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [selectedPeriod, setSelectedPeriod] = useState<string>("all");
   const [selectedTag, setSelectedTag] = useState<string>("all");
-  const [deletingAssignment, setDeletingAssignment] = useState<Assignment | null>(null);
+  const [deletingAssignment, setDeletingAssignment] =
+    useState<Assignment | null>(null);
 
   const periods = useMemo(
-    () => Array.from(new Set(assignments.map((assignment) => assignment.period_name).filter(Boolean))).sort(),
+    () =>
+      Array.from(
+        new Set(
+          assignments
+            .map((assignment) => assignment.period_name)
+            .filter(Boolean),
+        ),
+      ).sort(),
     [assignments],
   );
 
   const filtered = assignments.filter((assignment) => {
-    const matchesSearch = assignment.title.toLowerCase().includes(search.toLowerCase());
-    const matchesPeriod = selectedPeriod === "all" || assignment.period_name === selectedPeriod;
+    const matchesSearch = assignment.title
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    const matchesPeriod =
+      selectedPeriod === "all" || assignment.period_name === selectedPeriod;
     const matchesTag = selectedTag === "all" || assignment.tag === selectedTag;
     return matchesSearch && matchesPeriod && matchesTag;
   });
@@ -83,7 +95,7 @@ export function AssignmentsPage({
   };
 
   return (
-    <div className="flex h-full flex-col px-6 py-6 pl-3">
+    <div className="flex h-full flex-col px-6 py-3 pl-3">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -115,7 +127,9 @@ export function AssignmentsPage({
                     <SelectValue placeholder={t("assignments.allPeriods")} />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">{t("assignments.allPeriods")}</SelectItem>
+                    <SelectItem value="all">
+                      {t("assignments.allPeriods")}
+                    </SelectItem>
                     {periods.map((period) => (
                       <SelectItem key={period} value={period}>
                         {period}
@@ -153,7 +167,10 @@ export function AssignmentsPage({
       )}
 
       {error && (
-        <div role="alert" className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">
+        <div
+          role="alert"
+          className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger"
+        >
           {error}
         </div>
       )}
@@ -162,14 +179,18 @@ export function AssignmentsPage({
         {!loading && !error && (
           <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
             <div className="min-h-0 flex-1 overflow-auto">
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>{t("assignments.tableColumns.title")}</TableHead>
-                      <TableHead>{t("assignments.tags.all")}</TableHead>
-                      <TableHead>{t("assignments.tableColumns.period")}</TableHead>
-                      <TableHead>{t("assignments.tableColumns.maxScore")}</TableHead>
-                      <TableHead>{t("assignments.tableColumns.date")}</TableHead>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>{t("assignments.tableColumns.title")}</TableHead>
+                    <TableHead>{t("assignments.tags.all")}</TableHead>
+                    <TableHead>
+                      {t("assignments.tableColumns.period")}
+                    </TableHead>
+                    <TableHead>
+                      {t("assignments.tableColumns.maxScore")}
+                    </TableHead>
+                    <TableHead>{t("assignments.tableColumns.date")}</TableHead>
                     <TableHead />
                   </TableRow>
                 </TableHeader>
@@ -180,7 +201,9 @@ export function AssignmentsPage({
                       className="cursor-pointer"
                       onClick={() => onSelectAssignment(assignment)}
                     >
-                      <TableCell className="font-medium">{assignment.title}</TableCell>
+                      <TableCell className="font-medium">
+                        {assignment.title}
+                      </TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {tagLabels[assignment.tag] ?? assignment.tag}
                       </TableCell>
@@ -238,7 +261,9 @@ export function AssignmentsPage({
         title={t("assignments.deleteModal.title")}
         description={
           deletingAssignment
-            ? t("assignments.deleteModal.description", { title: deletingAssignment.title })
+            ? t("assignments.deleteModal.description", {
+                title: deletingAssignment.title,
+              })
             : ""
         }
         confirmLabel={t("common.delete")}
