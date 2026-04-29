@@ -713,7 +713,7 @@ function AppContent() {
 
         <div className="flex flex-col flex-1 min-h-0">
           {showSidebar && (
-            <div className="lg:hidden flex items-center gap-2 px-4 py-3 bg-background border-b border-border shadow-sm">
+            <div className="lg:hidden flex items-center gap-2 border-b border-border bg-app-background px-4 py-3 shadow-sm">
               <Button
                 variant="ghost"
                 size="icon"
@@ -725,7 +725,7 @@ function AppContent() {
               <span className="text-lg font-bold">{APP_NAME}</span>
             </div>
           )}
-          <main className="flex-1 bg-background flex flex-col overflow-y-auto">
+          <main className="flex flex-1 flex-col overflow-y-auto bg-app-background">
             {renderPage()}
           </main>
         </div>

@@ -1,6 +1,5 @@
 import { useState, useMemo } from "react";
 import { Inbox, Trash2 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -163,13 +162,14 @@ export function AssignmentsPage({
         {!loading && !error && (
           <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
             <div className="min-h-0 flex-1 overflow-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>{t("assignments.tableColumns.title")}</TableHead>
-                    <TableHead>{t("assignments.tableColumns.period")}</TableHead>
-                    <TableHead>{t("assignments.tableColumns.maxScore")}</TableHead>
-                    <TableHead>{t("assignments.tableColumns.date")}</TableHead>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>{t("assignments.tableColumns.title")}</TableHead>
+                      <TableHead>{t("assignments.tags.all")}</TableHead>
+                      <TableHead>{t("assignments.tableColumns.period")}</TableHead>
+                      <TableHead>{t("assignments.tableColumns.maxScore")}</TableHead>
+                      <TableHead>{t("assignments.tableColumns.date")}</TableHead>
                     <TableHead />
                   </TableRow>
                 </TableHeader>
@@ -180,13 +180,9 @@ export function AssignmentsPage({
                       className="cursor-pointer"
                       onClick={() => onSelectAssignment(assignment)}
                     >
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {assignment.title}
-                          <Badge variant="secondary">
-                            {tagLabels[assignment.tag] ?? assignment.tag}
-                          </Badge>
-                        </div>
+                      <TableCell className="font-medium">{assignment.title}</TableCell>
+                      <TableCell className="text-sm text-foreground/50">
+                        {tagLabels[assignment.tag] ?? assignment.tag}
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {assignment.period_name}
