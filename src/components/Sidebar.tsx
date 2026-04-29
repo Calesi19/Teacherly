@@ -94,14 +94,6 @@ export function Sidebar({
         onClick: nav(onGoToReports),
         disabled: !currentGroup,
       },
-      {
-        id: "settings",
-        label: t("sidebar.settings"),
-        icon: Settings,
-        active: currentPage === "settings",
-        onClick: nav(onGoToSettings),
-        disabled: false,
-      },
     ],
     [
       currentGroup,
@@ -114,6 +106,18 @@ export function Sidebar({
       onGoToStudents,
       t,
     ],
+  );
+
+  const settingsItem = useMemo(
+    () => ({
+      id: "settings",
+      label: t("sidebar.settings"),
+      icon: Settings,
+      active: currentPage === "settings",
+      onClick: nav(onGoToSettings),
+      disabled: false,
+    }),
+    [currentPage, onGoToSettings, t],
   );
 
   return (
@@ -200,6 +204,65 @@ export function Sidebar({
                 </button>
               );
             })}
+
+            <button
+              type="button"
+              onMouseEnter={() => setHoveredIndex(navItems.length)}
+              onClick={settingsItem.onClick}
+              className={cn(
+                "relative mt-auto flex min-h-12 items-center overflow-hidden rounded-md px-3 text-left transition-colors",
+                settingsItem.active
+                  ? "text-accent"
+                  : "text-neutral-700 dark:text-neutral-200/70",
+              )}
+            >
+              <AnimatePresence>
+                {settingsItem.active && (
+                  <motion.span
+                    className="absolute inset-0 z-0 rounded-sm bg-neutral-200 dark:bg-neutral-700"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.18, ease: "easeOut" }}
+                  />
+                )}
+              </AnimatePresence>
+
+              <AnimatePresence>
+                {hoveredIndex === navItems.length && !settingsItem.active && (
+                  <motion.span
+                    layoutId="sidebar-hover-bg"
+                    className="absolute inset-0 z-0 rounded-md bg-neutral-200/60 dark:bg-neutral-900/50"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                      type: "spring",
+                      stiffness: 350,
+                      damping: 30,
+                    }}
+                  />
+                )}
+              </AnimatePresence>
+
+              <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
+                <Settings size={18} />
+              </span>
+
+              <motion.span
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.16 }}
+                className={cn(
+                  "relative z-10 truncate pr-3 text-sm tracking-tight",
+                  settingsItem.active
+                    ? "font-medium text-accent"
+                    : "text-neutral-700 dark:text-neutral-200/70",
+                )}
+              >
+                {settingsItem.label}
+              </motion.span>
+            </button>
           </div>
         </motion.div>
       </motion.div>
