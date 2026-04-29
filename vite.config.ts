@@ -12,6 +12,7 @@ export default defineConfig(async () => ({
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
+      "lucide-react": path.resolve(__dirname, "./src/lib/lucide-compat.tsx"),
       "@heroui/react": path.resolve(__dirname, "./src/lib/heroui-compat.tsx"),
       "@internationalized/date": path.resolve(
         __dirname,

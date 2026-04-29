@@ -3,6 +3,7 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
+      "lucide-react": ["./src/lib/lucide-compat.tsx"],
       "@heroui/react": ["./src/lib/heroui-compat.tsx"],
       "@internationalized/date": ["./src/lib/internationalized-date-compat.ts"]
     },
