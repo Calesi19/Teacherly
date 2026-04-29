@@ -254,7 +254,7 @@ export function DashboardPage({
 
   if (loading) {
     return (
-      <div className="p-6 flex items-center justify-center h-full">
+      <div className="flex h-full items-center justify-center px-6 py-6 pl-3">
         <span className="text-muted text-sm">Loading…</span>
       </div>
     );
@@ -306,7 +306,7 @@ export function DashboardPage({
   ];
 
   return (
-    <div className="p-6 flex flex-col gap-6 h-full overflow-y-auto">
+    <div className="flex h-full flex-col gap-6 overflow-y-auto px-6 py-6 pl-3">
       {/* Header */}
       <div>
         <Breadcrumb

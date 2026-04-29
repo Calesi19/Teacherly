@@ -93,7 +93,7 @@ export function AccommodationsPage({
   };
 
   return (
-    <div className="p-6 flex flex-col h-full">
+    <div className="flex h-full flex-col px-6 py-6 pl-3">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },

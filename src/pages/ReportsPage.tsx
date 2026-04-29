@@ -614,7 +614,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
 
   return (
     <div className="flex h-full flex-col">
-      <div className="shrink-0 border-b border-border px-6 pt-6 pb-4">
+      <div className="shrink-0 border-b border-border pl-3 pr-6 pt-6 pb-4">
         <h2 className="flex items-center gap-2 text-2xl font-bold">
           <FileText size={22} />
           {t("reports.ui.title")}

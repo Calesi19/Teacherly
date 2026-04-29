@@ -727,7 +727,7 @@ function AppContent() {
               <span className="text-lg font-bold">{APP_NAME}</span>
             </div>
           )}
-          <main className="flex-1 bg-background-secondary flex flex-col overflow-y-auto">
+          <main className="flex-1 bg-background flex flex-col overflow-y-auto">
             {renderPage()}
           </main>
         </div>

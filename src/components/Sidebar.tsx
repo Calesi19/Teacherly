@@ -140,7 +140,7 @@ export function Sidebar({
       <motion.div
         animate={{ width: isOpen ? 248 : 72 }}
         transition={{ type: "spring", bounce: 0.28, duration: 0.75 }}
-        className="flex h-full flex-col overflow-hidden rounded-[28px] bg-neutral-200/85 p-2 text-neutral-800 shadow-[0_18px_40px_rgba(15,23,42,0.08)] backdrop-blur dark:bg-neutral-900/85 dark:text-neutral-100"
+        className="flex h-full flex-col overflow-hidden rounded-[28px] border-r border-border/50 bg-background p-2 text-foreground"
       >
         <div
           data-tauri-drag-region
@@ -200,11 +200,8 @@ export function Sidebar({
         </AnimatePresence>
 
         <motion.div
-          animate={{
-            backgroundColor: isOpen ? "rgba(250, 250, 250, 0.65)" : "rgba(0, 0, 0, 0)",
-          }}
           transition={{ duration: 0.35 }}
-          className="min-h-0 flex-1 rounded-[22px] p-2 dark:bg-neutral-800/80"
+          className="min-h-0 flex-1 rounded-[22px] p-2"
         >
           <div
             className="flex h-full flex-col gap-1"

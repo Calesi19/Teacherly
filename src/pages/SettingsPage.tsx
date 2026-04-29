@@ -56,7 +56,7 @@ export function SettingsPage({
   const { t, languagePreference, setLanguage } = useTranslation();
 
   return (
-    <div className="flex h-full flex-col overflow-y-auto p-6">
+    <div className="flex h-full flex-col overflow-y-auto px-6 py-6 pl-3">
       <div className="mb-6">
         <h2 className="text-2xl font-bold">{t("settings.title")}</h2>
         <p className="mt-0.5 text-sm text-muted">{t("settings.description")}</p>
