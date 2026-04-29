@@ -2,7 +2,9 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./src/*"],
+      "@heroui/react": ["./src/lib/heroui-compat.tsx"],
+      "@internationalized/date": ["./src/lib/internationalized-date-compat.ts"]
     },
     "target": "ES2020",
     "useDefineForClassFields": true,
