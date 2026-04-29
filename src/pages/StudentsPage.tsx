@@ -211,7 +211,7 @@ export function StudentsPage({
 
   return (
     <TooltipProvider>
-      <div className="flex h-full flex-col px-6 py-3 pl-3">
+      <div className="flex h-full flex-col px-6 pt-6 pb-6 pl-3">
         <Breadcrumb
           items={[
             { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -238,7 +238,7 @@ export function StudentsPage({
             <div className="flex items-center gap-2 sm:justify-end">
               {hasSelection ? (
                 <>
-                  <span className="text-sm text-muted">
+                  <span className="text-sm text-muted-foreground">
                     {selectedStudents.length} {t("students.selected")}
                   </span>
                   <Button

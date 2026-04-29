@@ -22,7 +22,7 @@ export function TermsOfServicePage({
   const { t } = useTranslation();
 
   return (
-    <div className="flex min-h-0 h-full flex-col px-6 py-6 pl-3">
+    <div className="flex min-h-0 h-full flex-col px-6 pt-6 pb-6 pl-3">
       <Breadcrumb
         items={[
           { label: t("legal.backToSettings"), onClick: onGoToSettings },

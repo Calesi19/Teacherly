@@ -24,6 +24,7 @@ import {
 } from "./components/CommandPalette";
 import { Sidebar } from "./components/Sidebar";
 import { GroupsPage } from "./pages/GroupsPage";
+import { GroupPage } from "./pages/GroupPage";
 import { StudentsPage } from "./pages/StudentsPage";
 import { StudentProfilePage } from "./pages/StudentProfilePage";
 import { ContactsPage } from "./pages/ContactsPage";
@@ -120,6 +121,7 @@ function useAppTheme() {
 
 type Route =
   | { page: "groups" }
+  | { page: "group"; group: Group }
   | { page: "students"; group: Group }
   | { page: "student-profile"; group: Group; student: Student }
   | { page: "student-info"; group: Group; student: Student }
@@ -157,6 +159,7 @@ function AppContent() {
   const { groups, loading: groupsLoading, error: groupsError, addGroup } = useGroups();
 
   const goToGroups = () => setRoute({ page: "groups" });
+  const goToGroup = (group: Group) => setRoute({ page: "group", group });
   const changeGroup = () => {
     localStorage.removeItem(LAST_GROUP_KEY);
     setCurrentGroup(null);
@@ -297,12 +300,12 @@ function AppContent() {
         : route.page,
     currentGroup,
     onSelectGroup: handleSelectGroup,
+    onGoToGroup: () => guardSidebarNav(() => currentGroup && goToGroup(currentGroup)),
     onGoToStudents: () => guardSidebarNav(() => currentGroup && goToStudents(currentGroup)),
     onGoToAttendance: () => guardSidebarNav(() => currentGroup && goToAttendance(currentGroup)),
     onGoToAssignments: () => guardSidebarNav(() => currentGroup && goToAssignments(currentGroup)),
     onGoToReports: () => guardSidebarNav(() => currentGroup && goToReports(currentGroup)),
     onGoToSettings: () => guardSidebarNav(() => goToSettings(currentGroup)),
-    onGoToGroups: () => guardSidebarNav(changeGroup),
   };
 
   const commandItems = useMemo<CommandPaletteItem[]>(() => {
@@ -487,6 +490,8 @@ function AppContent() {
             onGoToSettings={goToSettings}
           />
         );
+      case "group":
+        return <GroupPage group={route.group} onGoToGroups={goToGroups} />;
       case "students":
         return (
           <StudentsPage

@@ -1,27 +1,21 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
-import {
-  ArrowLeftRight,
-  BookOpen,
-  ClipboardCheck,
-  FileText,
-  Settings,
-  Users,
-} from "lucide-react";
 import { cn } from "@/lib/utils";
+import { BookOpen, ClipboardCheck, FileText, Settings, Users } from "../lib/lucide-compat";
 import { useTranslation } from "../i18n/LanguageContext";
+import { UserGroupIcon } from "../lib/lucide-compat";
 import type { Group } from "../types/group";
 
 interface SidebarProps {
   currentPage: string;
   currentGroup: Group | null;
   onSelectGroup: (group: Group) => void;
+  onGoToGroup: () => void;
   onGoToStudents: () => void;
   onGoToAttendance: () => void;
   onGoToAssignments: () => void;
   onGoToReports: () => void;
   onGoToSettings: () => void;
-  onGoToGroups: () => void;
   onClose?: () => void;
 }
 
@@ -38,25 +32,15 @@ const STUDENTS_PAGES = new Set([
   "notes",
 ]);
 
-const formatMonthYear = (dateString: string | undefined) => {
-  if (!dateString) return "";
-  const date = new Date(dateString);
-
-  return new Intl.DateTimeFormat("en-US", {
-    month: "short",
-    year: "numeric",
-  }).format(date);
-};
-
 export function Sidebar({
   currentPage,
   currentGroup,
   onGoToStudents,
+  onGoToGroup,
   onGoToAttendance,
   onGoToAssignments,
   onGoToReports,
   onGoToSettings,
-  onGoToGroups,
   onClose,
 }: SidebarProps) {
   const { t } = useTranslation();
@@ -69,6 +53,14 @@ export function Sidebar({
 
   const navItems = useMemo(
     () => [
+      {
+        id: "group",
+        label: t("sidebar.group"),
+        icon: UserGroupIcon,
+        active: currentPage === "group",
+        onClick: nav(onGoToGroup),
+        disabled: !currentGroup,
+      },
       {
         id: "students",
         label: t("sidebar.students"),
@@ -116,7 +108,7 @@ export function Sidebar({
       currentPage,
       onGoToAssignments,
       onGoToAttendance,
-      onGoToGroups,
+      onGoToGroup,
       onGoToReports,
       onGoToSettings,
       onGoToStudents,
@@ -132,36 +124,8 @@ export function Sidebar({
         className="flex h-full flex-col overflow-hidden rounded-[14px] bg-neutral-100 p-2 text-foreground transition-colors duration-700 ease-out dark:bg-neutral-800"
       >
         <motion.div
-          initial={{ opacity: 0, filter: "blur(4px)" }}
-          animate={{ opacity: 1, filter: "blur(0px)" }}
-          transition={{ duration: 0.18, ease: "easeOut" }}
-          className="px-3 pb-4 pt-1"
-        >
-          <div className="flex items-center justify-between gap-3">
-            <p className="truncate text-[1.05rem] font-semibold tracking-tight text-neutral-950 dark:text-white">
-              {currentGroup?.name ?? "Select Group"}
-            </p>
-            <button
-              type="button"
-              onClick={nav(onGoToGroups)}
-              className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-neutral-700 transition-colors hover:bg-black/5 hover:text-neutral-950 dark:text-neutral-300 dark:hover:bg-white/8 dark:hover:text-white"
-              aria-label={t("sidebar.changeGroup")}
-            >
-              <ArrowLeftRight size={16} />
-            </button>
-          </div>
-          <p className="mt-1 text-xs text-neutral-500 dark:text-neutral-400">
-            {currentGroup
-              ? `${formatMonthYear(currentGroup.start_date ?? undefined)} - ${formatMonthYear(
-                  currentGroup.end_date ?? undefined,
-                )}`
-              : t("commandPalette.items.selectAGroup")}
-          </p>
-        </motion.div>
-
-        <motion.div
           transition={{ duration: 0.35 }}
-          className="min-h-0 flex-1 rounded-[14px] p-2"
+          className="min-h-0 flex-1 rounded-[14px] p-2 pt-1"
         >
           <div
             className="flex h-full flex-col gap-1"
@@ -178,7 +142,7 @@ export function Sidebar({
                   onMouseEnter={() => setHoveredIndex(index)}
                   onClick={item.onClick}
                   className={cn(
-                    "relative flex items-center overflow-hidden rounded-mdtext-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
+                    "relative flex items-center overflow-hidden rounded-md text-left transition-colors disabled:cursor-not-allowed disabled:opacity-40",
                     item.active
                       ? "text-accent"
                       : "text-neutral-700 dark:text-neutral-200/70",

@@ -207,7 +207,7 @@ export function CommandPalette({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[140] flex items-center justify-center bg-black/10 px-4 backdrop-blur-sm dark:bg-black/40 sm:px-6"
+      className="fixed inset-0 z-[140] flex items-center justify-center bg-black/25 px-4 backdrop-blur-sm dark:bg-black/45 sm:px-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}

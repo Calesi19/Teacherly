@@ -94,7 +94,7 @@ export function AttendanceTab({
                     onClick={() => onAttendanceFilterChange(isActive ? null : key)}
                   >
                     <span className={cn("text-xl font-bold", color)}>{value}</span>
-                    <div className="text-xs text-muted">
+                    <div className="text-xs text-muted-foreground">
                       {t(`studentProfile.attendance.summary.${key}`)}
                     </div>
                   </div>

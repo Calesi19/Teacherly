@@ -45,7 +45,9 @@ function AppDatePicker({
         className="w-full"
         aria-label={label}
         value={parsed}
-        onChange={(date: DateValue | null) => onChange(date ? date.toString() : "")}
+        onChange={(date: DateValue | null) =>
+          onChange(date ? date.toString() : "")
+        }
       >
         <DateField.Group fullWidth>
           <DateField.Input>
@@ -100,8 +102,12 @@ export function StudentInfoPage({
   const [name, setName] = useState(student.name);
   const [gender, setGender] = useState(student.gender ?? "");
   const [birthdate, setBirthdate] = useState(student.birthdate ?? "");
-  const [studentNumber, setStudentNumber] = useState(student.student_number ?? "");
-  const [enrollmentDate, setEnrollmentDate] = useState(student.enrollment_date ?? "");
+  const [studentNumber, setStudentNumber] = useState(
+    student.student_number ?? "",
+  );
+  const [enrollmentDate, setEnrollmentDate] = useState(
+    student.enrollment_date ?? "",
+  );
   const [enrollmentEndDate, setEnrollmentEndDate] = useState(
     student.enrollment_end_date ?? group.end_date ?? "",
   );
@@ -142,7 +148,7 @@ export function StudentInfoPage({
   };
 
   return (
-    <div className="flex h-full flex-col px-6 py-6 pl-3">
+    <div className="flex h-full flex-col px-6 pt-6 pb-6 pl-3">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -169,11 +175,14 @@ export function StudentInfoPage({
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
+        <div className="flex justify-center py-6">
           <Spinner size="lg" color="accent" />
         </div>
       ) : error ? (
-        <div role="alert" className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm">
+        <div
+          role="alert"
+          className="rounded-lg bg-danger/10 text-danger px-4 py-3 text-sm"
+        >
           {error}
         </div>
       ) : (
@@ -190,7 +199,9 @@ export function StudentInfoPage({
           </div>
 
           <div className="flex flex-col gap-1.5">
-            <Label htmlFor="info-student-number">{t("studentInfoPage.studentIdLabel")}</Label>
+            <Label htmlFor="info-student-number">
+              {t("studentInfoPage.studentIdLabel")}
+            </Label>
             <Input
               id="info-student-number"
               value={studentNumber}
@@ -209,16 +220,30 @@ export function StudentInfoPage({
               <Select.Trigger>
                 <Select.Value>
                   {({ selectedText, isPlaceholder }) =>
-                    isPlaceholder ? t("studentInfoPage.selectGender") : selectedText
+                    isPlaceholder
+                      ? t("studentInfoPage.selectGender")
+                      : selectedText
                   }
                 </Select.Value>
                 <Select.Indicator />
               </Select.Trigger>
               <Select.Popover>
                 <ListBox>
-                  <ListBox.Item id="Male" textValue={t("studentInfoPage.male")}>{t("studentInfoPage.male")}</ListBox.Item>
-                  <ListBox.Item id="Female" textValue={t("studentInfoPage.female")}>{t("studentInfoPage.female")}</ListBox.Item>
-                  <ListBox.Item id="Other" textValue={t("studentInfoPage.other")}>{t("studentInfoPage.other")}</ListBox.Item>
+                  <ListBox.Item id="Male" textValue={t("studentInfoPage.male")}>
+                    {t("studentInfoPage.male")}
+                  </ListBox.Item>
+                  <ListBox.Item
+                    id="Female"
+                    textValue={t("studentInfoPage.female")}
+                  >
+                    {t("studentInfoPage.female")}
+                  </ListBox.Item>
+                  <ListBox.Item
+                    id="Other"
+                    textValue={t("studentInfoPage.other")}
+                  >
+                    {t("studentInfoPage.other")}
+                  </ListBox.Item>
                 </ListBox>
               </Select.Popover>
             </Select>
@@ -247,7 +272,15 @@ export function StudentInfoPage({
             />
             {group.end_date && (
               <p className="text-xs text-muted">
-                {t("studentInfoPage.groupEnds", { date: new Date(group.end_date + "T12:00:00").toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" }) })}
+                {t("studentInfoPage.groupEnds", {
+                  date: new Date(
+                    group.end_date + "T12:00:00",
+                  ).toLocaleDateString(undefined, {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                  }),
+                })}
               </p>
             )}
           </div>

@@ -102,4 +102,5 @@ export const Moon = createIcon(Moon01Icon, "Moon");
 export const Trash2 = createIcon(Delete02Icon, "Trash2");
 export const User = createIcon(UserIcon, "User");
 export const Users = createIcon(UserMultipleIcon, "Users");
+export const UserGroupIcon = createIcon(UserMultipleIcon, "UserGroupIcon");
 export const X = createIcon(Cancel01Icon, "X");

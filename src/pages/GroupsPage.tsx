@@ -28,7 +28,7 @@ export function GroupsPage({
   const { t } = useTranslation();
 
   return (
-    <div className="relative flex h-full flex-col overflow-y-auto px-6 py-6 pl-3">
+    <div className="relative flex h-full flex-col overflow-y-auto px-6 pt-6 pb-6 pl-3">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold">{t("groups.title")}</h2>
         <AddGroupModal onAdd={onAddGroup} />
