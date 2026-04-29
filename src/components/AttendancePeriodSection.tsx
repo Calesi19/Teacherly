@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import type { SchedulePeriod } from "../types/schedule";
 import type { AttendanceStatus } from "../types/attendance";
 
@@ -89,9 +89,9 @@ export function AttendancePeriodSection({
         {someSelected && (
           <div className="flex items-center gap-1">
             <span className="text-xs text-foreground/50 mr-1">{selected.size} selected:</span>
-            <Button variant="ghost" size="sm" onPress={() => handleBulk("present")}>Present</Button>
-            <Button variant="ghost" size="sm" onPress={() => handleBulk("absent")}>Absent</Button>
-            <Button variant="ghost" size="sm" onPress={() => handleBulk("late")}>Late</Button>
+            <Button variant="ghost" size="sm" onClick={() => handleBulk("present")}>Present</Button>
+            <Button variant="ghost" size="sm" onClick={() => handleBulk("absent")}>Absent</Button>
+            <Button variant="ghost" size="sm" onClick={() => handleBulk("late")}>Late</Button>
           </div>
         )}
       </div>

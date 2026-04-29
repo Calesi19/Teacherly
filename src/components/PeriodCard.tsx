@@ -1,5 +1,13 @@
 import { useState } from "react";
-import { Button, Modal, Label, Spinner, useOverlayState } from "@heroui/react";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Trash2, Pencil } from "lucide-react";
 import { ConfirmModal } from "./ConfirmModal";
 import { useTranslation } from "../i18n/LanguageContext";
@@ -22,7 +30,7 @@ interface PeriodCardProps {
 export function PeriodCard({ period, onDelete, onEdit, compact = false }: PeriodCardProps) {
   const { t } = useTranslation();
   const [confirming, setConfirming] = useState(false);
-  const editModalState = useOverlayState();
+  const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState({ name: period.name, start_time: period.start_time, end_time: period.end_time });
   const [saving, setSaving] = useState(false);
   const [editError, setEditError] = useState<string | null>(null);
@@ -30,7 +38,7 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
   const openEdit = () => {
     setEditForm({ name: period.name, start_time: period.start_time, end_time: period.end_time });
     setEditError(null);
-    editModalState.open();
+    setEditOpen(true);
   };
 
   const handleEditSubmit = async (e: React.FormEvent) => {
@@ -40,7 +48,7 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
     setEditError(null);
     try {
       await onEdit(period.id, editForm);
-      editModalState.close();
+      setEditOpen(false);
     } catch (err) {
       setEditError(String(err));
     } finally {
@@ -50,60 +58,58 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
 
   const editModal = (
     <>
-      <Modal state={editModalState}>
-        <Modal.Backdrop isDismissable={!saving}>
-          <Modal.Container>
-            <Modal.Dialog>
-              <form onSubmit={handleEditSubmit}>
-                <Modal.Header>{t("schedule.editPeriodModal.title")}</Modal.Header>
-                <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="edit-period-name">{t("schedule.editPeriodModal.periodNameLabel")}</Label>
-                    <input
-                      id="edit-period-name"
-                      value={editForm.name}
-                      onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                      required
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    />
-                  </div>
-                  <div className="flex gap-4">
-                    <div className="flex flex-col gap-1.5 flex-1">
-                      <Label htmlFor="edit-period-start">{t("schedule.editPeriodModal.startTimeLabel")}</Label>
-                      <input
-                        id="edit-period-start"
-                        type="time"
-                        value={editForm.start_time}
-                        onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })}
-                        required
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      />
-                    </div>
-                    <div className="flex flex-col gap-1.5 flex-1">
-                      <Label htmlFor="edit-period-end">{t("schedule.editPeriodModal.endTimeLabel")}</Label>
-                      <input
-                        id="edit-period-end"
-                        type="time"
-                        value={editForm.end_time}
-                        onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })}
-                        required
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                      />
-                    </div>
-                  </div>
-                  {editError && <p className="text-danger text-sm">{editError}</p>}
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button type="button" variant="ghost" onPress={editModalState.close}>{t("common.cancel")}</Button>
-                  <Button type="submit" variant="primary" isDisabled={saving}>
-                    {saving ? <Spinner size="sm" /> : t("common.save")}
-                  </Button>
-                </Modal.Footer>
-              </form>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+      <Dialog open={editOpen} onOpenChange={(o) => { if (!o && !saving) setEditOpen(false); }}>
+        <DialogContent>
+          <form onSubmit={handleEditSubmit}>
+            <DialogHeader>
+              <DialogTitle>{t("schedule.editPeriodModal.title")}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="edit-period-name">{t("schedule.editPeriodModal.periodNameLabel")}</Label>
+                <input
+                  id="edit-period-name"
+                  value={editForm.name}
+                  onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
+                  required
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
+              <div className="flex gap-4">
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <Label htmlFor="edit-period-start">{t("schedule.editPeriodModal.startTimeLabel")}</Label>
+                  <input
+                    id="edit-period-start"
+                    type="time"
+                    value={editForm.start_time}
+                    onChange={(e) => setEditForm({ ...editForm, start_time: e.target.value })}
+                    required
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5 flex-1">
+                  <Label htmlFor="edit-period-end">{t("schedule.editPeriodModal.endTimeLabel")}</Label>
+                  <input
+                    id="edit-period-end"
+                    type="time"
+                    value={editForm.end_time}
+                    onChange={(e) => setEditForm({ ...editForm, end_time: e.target.value })}
+                    required
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                  />
+                </div>
+              </div>
+              {editError && <p className="text-danger text-sm">{editError}</p>}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={() => setEditOpen(false)}>{t("common.cancel")}</Button>
+              <Button type="submit" disabled={saving}>
+                {saving ? <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" /> : t("common.save")}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <ConfirmModal
         isOpen={confirming}
@@ -165,10 +171,9 @@ export function PeriodCard({ period, onDelete, onEdit, compact = false }: Period
         </button>
         <Button
           variant="ghost"
-          isIconOnly
-          size="sm"
+          size="icon"
           aria-label={t("schedule.deletePeriodModal.title")}
-          onPress={() => setConfirming(true)}
+          onClick={() => setConfirming(true)}
         >
           <Trash2 size={14} />
         </Button>

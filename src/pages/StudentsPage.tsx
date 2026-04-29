@@ -31,7 +31,12 @@ import Database from "@tauri-apps/plugin-sql";
 import { useStudents } from "../hooks/useStudents";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { useTranslation } from "../i18n/LanguageContext";
-import { NOTE_TAG_KEYS, NOTE_TAG_COLORS, serializeTags, type NoteTagKey } from "../types/note";
+import {
+  NOTE_TAG_KEYS,
+  NOTE_TAG_COLORS,
+  serializeTags,
+  type NoteTagKey,
+} from "../types/note";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 
@@ -96,7 +101,11 @@ export function StudentsPage({
     setSubmitting(true);
     setAddError(null);
     try {
-      await addStudent({ ...form, name: form.name.trim(), enrollment_date: group.start_date ?? "" });
+      await addStudent({
+        ...form,
+        name: form.name.trim(),
+        enrollment_date: group.start_date ?? "",
+      });
       setForm(emptyForm);
       modalState.close();
     } catch (err) {
@@ -240,13 +249,11 @@ export function StudentsPage({
                   <TableColumn isRowHeader>
                     {t("students.tableColumns.name")}
                   </TableColumn>
-                  <TableColumn>
-                    {t("students.tableColumns.gender")}
-                  </TableColumn>
+                  <TableColumn>{t("students.tableColumns.gender")}</TableColumn>
                   <TableColumn>
                     {t("students.tableColumns.birthdate")}
                   </TableColumn>
-                  <TableColumn>{" "}</TableColumn>
+                  <TableColumn> </TableColumn>
                   <TableColumn>
                     {t("students.tableColumns.studentId")}
                   </TableColumn>
@@ -269,11 +276,7 @@ export function StudentsPage({
                   )}
                 >
                   {filtered.map((s) => (
-                    <TableRow
-                      key={s.id}
-                      id={s.id}
-                      className="cursor-pointer"
-                    >
+                    <TableRow key={s.id} id={s.id} className="cursor-pointer">
                       <TableCell className="pr-0">
                         <Checkbox
                           aria-label={`Select ${s.name}`}
@@ -285,9 +288,7 @@ export function StudentsPage({
                           </Checkbox.Control>
                         </Checkbox>
                       </TableCell>
-                      <TableCell className="font-medium">
-                        {s.name}
-                      </TableCell>
+                      <TableCell className="font-medium">{s.name}</TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {s.gender || "—"}
                       </TableCell>
@@ -301,8 +302,7 @@ export function StudentsPage({
                               const m = today.getMonth() - birth.getMonth();
                               if (
                                 m < 0 ||
-                                (m === 0 &&
-                                  today.getDate() < birth.getDate())
+                                (m === 0 && today.getDate() < birth.getDate())
                               )
                                 age--;
                               return `${birth.toLocaleDateString(undefined, { month: "short", day: "numeric", year: "numeric" })} (${age})`;
@@ -318,7 +318,9 @@ export function StudentsPage({
                                   <GraduationCap size={10} />
                                 </span>
                               </Tooltip.Trigger>
-                              <Tooltip.Content>{t("students.badges.specialEducation")}</Tooltip.Content>
+                              <Tooltip.Content>
+                                {t("students.badges.specialEducation")}
+                              </Tooltip.Content>
                             </Tooltip>
                           )}
                           {s.birthdate && isBirthdaySoon(s.birthdate) && (
@@ -328,7 +330,9 @@ export function StudentsPage({
                                   <Cake size={10} />
                                 </span>
                               </Tooltip.Trigger>
-                              <Tooltip.Content>{t("students.badges.birthdaySoon")}</Tooltip.Content>
+                              <Tooltip.Content>
+                                {t("students.badges.birthdaySoon")}
+                              </Tooltip.Content>
                             </Tooltip>
                           )}
                         </div>
@@ -550,14 +554,22 @@ export function StudentsPage({
                             type="button"
                             onClick={() =>
                               setNoteTags((prev) =>
-                                isActive ? prev.filter((k) => k !== tag) : [...prev, tag]
+                                isActive
+                                  ? prev.filter((k) => k !== tag)
+                                  : [...prev, tag],
                               )
                             }
                             className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
-                              isActive ? NOTE_TAG_COLORS[tag].active : NOTE_TAG_COLORS[tag].inactive
+                              isActive
+                                ? NOTE_TAG_COLORS[tag].active
+                                : NOTE_TAG_COLORS[tag].inactive
                             }`}
                           >
-                            {t(`studentProfile.notes.tags.${tag}` as Parameters<typeof t>[0])}
+                            {t(
+                              `studentProfile.notes.tags.${tag}` as Parameters<
+                                typeof t
+                              >[0],
+                            )}
                           </button>
                         );
                       })}

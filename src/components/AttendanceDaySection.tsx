@@ -1,5 +1,12 @@
-import { useState, useEffect } from "react";
-import { Button, Modal, useOverlayState } from "@heroui/react";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useTranslation } from "../i18n/LanguageContext";
 import type {
   DayAttendanceStatus,
@@ -31,7 +38,7 @@ interface AttendanceDaySectionProps {
 
 type PartialModalState = {
   studentIds: number[];
-  studentName: string; // single name or "{n} students"
+  studentName: string;
   periodStatuses: {
     periodId: number;
     periodName: string;
@@ -41,14 +48,14 @@ type PartialModalState = {
 } | null;
 
 function PartialModal({
-  state: modalState,
+  open,
   partial,
   onToggle,
   onNoteChange,
   onConfirm,
   onClose,
 }: {
-  state: ReturnType<typeof useOverlayState>;
+  open: boolean;
   partial: PartialModalState;
   onToggle: (periodId: number, status: "present" | "absent") => void;
   onNoteChange: (note: string) => void;
@@ -58,74 +65,67 @@ function PartialModal({
   const { t } = useTranslation();
 
   return (
-    <Modal
-      state={modalState}
-      onOpenChange={(open) => {
-        if (!open) onClose();
-      }}
-    >
-      <Modal.Backdrop>
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>
-              {t("attendance.partialModal.title")} — {partial?.studentName}
-            </Modal.Header>
-            <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-              {partial?.periodStatuses.map((ps) => (
-                <div
-                  key={ps.periodId}
-                  className="flex items-center justify-between gap-3"
+    <Dialog open={open} onOpenChange={(o) => { if (!o) onClose(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>
+            {t("attendance.partialModal.title")} — {partial?.studentName}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="flex flex-col gap-4">
+          {partial?.periodStatuses.map((ps) => (
+            <div
+              key={ps.periodId}
+              className="flex items-center justify-between gap-3"
+            >
+              <span className="text-sm font-medium">{ps.periodName}</span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => onToggle(ps.periodId, "present")}
+                  className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                    ps.status === "present"
+                      ? "bg-success/20 text-success"
+                      : "text-foreground/40 hover:text-foreground hover:bg-foreground/5"
+                  }`}
                 >
-                  <span className="text-sm font-medium">{ps.periodName}</span>
-                  <div className="flex items-center gap-1">
-                    <button
-                      onClick={() => onToggle(ps.periodId, "present")}
-                      className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                        ps.status === "present"
-                          ? "bg-success/20 text-success"
-                          : "text-foreground/40 hover:text-foreground hover:bg-foreground/5"
-                      }`}
-                    >
-                      {t("attendance.status.present")}
-                    </button>
-                    <button
-                      onClick={() => onToggle(ps.periodId, "absent")}
-                      className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
-                        ps.status === "absent"
-                          ? "bg-danger/20 text-danger"
-                          : "text-foreground/40 hover:text-foreground hover:bg-foreground/5"
-                      }`}
-                    >
-                      {t("attendance.status.absent")}
-                    </button>
-                  </div>
-                </div>
-              ))}
-              <div className="flex flex-col gap-1.5 pt-1 border-t border-border/40">
-                <label className="text-xs font-medium text-foreground/60">
-                  {t("attendance.partialModal.noteLabel")}
-                </label>
-                <textarea
-                  value={partial?.note ?? ""}
-                  onChange={(e) => onNoteChange(e.target.value)}
-                  placeholder={t("attendance.partialModal.notePlaceholder")}
-                  rows={2}
-                  className="w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary/50"
-                />
+                  {t("attendance.status.present")}
+                </button>
+                <button
+                  onClick={() => onToggle(ps.periodId, "absent")}
+                  className={`px-2 py-1 rounded-md text-xs font-medium transition-colors ${
+                    ps.status === "absent"
+                      ? "bg-danger/20 text-danger"
+                      : "text-foreground/40 hover:text-foreground hover:bg-foreground/5"
+                  }`}
+                >
+                  {t("attendance.status.absent")}
+                </button>
               </div>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="ghost" onPress={onClose}>
-                {t("common.cancel")}
-              </Button>
-              <Button variant="primary" onPress={onConfirm}>
-                {t("attendance.partialModal.confirm")}
-              </Button>
-            </Modal.Footer>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
-    </Modal>
+            </div>
+          ))}
+          <div className="flex flex-col gap-1.5 pt-1 border-t border-border/40">
+            <label className="text-xs font-medium text-foreground/60">
+              {t("attendance.partialModal.noteLabel")}
+            </label>
+            <textarea
+              value={partial?.note ?? ""}
+              onChange={(e) => onNoteChange(e.target.value)}
+              placeholder={t("attendance.partialModal.notePlaceholder")}
+              rows={2}
+              className="w-full rounded-lg border border-border bg-background-secondary px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-primary/50"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="ghost" onClick={onClose}>
+            {t("common.cancel")}
+          </Button>
+          <Button onClick={onConfirm}>
+            {t("attendance.partialModal.confirm")}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }
 
@@ -139,7 +139,6 @@ export function AttendanceDaySection({
   const { t } = useTranslation();
   const [selected, setSelected] = useState<Set<number>>(new Set());
   const [partialModal, setPartialModal] = useState<PartialModalState>(null);
-  const modalState = useOverlayState();
 
   const statusLabels: Record<DayAttendanceStatus, string> = {
     present: t("attendance.status.present"),
@@ -147,11 +146,6 @@ export function AttendanceDaySection({
     late: t("attendance.status.late"),
     partial: t("attendance.status.partial"),
   };
-
-  useEffect(() => {
-    if (partialModal) modalState.open();
-    else modalState.close();
-  }, [partialModal]);
 
   const toggleSelect = (studentId: number) => {
     setSelected((prev) => {
@@ -249,21 +243,21 @@ export function AttendanceDaySection({
               <Button
                 variant="ghost"
                 size="sm"
-                onPress={() => handleBulk("present")}
+                onClick={() => handleBulk("present")}
               >
                 {t("attendance.status.present")}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                onPress={() => handleBulk("absent")}
+                onClick={() => handleBulk("absent")}
               >
                 {t("attendance.status.absent")}
               </Button>
               <Button
                 variant="ghost"
                 size="sm"
-                onPress={() => handleBulk("late")}
+                onClick={() => handleBulk("late")}
               >
                 {t("attendance.status.late")}
               </Button>
@@ -315,7 +309,7 @@ export function AttendanceDaySection({
       </div>
 
       <PartialModal
-        state={modalState}
+        open={partialModal !== null}
         partial={partialModal}
         onToggle={handleTogglePeriod}
         onNoteChange={handleNoteChange}

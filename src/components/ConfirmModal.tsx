@@ -1,5 +1,11 @@
-import { Button, Modal, Spinner, useOverlayState } from "@heroui/react";
-import { useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { useTranslation } from "../i18n/LanguageContext";
 
 interface ConfirmModalProps {
@@ -21,13 +27,7 @@ export function ConfirmModal({
   confirmLabel,
   loading = false,
 }: ConfirmModalProps) {
-  const state = useOverlayState();
   const { t } = useTranslation();
-
-  useEffect(() => {
-    if (isOpen) state.open();
-    else state.close();
-  }, [isOpen]);
 
   const handleConfirm = async () => {
     await onConfirm();
@@ -35,27 +35,27 @@ export function ConfirmModal({
   };
 
   return (
-    <Modal state={state} onOpenChange={(open) => { if (!open) onClose(); }}>
-      <Modal.Backdrop isDismissable={!loading}>
-        <Modal.Container>
-          <Modal.Dialog>
-            <Modal.Header>{title}</Modal.Header>
-            {description && (
-              <Modal.Body className="pb-px">
-                <p className="text-sm text-foreground/70">{description}</p>
-              </Modal.Body>
+    <Dialog open={isOpen} onOpenChange={(open) => { if (!open && !loading) onClose(); }}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>{title}</DialogTitle>
+        </DialogHeader>
+        {description && (
+          <p className="text-sm text-foreground/70">{description}</p>
+        )}
+        <DialogFooter>
+          <Button type="button" variant="ghost" disabled={loading} onClick={onClose}>
+            {t("confirmModal.cancel")}
+          </Button>
+          <Button type="button" variant="destructive" disabled={loading} onClick={handleConfirm}>
+            {loading ? (
+              <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            ) : (
+              confirmLabel ?? t("common.delete")
             )}
-            <Modal.Footer>
-              <Button type="button" variant="ghost" isDisabled={loading} onPress={onClose}>
-                {t("confirmModal.cancel")}
-              </Button>
-              <Button type="button" variant="danger" isDisabled={loading} onPress={handleConfirm}>
-                {loading ? <Spinner size="sm" /> : (confirmLabel ?? t("common.delete"))}
-              </Button>
-            </Modal.Footer>
-          </Modal.Dialog>
-        </Modal.Container>
-      </Modal.Backdrop>
-    </Modal>
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

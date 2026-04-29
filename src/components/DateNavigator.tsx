@@ -1,7 +1,7 @@
-import { useRef } from "react";
-import { Button, DatePicker, Calendar } from "@heroui/react";
-import { parseDate } from "@internationalized/date";
-import type { DateValue } from "@internationalized/date";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "../i18n/LanguageContext";
 
@@ -10,6 +10,18 @@ interface DateNavigatorProps {
   onChange: (date: string) => void;
   minDate?: string | null;
   maxDate?: string | null;
+}
+
+function parseLocalDate(dateStr: string): Date {
+  const [year, month, day] = dateStr.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}
+
+function toDateString(date: Date): string {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}-${m}-${d}`;
 }
 
 function formatDisplay(dateStr: string, locale: string) {
@@ -34,69 +46,73 @@ function today() {
 
 export function DateNavigator({ date, onChange, minDate, maxDate }: DateNavigatorProps) {
   const { t, language } = useTranslation();
+  const [open, setOpen] = useState(false);
   const isToday = date === today();
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const canGoPrev = !minDate || addDays(date, -1) >= minDate;
   const canGoNext = !maxDate || addDays(date, 1) <= maxDate;
   const todayDate = today();
   const isTodayInRange =
     (!minDate || todayDate >= minDate) && (!maxDate || todayDate <= maxDate);
 
+  const selected = parseLocalDate(date);
+  const fromDate = minDate ? parseLocalDate(minDate) : undefined;
+  const toDate = maxDate ? parseLocalDate(maxDate) : undefined;
+
   return (
     <div className="flex items-center gap-2 py-3 px-1">
-      <Button variant="ghost" isIconOnly size="sm" onPress={() => onChange(addDays(date, -1))} isDisabled={!canGoPrev} aria-label="Previous day">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onChange(addDays(date, -1))}
+        disabled={!canGoPrev}
+        aria-label="Previous day"
+        className="h-8 w-8"
+      >
         <ChevronLeft size={16} />
       </Button>
 
-      <DatePicker
-        className="flex-1"
-        aria-label="Jump to date"
-        value={parseDate(date)}
-        minValue={minDate ? parseDate(minDate) : undefined}
-        maxValue={maxDate ? parseDate(maxDate) : undefined}
-        onChange={(val: DateValue | null) => {
-          if (val) onChange(val.toString());
-        }}
-      >
-        <DatePicker.Trigger>
-          <button ref={triggerRef} className="w-full font-semibold text-sm px-2 py-1 rounded-lg hover:bg-foreground/5 transition-colors select-none cursor-pointer">
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <button className="flex-1 font-semibold text-sm px-2 py-1 rounded-lg hover:bg-foreground/5 transition-colors select-none cursor-pointer">
             {formatDisplay(date, language)}
           </button>
-        </DatePicker.Trigger>
-        <DatePicker.Popover placement="bottom" triggerRef={triggerRef}>
-          <Calendar aria-label="Pick a date">
-            <Calendar.Header>
-              <Calendar.YearPickerTrigger>
-                <Calendar.YearPickerTriggerHeading />
-                <Calendar.YearPickerTriggerIndicator />
-              </Calendar.YearPickerTrigger>
-              <Calendar.NavButton slot="previous" />
-              <Calendar.NavButton slot="next" />
-            </Calendar.Header>
-            <Calendar.Grid>
-              <Calendar.GridHeader>
-                {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-              </Calendar.GridHeader>
-              <Calendar.GridBody>
-                {(d) => <Calendar.Cell date={d} />}
-              </Calendar.GridBody>
-            </Calendar.Grid>
-            <Calendar.YearPickerGrid>
-              <Calendar.YearPickerGridBody>
-                {({ year }) => <Calendar.YearPickerCell year={year} />}
-              </Calendar.YearPickerGridBody>
-            </Calendar.YearPickerGrid>
-          </Calendar>
-        </DatePicker.Popover>
-      </DatePicker>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="center">
+          <Calendar
+            mode="single"
+            captionLayout="dropdown"
+            selected={selected}
+            defaultMonth={selected}
+            onSelect={(d) => {
+              if (d) {
+                onChange(toDateString(d));
+                setOpen(false);
+              }
+            }}
+            disabled={(d) => {
+              if (fromDate && d < fromDate) return true;
+              if (toDate && d > toDate) return true;
+              return false;
+            }}
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
 
       {!isToday && isTodayInRange && (
-        <Button variant="ghost" size="sm" onPress={() => onChange(today())}>
+        <Button variant="ghost" size="sm" onClick={() => onChange(today())}>
           {t("attendance.today")}
         </Button>
       )}
 
-      <Button variant="ghost" isIconOnly size="sm" onPress={() => onChange(addDays(date, 1))} isDisabled={!canGoNext} aria-label="Next day">
+      <Button
+        variant="ghost"
+        size="icon"
+        onClick={() => onChange(addDays(date, 1))}
+        disabled={!canGoNext}
+        aria-label="Next day"
+        className="h-8 w-8"
+      >
         <ChevronRight size={16} />
       </Button>
     </div>

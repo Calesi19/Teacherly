@@ -1,4 +1,4 @@
-import { Button } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import {
   Users,
   ClipboardCheck,
@@ -65,14 +65,14 @@ export function Sidebar({
       label: t("sidebar.students"),
       icon: <Users size={16} />,
       active: STUDENTS_PAGES.has(currentPage),
-      onPress: nav(onGoToStudents),
+      onClick: nav(onGoToStudents),
     },
     {
       id: "attendance",
       label: t("sidebar.attendance"),
       icon: <ClipboardCheck size={16} />,
       active: currentPage === "attendance",
-      onPress: nav(onGoToAttendance),
+      onClick: nav(onGoToAttendance),
     },
     {
       id: "assignments",
@@ -80,14 +80,14 @@ export function Sidebar({
       icon: <BookOpen size={16} />,
       active:
         currentPage === "assignments" || currentPage === "assignment-detail",
-      onPress: nav(onGoToAssignments),
+      onClick: nav(onGoToAssignments),
     },
     {
       id: "reports",
       label: t("sidebar.reports"),
       icon: <FileText size={16} />,
       active: currentPage === "reports",
-      onPress: nav(onGoToReports),
+      onClick: nav(onGoToReports),
     },
   ];
 
@@ -116,10 +116,9 @@ export function Sidebar({
             <li key={item.id}>
               <Button
                 variant={item.active ? "secondary" : "ghost"}
-                fullWidth
-                className="justify-start gap-2"
-                isDisabled={!currentGroup}
-                onPress={item.onPress}
+                className="w-full justify-start gap-2"
+                disabled={!currentGroup}
+                onClick={item.onClick}
               >
                 {item.icon}
                 {item.label}
@@ -132,18 +131,16 @@ export function Sidebar({
       <div className="px-2 pb-3 border-t border-border/40 pt-2 flex flex-col gap-0.5">
         <Button
           variant="ghost"
-          fullWidth
-          className="justify-start gap-2"
-          onPress={nav(onGoToGroups)}
+          className="w-full justify-start gap-2"
+          onClick={nav(onGoToGroups)}
         >
           <ArrowLeftRight size={16} />
           {t("sidebar.changeGroup")}
         </Button>
         <Button
           variant={currentPage === "settings" ? "secondary" : "ghost"}
-          fullWidth
-          className="justify-start gap-2"
-          onPress={nav(onGoToSettings)}
+          className="w-full justify-start gap-2"
+          onClick={nav(onGoToSettings)}
         >
           <Settings size={16} />
           {t("sidebar.settings")}

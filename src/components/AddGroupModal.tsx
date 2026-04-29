@@ -1,23 +1,19 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
-  Button,
-  Modal,
-  Label,
-  Input,
-  Spinner,
-  useOverlayState,
-  Chip,
-  DatePicker, // New
-  DateField, // New
-  Calendar, // New
-} from "@heroui/react";
-import { parseDate } from "@internationalized/date"; // Required for HeroUI Dates
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { AppDatePicker } from "@/components/ui/app-date-picker";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { NewGroupInput } from "../types/group";
-
-interface AddGroupModalProps {
-  onAdd: (input: NewGroupInput) => Promise<void>;
-}
 
 const GRADE_OPTIONS = [
   "Preschool",
@@ -45,8 +41,12 @@ const emptyForm: NewGroupInput = {
   end_date: "",
 };
 
+interface AddGroupModalProps {
+  onAdd: (input: NewGroupInput) => Promise<void>;
+}
+
 export function AddGroupModal({ onAdd }: AddGroupModalProps) {
-  const state = useOverlayState();
+  const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const [form, setForm] = useState<NewGroupInput>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
@@ -55,7 +55,7 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
   const close = () => {
     setForm(emptyForm);
     setError(null);
-    state.close();
+    setOpen(false);
   };
 
   const handleGradeSelect = (grade: string) => {
@@ -80,148 +80,85 @@ export function AddGroupModal({ onAdd }: AddGroupModalProps) {
     }
   };
 
-  // Reusable DatePicker structure to keep the JSX clean
-  const CustomDatePicker = ({
-    label,
-    value,
-    onChange,
-    minValue,
-  }: {
-    label: string;
-    value: string;
-    onChange: (dateStr: string) => void;
-    minValue?: string;
-  }) => (
-    <DatePicker
-      className="w-full"
-      value={value ? parseDate(value) : null}
-      minValue={minValue ? parseDate(minValue) : undefined}
-      onChange={(date) => onChange(date ? date.toString() : "")}
-    >
-      <Label>{label}</Label>
-      <DateField.Group fullWidth>
-        <DateField.Input>
-          {(segment) => <DateField.Segment segment={segment} />}
-        </DateField.Input>
-        <DateField.Suffix>
-          <DatePicker.Trigger>
-            <DatePicker.TriggerIndicator />
-          </DatePicker.Trigger>
-        </DateField.Suffix>
-      </DateField.Group>
-      <DatePicker.Popover>
-        <Calendar aria-label={label}>
-          <Calendar.Header>
-            <Calendar.YearPickerTrigger>
-              <Calendar.YearPickerTriggerHeading />
-              <Calendar.YearPickerTriggerIndicator />
-            </Calendar.YearPickerTrigger>
-            <Calendar.NavButton slot="previous" />
-            <Calendar.NavButton slot="next" />
-          </Calendar.Header>
-          <Calendar.Grid>
-            <Calendar.GridHeader>
-              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-            </Calendar.GridHeader>
-            <Calendar.GridBody>
-              {(date) => <Calendar.Cell date={date} />}
-            </Calendar.GridBody>
-          </Calendar.Grid>
-          <Calendar.YearPickerGrid>
-            <Calendar.YearPickerGridBody>
-              {({ year }) => <Calendar.YearPickerCell year={year} />}
-            </Calendar.YearPickerGridBody>
-          </Calendar.YearPickerGrid>
-        </Calendar>
-      </DatePicker.Popover>
-    </DatePicker>
-  );
-
   return (
     <>
-      <Button variant="primary" onPress={state.open}>
+      <Button onClick={() => setOpen(true)}>
         {t("groups.addGroup")}
       </Button>
 
-      <Modal state={state}>
-        <Modal.Backdrop isDismissable={!submitting}>
-          <Modal.Container>
-            <Modal.Dialog>
-              <form onSubmit={handleSubmit}>
-                <Modal.Header>{t("groups.addGroupModal.title")}</Modal.Header>
-                <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-                  {/* Group Name Input */}
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="add-group-name">
-                      {t("groups.addGroupModal.nameLabel")}
-                    </Label>
-                    <Input
-                      id="add-group-name"
-                      value={form.name}
-                      onChange={(e) =>
-                        setForm({ ...form, name: e.target.value })
-                      }
-                      placeholder={t("groups.addGroupModal.namePlaceholder")}
-                      required
-                    />
-                  </div>
+      <Dialog open={open} onOpenChange={(o) => { if (!o && !submitting) close(); }}>
+        <DialogContent className="overflow-visible">
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle>{t("groups.addGroupModal.title")}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="add-group-name">
+                  {t("groups.addGroupModal.nameLabel")}
+                </Label>
+                <Input
+                  id="add-group-name"
+                  value={form.name}
+                  onChange={(e) => setForm({ ...form, name: e.target.value })}
+                  placeholder={t("groups.addGroupModal.namePlaceholder")}
+                  required
+                />
+              </div>
 
-                  {/* Grade Selection */}
-                  <div className="flex flex-col gap-2">
-                    <Label>{t("groups.addGroupModal.gradeLabel")}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {GRADE_OPTIONS.map((grade) => {
-                        const isSelected = form.grade === grade;
-                        return (
-                          <Chip
-                            key={grade}
-                            variant={isSelected ? "primary" : "soft"}
-                            color={isSelected ? "accent" : "default"}
-                            className="cursor-pointer transition-transform active:scale-95"
-                            onClick={() => handleGradeSelect(grade)}
-                          >
-                            {t(`groups.addGroupModal.grades.${grade}`)}
-                          </Chip>
-                        );
-                      })}
-                    </div>
-                  </div>
+              <div className="flex flex-col gap-2">
+                <Label>{t("groups.addGroupModal.gradeLabel")}</Label>
+                <div className="flex flex-wrap gap-2">
+                  {GRADE_OPTIONS.map((grade) => {
+                    const isSelected = form.grade === grade;
+                    return (
+                      <Badge
+                        key={grade}
+                        variant={isSelected ? "default" : "outline"}
+                        className={cn(
+                          "cursor-pointer transition-transform active:scale-95",
+                          isSelected ? "" : "text-foreground/60 hover:text-foreground"
+                        )}
+                        onClick={() => handleGradeSelect(grade)}
+                      >
+                        {t(`groups.addGroupModal.grades.${grade}`)}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
 
-                  {/* Start Date */}
-                  <CustomDatePicker
-                    label={t("groups.addGroupModal.startDateLabel")}
-                    value={form.start_date}
-                    onChange={(val) => setForm({ ...form, start_date: val })}
-                  />
+              <AppDatePicker
+                label={t("groups.addGroupModal.startDateLabel")}
+                value={form.start_date}
+                onChange={(val) => setForm({ ...form, start_date: val })}
+              />
 
-                  {/* End Date */}
-                  <CustomDatePicker
-                    label={t("groups.addGroupModal.endDateLabel")}
-                    value={form.end_date}
-                    minValue={form.start_date}
-                    onChange={(val) => setForm({ ...form, end_date: val })}
-                  />
+              <AppDatePicker
+                label={t("groups.addGroupModal.endDateLabel")}
+                value={form.end_date}
+                minValue={form.start_date}
+                onChange={(val) => setForm({ ...form, end_date: val })}
+              />
 
-                  {error && <p className="text-danger text-sm">{error}</p>}
-                </Modal.Body>
+              {error && <p className="text-danger text-sm">{error}</p>}
+            </div>
 
-                <Modal.Footer>
-                  <Button type="button" variant="ghost" onPress={close}>
-                    {t("common.cancel")}
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    isDisabled={submitting}
-                  >
-                    {submitting ? <Spinner size="sm" /> : t("common.add")}
-                  </Button>
-                </Modal.Footer>
-              </form>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={close}>
+                {t("common.cancel")}
+              </Button>
+              <Button type="submit" disabled={submitting}>
+                {submitting ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  t("common.add")
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

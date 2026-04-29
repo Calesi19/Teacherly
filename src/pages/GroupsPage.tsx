@@ -1,4 +1,4 @@
-import { Button, Spinner } from "@heroui/react";
+import { Button } from "@/components/ui/button";
 import { Settings } from "lucide-react";
 import { useGroups } from "../hooks/useGroups";
 import { GroupCard } from "../components/GroupCard";
@@ -26,7 +26,7 @@ export function GroupsPage({ onSelectGroup, currentGroup, onGoToSettings }: Grou
 
         {loading && (
           <div className="flex justify-center py-12">
-            <Spinner size="lg" color="accent" />
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
           </div>
         )}
 
@@ -54,9 +54,8 @@ export function GroupsPage({ onSelectGroup, currentGroup, onGoToSettings }: Grou
 
       <Button
         variant="ghost"
-        isIconOnly
-        size="sm"
-        onPress={onGoToSettings}
+        size="icon"
+        onClick={onGoToSettings}
         aria-label={t("sidebar.settings")}
         className="fixed bottom-4 left-4"
       >

@@ -1,18 +1,18 @@
 import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
-  Button,
-  Input,
-  Label,
-  Modal,
-  Spinner,
-  Chip,
-  DatePicker,
-  DateField,
-  Calendar,
-  useOverlayState,
-} from "@heroui/react";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { AppDatePicker } from "@/components/ui/app-date-picker";
+import { cn } from "@/lib/utils";
 import { Trash2, CalendarDays } from "lucide-react";
-import { parseDate } from "@internationalized/date";
 import { useGroups } from "../hooks/useGroups";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
@@ -35,64 +35,6 @@ const GRADE_OPTIONS = [
   "Adult",
 ];
 
-function CustomDatePicker({
-  label,
-  value,
-  onChange,
-  minValue,
-}: {
-  label: string;
-  value: string;
-  onChange: (v: string) => void;
-  minValue?: string;
-}) {
-  return (
-    <DatePicker
-      className="w-full"
-      value={value ? parseDate(value) : null}
-      minValue={minValue ? parseDate(minValue) : undefined}
-      onChange={(date) => onChange(date ? date.toString() : "")}
-    >
-      <Label>{label}</Label>
-      <DateField.Group fullWidth>
-        <DateField.Input>
-          {(segment) => <DateField.Segment segment={segment} />}
-        </DateField.Input>
-        <DateField.Suffix>
-          <DatePicker.Trigger>
-            <DatePicker.TriggerIndicator />
-          </DatePicker.Trigger>
-        </DateField.Suffix>
-      </DateField.Group>
-      <DatePicker.Popover>
-        <Calendar aria-label={label}>
-          <Calendar.Header>
-            <Calendar.YearPickerTrigger>
-              <Calendar.YearPickerTriggerHeading />
-              <Calendar.YearPickerTriggerIndicator />
-            </Calendar.YearPickerTrigger>
-            <Calendar.NavButton slot="previous" />
-            <Calendar.NavButton slot="next" />
-          </Calendar.Header>
-          <Calendar.Grid>
-            <Calendar.GridHeader>
-              {(day) => <Calendar.HeaderCell>{day}</Calendar.HeaderCell>}
-            </Calendar.GridHeader>
-            <Calendar.GridBody>
-              {(date) => <Calendar.Cell date={date} />}
-            </Calendar.GridBody>
-          </Calendar.Grid>
-          <Calendar.YearPickerGrid>
-            <Calendar.YearPickerGridBody>
-              {({ year }) => <Calendar.YearPickerCell year={year} />}
-            </Calendar.YearPickerGridBody>
-          </Calendar.YearPickerGrid>
-        </Calendar>
-      </DatePicker.Popover>
-    </DatePicker>
-  );
-}
-
 interface GroupSettingsSectionProps {
   group: Group;
   onGoToSchedule: () => void;
@@ -106,7 +48,7 @@ export function GroupSettingsSection({
 }: GroupSettingsSectionProps) {
   const { t } = useTranslation();
   const { updateGroup, deleteGroup } = useGroups();
-  const deleteModalState = useOverlayState();
+  const [deleteOpen, setDeleteOpen] = useState(false);
 
   const [name, setName] = useState(group.name);
   const [schoolName, setSchoolName] = useState(group.school_name ?? "");
@@ -125,7 +67,7 @@ export function GroupSettingsSection({
     setDeleting(true);
     try {
       await deleteGroup(group.id);
-      deleteModalState.close();
+      setDeleteOpen(false);
       onGoToGroups();
     } catch (e) {
       setSaveError(String(e));
@@ -164,12 +106,15 @@ export function GroupSettingsSection({
           )}
         </div>
         <Button
-          variant="primary"
           size="sm"
-          onPress={handleSave}
-          isDisabled={submitting || !name.trim()}
+          onClick={handleSave}
+          disabled={submitting || !name.trim()}
         >
-          {submitting ? <Spinner size="sm" /> : t("common.save")}
+          {submitting ? (
+            <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+          ) : (
+            t("common.save")
+          )}
         </Button>
       </div>
 
@@ -204,27 +149,29 @@ export function GroupSettingsSection({
           {GRADE_OPTIONS.map((option) => {
             const isSelected = grade === option;
             return (
-              <Chip
+              <Badge
                 key={option}
-                variant={isSelected ? "primary" : "soft"}
-                color={isSelected ? "accent" : "default"}
-                className="cursor-pointer transition-transform active:scale-95"
+                variant={isSelected ? "default" : "outline"}
+                className={cn(
+                  "cursor-pointer transition-transform active:scale-95",
+                  isSelected ? "" : "text-foreground/60 hover:text-foreground"
+                )}
                 onClick={() => setGrade(isSelected ? "" : option)}
               >
                 {t(`groups.addGroupModal.grades.${option}`)}
-              </Chip>
+              </Badge>
             );
           })}
         </div>
       </div>
 
-      <CustomDatePicker
+      <AppDatePicker
         label={t("groups.addGroupModal.startDateLabel")}
         value={startDate}
         onChange={setStartDate}
       />
 
-      <CustomDatePicker
+      <AppDatePicker
         label={t("groups.addGroupModal.endDateLabel")}
         value={endDate}
         minValue={startDate}
@@ -242,7 +189,7 @@ export function GroupSettingsSection({
             {t("groups.editGroup.scheduleDescription")}
           </p>
         </div>
-        <Button variant="ghost" size="sm" onPress={onGoToSchedule}>
+        <Button variant="ghost" size="sm" onClick={onGoToSchedule}>
           <CalendarDays size={16} />
           {t("groups.editGroup.scheduleManage")}
         </Button>
@@ -260,8 +207,8 @@ export function GroupSettingsSection({
           </p>
         </div>
         <Button
-          variant="danger"
-          onPress={deleteModalState.open}
+          variant="destructive"
+          onClick={() => setDeleteOpen(true)}
           className="w-full"
         >
           <Trash2 size={16} />
@@ -269,60 +216,63 @@ export function GroupSettingsSection({
         </Button>
       </div>
 
-      <Modal
-        state={deleteModalState}
+      <Dialog
+        open={deleteOpen}
         onOpenChange={(open) => {
           if (!open) setDeleteConfirmText("");
+          setDeleteOpen(open);
         }}
       >
-        <Modal.Backdrop isDismissable={!deleting}>
-          <Modal.Container>
-            <Modal.Dialog>
-              <Modal.Header>{t("groups.editGroup.deleteTitle")}</Modal.Header>
-              <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-                <p className="text-sm text-foreground/70">
-                  {t("groups.editGroup.deleteDescription")}
-                </p>
-                <div className="flex flex-col gap-1.5">
-                  <Label htmlFor="settings-delete-confirm">
-                    {t("groups.editGroup.deleteConfirmLabel", {
-                      phrase: CONFIRM_PHRASE,
-                    })}
-                  </Label>
-                  <Input
-                    id="settings-delete-confirm"
-                    value={deleteConfirmText}
-                    onChange={(e) => setDeleteConfirmText(e.target.value)}
-                    placeholder={CONFIRM_PHRASE}
-                    disabled={deleting}
-                  />
-                </div>
-              </Modal.Body>
-              <Modal.Footer>
-                <Button
-                  type="button"
-                  variant="ghost"
-                  isDisabled={deleting}
-                  onPress={() => {
-                    deleteModalState.close();
-                    setDeleteConfirmText("");
-                  }}
-                >
-                  {t("common.cancel")}
-                </Button>
-                <Button
-                  type="button"
-                  variant="danger"
-                  isDisabled={deleting || deleteConfirmText !== CONFIRM_PHRASE}
-                  onPress={handleDelete}
-                >
-                  {deleting ? <Spinner size="sm" /> : t("common.delete")}
-                </Button>
-              </Modal.Footer>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("groups.editGroup.deleteTitle")}</DialogTitle>
+          </DialogHeader>
+          <div className="flex flex-col gap-4">
+            <p className="text-sm text-foreground/70">
+              {t("groups.editGroup.deleteDescription")}
+            </p>
+            <div className="flex flex-col gap-1.5">
+              <Label htmlFor="settings-delete-confirm">
+                {t("groups.editGroup.deleteConfirmLabel", {
+                  phrase: CONFIRM_PHRASE,
+                })}
+              </Label>
+              <Input
+                id="settings-delete-confirm"
+                value={deleteConfirmText}
+                onChange={(e) => setDeleteConfirmText(e.target.value)}
+                placeholder={CONFIRM_PHRASE}
+                disabled={deleting}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button
+              type="button"
+              variant="ghost"
+              disabled={deleting}
+              onClick={() => {
+                setDeleteOpen(false);
+                setDeleteConfirmText("");
+              }}
+            >
+              {t("common.cancel")}
+            </Button>
+            <Button
+              type="button"
+              variant="destructive"
+              disabled={deleting || deleteConfirmText !== CONFIRM_PHRASE}
+              onClick={handleDelete}
+            >
+              {deleting ? (
+                <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+              ) : (
+                t("common.delete")
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

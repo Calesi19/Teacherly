@@ -1,15 +1,23 @@
 import { useState, useMemo } from "react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 import {
-  Button,
-  Chip,
-  Modal,
-  Label,
-  Input,
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
   Select,
-  ListBox,
-  Spinner,
-  useOverlayState,
-} from "@heroui/react";
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 import { useSchedule } from "../hooks/useSchedule";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { AssignmentTag, NewAssignmentInput } from "../types/assignment";
@@ -24,7 +32,7 @@ const TAG_OPTIONS: AssignmentTag[] = ["Exam", "Quiz", "Homework", "Extra Credit"
 const emptyForm = { title: "", description: "", max_score: "", period_name: "", tag: "" };
 
 export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) {
-  const modalState = useOverlayState();
+  const [open, setOpen] = useState(false);
   const { t } = useTranslation();
   const [form, setForm] = useState(emptyForm);
   const [submitting, setSubmitting] = useState(false);
@@ -46,7 +54,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
   const closeModal = () => {
     setForm(emptyForm);
     setAddError(null);
-    modalState.close();
+    setOpen(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -64,7 +72,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
         tag: form.tag as AssignmentTag,
       });
       setForm(emptyForm);
-      modalState.close();
+      setOpen(false);
     } catch (err) {
       setAddError(String(err));
     } finally {
@@ -83,143 +91,132 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
 
   return (
     <>
-      <Button variant="primary" size="sm" onPress={modalState.open}>
+      <Button size="sm" onClick={() => setOpen(true)}>
         {t("assignments.addModal.triggerLabel")}
       </Button>
 
-      <Modal state={modalState}>
-        <Modal.Backdrop isDismissable={!submitting}>
-          <Modal.Container>
-            <Modal.Dialog>
-              <form onSubmit={handleSubmit}>
-                <Modal.Header>{t("assignments.addModal.title")}</Modal.Header>
-                <Modal.Body className="flex flex-col gap-4 pb-px overflow-visible">
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="assignment-title">{t("assignments.addModal.titleLabel")}</Label>
-                    <Input
-                      id="assignment-title"
-                      value={form.title}
-                      onChange={(e) => setForm({ ...form, title: e.target.value })}
-                      placeholder={t("assignments.addModal.titlePlaceholder")}
-                      required
-                    />
-                  </div>
+      <Dialog open={open} onOpenChange={(o) => { if (!o && !submitting) closeModal(); }}>
+        <DialogContent>
+          <form onSubmit={handleSubmit}>
+            <DialogHeader>
+              <DialogTitle>{t("assignments.addModal.title")}</DialogTitle>
+            </DialogHeader>
+            <div className="flex flex-col gap-4 py-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="assignment-title">{t("assignments.addModal.titleLabel")}</Label>
+                <Input
+                  id="assignment-title"
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder={t("assignments.addModal.titlePlaceholder")}
+                  required
+                />
+              </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="assignment-description">{t("assignments.addModal.descriptionLabel")}</Label>
-                    <textarea
-                      id="assignment-description"
-                      rows={3}
-                      value={form.description}
-                      onChange={(e) => setForm({ ...form, description: e.target.value })}
-                      placeholder={t("assignments.addModal.descriptionPlaceholder")}
-                      className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
-                    />
-                  </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="assignment-description">{t("assignments.addModal.descriptionLabel")}</Label>
+                <textarea
+                  id="assignment-description"
+                  rows={3}
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder={t("assignments.addModal.descriptionPlaceholder")}
+                  className="flex w-full rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring resize-none"
+                />
+              </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <Label htmlFor="assignment-max-score">{t("assignments.addModal.maxScoreLabel")}</Label>
-                    <input
-                      id="assignment-max-score"
-                      type="number"
-                      min="0"
-                      step="any"
-                      value={form.max_score}
-                      onChange={(e) => setForm({ ...form, max_score: e.target.value })}
-                      placeholder={t("assignments.addModal.maxScorePlaceholder")}
-                      required
-                      className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                    />
-                  </div>
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="assignment-max-score">{t("assignments.addModal.maxScoreLabel")}</Label>
+                <input
+                  id="assignment-max-score"
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={form.max_score}
+                  onChange={(e) => setForm({ ...form, max_score: e.target.value })}
+                  placeholder={t("assignments.addModal.maxScorePlaceholder")}
+                  required
+                  className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                />
+              </div>
 
-                  <div className="flex flex-col gap-1.5">
-                    <Label>{t("assignments.addModal.periodLabel")}</Label>
-                    {uniquePeriodNames.length === 0 ? (
-                      <select
-                        disabled
-                        className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm opacity-50 cursor-not-allowed"
-                      >
-                        <option>{t("assignments.addModal.noPeriods")}</option>
-                      </select>
-                    ) : (
-                      <Select
-                        aria-label={t("assignments.addModal.periodLabel")}
-                        selectedKey={form.period_name || null}
-                        onSelectionChange={(key) =>
-                          setForm({ ...form, period_name: String(key) })
-                        }
-                      >
-                        <Select.Trigger className="w-full">
-                          <Select.Value>
-                            {({ isPlaceholder }) =>
-                              isPlaceholder ? (
-                                <span className="text-foreground/40">{t("assignments.addModal.selectPeriod")}</span>
-                              ) : (
-                                <span>{form.period_name}</span>
-                              )
-                            }
-                          </Select.Value>
-                          <Select.Indicator />
-                        </Select.Trigger>
-                        <Select.Popover>
-                          <ListBox>
-                            {uniquePeriodNames.map((name) => (
-                              <ListBox.Item key={name} id={name} textValue={name}>
-                                {name}
-                              </ListBox.Item>
-                            ))}
-                          </ListBox>
-                        </Select.Popover>
-                      </Select>
-                    )}
-                  </div>
-
-                  <div className="flex flex-col gap-1.5">
-                    <Label>{t("assignments.addModal.tagLabel")}</Label>
-                    <div className="flex flex-wrap gap-2">
-                      {TAG_OPTIONS.map((tag) => {
-                        const isSelected = form.tag === tag;
-                        return (
-                          <Chip
-                            key={tag}
-                            variant={isSelected ? "primary" : "soft"}
-                            color={isSelected ? "accent" : "default"}
-                            className="cursor-pointer transition-transform active:scale-95"
-                            onClick={() => setForm({ ...form, tag })}
-                          >
-                            {tagLabels[tag]}
-                          </Chip>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {addError && <p className="text-danger text-sm">{addError}</p>}
-                </Modal.Body>
-                <Modal.Footer>
-                  <Button type="button" variant="ghost" onPress={closeModal}>
-                    {t("common.cancel")}
-                  </Button>
-                  <Button
-                    type="submit"
-                    variant="primary"
-                    isDisabled={
-                      submitting ||
-                      !form.title.trim() ||
-                      !form.max_score ||
-                      !form.period_name ||
-                      !form.tag ||
-                      uniquePeriodNames.length === 0
-                    }
+              <div className="flex flex-col gap-1.5">
+                <Label>{t("assignments.addModal.periodLabel")}</Label>
+                {uniquePeriodNames.length === 0 ? (
+                  <select
+                    disabled
+                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm opacity-50 cursor-not-allowed"
                   >
-                    {submitting ? <Spinner size="sm" /> : t("assignments.addModal.addButton")}
-                  </Button>
-                </Modal.Footer>
-              </form>
-            </Modal.Dialog>
-          </Modal.Container>
-        </Modal.Backdrop>
-      </Modal>
+                    <option>{t("assignments.addModal.noPeriods")}</option>
+                  </select>
+                ) : (
+                  <Select
+                    value={form.period_name || undefined}
+                    onValueChange={(val) => setForm({ ...form, period_name: val })}
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue placeholder={t("assignments.addModal.selectPeriod")} />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {uniquePeriodNames.map((name) => (
+                        <SelectItem key={name} value={name}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label>{t("assignments.addModal.tagLabel")}</Label>
+                <div className="flex flex-wrap gap-2">
+                  {TAG_OPTIONS.map((tag) => {
+                    const isSelected = form.tag === tag;
+                    return (
+                      <Badge
+                        key={tag}
+                        variant={isSelected ? "default" : "outline"}
+                        className={cn(
+                          "cursor-pointer transition-transform active:scale-95",
+                          isSelected ? "" : "text-foreground/60 hover:text-foreground"
+                        )}
+                        onClick={() => setForm({ ...form, tag })}
+                      >
+                        {tagLabels[tag]}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {addError && <p className="text-danger text-sm">{addError}</p>}
+            </div>
+            <DialogFooter>
+              <Button type="button" variant="ghost" onClick={closeModal}>
+                {t("common.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  submitting ||
+                  !form.title.trim() ||
+                  !form.max_score ||
+                  !form.period_name ||
+                  !form.tag ||
+                  uniquePeriodNames.length === 0
+                }
+              >
+                {submitting ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  t("assignments.addModal.addButton")
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

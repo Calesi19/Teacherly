@@ -7,7 +7,8 @@ import {
   useRef,
 } from "react";
 import "./App.css";
-import { Button, Drawer, useOverlayState } from "@heroui/react";
+import { Button } from "@/components/ui/button";
+import { Sheet, SheetContent } from "@/components/ui/sheet";
 import { invoke } from "@tauri-apps/api/core";
 import { useGroups } from "./hooks/useGroups";
 import { useStudents } from "./hooks/useStudents";
@@ -64,7 +65,7 @@ import {
 } from "lucide-react";
 
 type ThemePreference = "light" | "dark" | "system";
-const THEME_KEY = "heroui-theme";
+const THEME_KEY = "app-theme";
 
 type ColorTheme = "default" | "ocean" | "forest" | "sunset" | "rose";
 
@@ -175,7 +176,7 @@ function App() {
 }
 
 function AppContent() {
-  const drawerState = useOverlayState();
+  const [drawerOpen, setDrawerOpen] = useState(false);
   const { t } = useTranslation();
   const { theme, setTheme } = useAppTheme();
   const { colorTheme, setColorTheme } = useAppColorTheme();
@@ -712,17 +713,11 @@ function AppContent() {
 
       <div className="flex h-screen overflow-hidden">
         {showSidebar && (
-          <Drawer state={drawerState}>
-            <Drawer.Backdrop isDismissable>
-              <Drawer.Content placement="left">
-                <Drawer.Dialog aria-label="Navigation">
-                  <Drawer.Body className="p-0">
-                    <Sidebar {...sidebarProps} onClose={drawerState.close} />
-                  </Drawer.Body>
-                </Drawer.Dialog>
-              </Drawer.Content>
-            </Drawer.Backdrop>
-          </Drawer>
+          <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+            <SheetContent side="left" className="p-0 w-64">
+              <Sidebar {...sidebarProps} onClose={() => setDrawerOpen(false)} />
+            </SheetContent>
+          </Sheet>
         )}
 
         {showSidebar && (
@@ -736,9 +731,8 @@ function AppContent() {
             <div className="lg:hidden flex items-center gap-2 px-4 py-3 bg-background border-b border-border shadow-sm">
               <Button
                 variant="ghost"
-                isIconOnly
-                size="sm"
-                onPress={drawerState.open}
+                size="icon"
+                onClick={() => setDrawerOpen(true)}
                 aria-label="Open menu"
               >
                 ☰
