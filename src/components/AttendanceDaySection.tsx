@@ -134,6 +134,7 @@ export function AttendanceDaySection({
   onMarkPresent,
   onMarkAbsent,
   onMarkLate,
+  onMarkPartial,
   onMarkBulk,
 }: AttendanceDaySectionProps) {
   const { t } = useTranslation();
@@ -208,7 +209,13 @@ export function AttendanceDaySection({
   };
 
   const handlePartialConfirm = () => {
-    // skip
+    if (!partialModal) return;
+    onMarkPartial(
+      partialModal.studentIds[0],
+      partialModal.periodStatuses,
+      partialModal.note,
+    );
+    setPartialModal(null);
   };
 
   const handleModalClose = () => {

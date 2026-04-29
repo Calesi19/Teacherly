@@ -505,6 +505,7 @@ const en = {
   attendance: {
     title: "Attendance",
     breadcrumb: "Attendance",
+    date: "Date",
     noPeriodsForDay: "No courses scheduled for this day",
     noPeriodsHint: "Set up a schedule to define when this class meets.",
     setUpSchedule: "Set Up Schedule",
@@ -1532,6 +1533,7 @@ const es: typeof en = {
   attendance: {
     title: "Asistencia",
     breadcrumb: "Asistencia",
+    date: "Fecha",
     noPeriodsForDay: "Sin cursos programados para este día",
     noPeriodsHint:
       "Configura un horario para definir cuándo se reúne esta clase.",

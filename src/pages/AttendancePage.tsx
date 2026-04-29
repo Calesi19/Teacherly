@@ -1,10 +1,10 @@
 import { useState } from "react";
-import { Button, Spinner } from "@heroui/react";
 import { CalendarDays, CalendarX } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { AppDatePicker } from "@/components/ui/app-date-picker";
 
 import { useAttendance } from "../hooks/useAttendance";
 import { Breadcrumb } from "../components/Breadcrumb";
-import { DateNavigator } from "../components/DateNavigator";
 import { AttendanceDaySection } from "../components/AttendanceDaySection";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { useTranslation } from "../i18n/LanguageContext";
@@ -76,34 +76,39 @@ export function AttendancePage({
         <div>
           <h2 className="text-2xl font-bold">{t("attendance.title")}</h2>
         </div>
+      </div>
+
+      <div className="mb-4 flex items-end gap-2">
+        <AppDatePicker
+          label={t("attendance.date")}
+          value={date}
+          onChange={setDate}
+          minValue={group.start_date ?? undefined}
+          maxValue={group.end_date ?? undefined}
+          placeholder={t("attendance.date")}
+          className="w-full max-w-sm"
+        />
         {!loading &&
           !error &&
           (isCanceled ? (
-            <Button variant="secondary" size="sm" onPress={uncancelDay}>
+            <Button variant="secondary" size="sm" onClick={uncancelDay}>
               {t("attendance.restoreDay")}
             </Button>
           ) : (
             <Button
               variant="secondary"
               size="sm"
-              onPress={() => cancelDay()}
-              isDisabled={periodsForDay.length === 0}
+              onClick={() => cancelDay()}
+              disabled={periodsForDay.length === 0}
             >
               {t("attendance.cancelDay")}
             </Button>
           ))}
       </div>
 
-      <DateNavigator
-        date={date}
-        onChange={setDate}
-        minDate={group.start_date}
-        maxDate={group.end_date}
-      />
-
       {loading && (
         <div className="flex justify-center py-12">
-          <Spinner size="lg" color="accent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-2 border-accent border-t-transparent" />
         </div>
       )}
 
@@ -132,7 +137,7 @@ export function AttendancePage({
           <p className="text-sm text-foreground/40">
             {t("attendance.noPeriodsHint")}
           </p>
-          <Button variant="primary" size="sm" onPress={onGoToSchedule}>
+          <Button size="sm" onClick={onGoToSchedule}>
             {t("attendance.setUpSchedule")}
           </Button>
         </div>
@@ -147,13 +152,13 @@ export function AttendancePage({
             <p className="text-lg font-semibold text-muted">
               {t("attendance.noStudents")}
             </p>
-            <p className="text-sm text-foreground/40">
-              {t("attendance.noStudentsHint")}
-            </p>
-            <Button variant="ghost" size="sm" onPress={onGoToStudents}>
-              {t("attendance.goToStudents")}
-            </Button>
-          </div>
+          <p className="text-sm text-foreground/40">
+            {t("attendance.noStudentsHint")}
+          </p>
+          <Button variant="ghost" size="sm" onClick={onGoToStudents}>
+            {t("attendance.goToStudents")}
+          </Button>
+        </div>
         )}
 
       {!loading &&
