@@ -821,11 +821,11 @@ body,
 
 :root[data-color-theme="storybook"] {
   --app-background: #f7f2eb;
-  --background: #fffdfa;
+  --background: #fffffe;
   --foreground: #473841;
-  --card: #fffefd;
+  --card: #fffffe;
   --card-foreground: #473841;
-  --popover: #fffefd;
+  --popover: #fffffe;
   --popover-foreground: #473841;
   --primary: #c86b85;
   --primary-foreground: #fff3f7;
@@ -858,7 +858,7 @@ body,
   --sidebar-accent-foreground: #624526;
   --sidebar-border: rgba(207, 190, 182, 0.42);
   --sidebar-ring: #9ab7e4;
-  --surface: rgba(255, 254, 253, 0.8);
+  --surface: rgba(255, 255, 254, 0.94);
 }
 
 .dark[data-color-theme="storybook"] {
