@@ -27,20 +27,12 @@ interface ObservationGroup {
   items: string[];
 }
 
-function getGradeColorClass(percentage: number) {
-  if (percentage >= 90) {
-    return "border-success/30 bg-success/10 text-success";
-  }
-  if (percentage >= 80) {
-    return "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-300";
-  }
-  if (percentage >= 70) {
-    return "border-warning/35 bg-warning/10 text-warning";
-  }
-  if (percentage >= 60) {
-    return "border-orange-500/35 bg-orange-500/10 text-orange-600 dark:text-orange-300";
-  }
-  return "border-danger/35 bg-danger/10 text-danger";
+function getGradeStrokeColor(percentage: number) {
+  if (percentage >= 90) return "var(--success)";
+  if (percentage >= 80) return "#2563eb";
+  if (percentage >= 70) return "var(--warning)";
+  if (percentage >= 60) return "#ea580c";
+  return "var(--danger)";
 }
 
 const ATTENDANCE_CHART_COLORS = {
@@ -160,17 +152,6 @@ export function OverviewTab({
   const gradedAssignments = assignments.filter(
     (assignment) => assignment.score !== null,
   );
-  const gradeTotals = gradedAssignments.reduce(
-    (totals, assignment) => ({
-      score: totals.score + (assignment.score ?? 0),
-      maxScore: totals.maxScore + assignment.max_score,
-    }),
-    { score: 0, maxScore: 0 },
-  );
-  const gradePercentage =
-    gradeTotals.maxScore > 0
-      ? Math.round((gradeTotals.score / gradeTotals.maxScore) * 100)
-      : null;
   const gradesByClass = Array.from(
     gradedAssignments
       .reduce((map, assignment) => {
@@ -390,33 +371,7 @@ export function OverviewTab({
             </p>
           ) : (
             <div className="flex flex-col gap-4">
-              <div
-                className={cn(
-                  "flex flex-wrap items-end justify-between gap-3 rounded-lg border px-4 py-3",
-                  getGradeColorClass(gradePercentage ?? 0),
-                )}
-              >
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide opacity-75">
-                    {t("studentProfile.overview.overallGrade")}
-                  </span>
-                  <span className="text-2xl font-bold">
-                    {gradePercentage}%
-                  </span>
-                </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold">
-                    {gradeTotals.score}/{gradeTotals.maxScore}
-                  </div>
-                  <div className="text-xs opacity-75">
-                    {t("studentProfile.overview.gradedAssignments", {
-                      count: gradedAssignments.length,
-                    })}
-                  </div>
-                </div>
-              </div>
-
-              <div className="grid gap-2 sm:grid-cols-2">
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {gradesByClass.map((classGrade) => {
                   const percentage = Math.round(
                     (classGrade.score / classGrade.maxScore) * 100,
@@ -425,22 +380,50 @@ export function OverviewTab({
                   return (
                     <div
                       key={classGrade.periodName}
-                      className={cn(
-                        "flex items-center justify-between gap-3 rounded-lg border px-3 py-2",
-                        getGradeColorClass(percentage),
-                      )}
+                      className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/60 px-3 py-3"
                     >
-                      <div className="min-w-0">
-                        <div className="truncate text-sm font-medium">
+                      <div className="min-w-0 text-center">
+                        <div className="truncate text-sm font-semibold">
                           {classGrade.periodName}
                         </div>
                         <div className="text-xs opacity-75">
                           {classGrade.score}/{classGrade.maxScore}
                         </div>
                       </div>
-                      <span className="shrink-0 text-sm font-semibold">
-                        {percentage}%
-                      </span>
+                      <div className="relative mx-auto aspect-[2/1] w-full max-w-[180px]">
+                        <svg
+                          viewBox="0 0 120 64"
+                          className="h-full w-full"
+                          aria-label={`${classGrade.periodName} ${percentage}%`}
+                        >
+                          <path
+                            d="M16 58 A44 44 0 0 1 104 58"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="12"
+                            strokeLinecap="round"
+                            className="opacity-20"
+                            pathLength={100}
+                          />
+                          <path
+                            d="M16 58 A44 44 0 0 1 104 58"
+                            fill="none"
+                            stroke={getGradeStrokeColor(percentage)}
+                            strokeWidth="12"
+                            strokeLinecap="round"
+                            pathLength={100}
+                            strokeDasharray={`${Math.min(Math.max(percentage, 0), 100)} 100`}
+                          />
+                          <text
+                            x="60"
+                            y="54"
+                            textAnchor="middle"
+                            className="fill-current text-xl font-bold"
+                          >
+                            {percentage}%
+                          </text>
+                        </svg>
+                      </div>
                     </div>
                   );
                 })}
