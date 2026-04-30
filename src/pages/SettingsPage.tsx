@@ -26,7 +26,10 @@ type ColorTheme =
   | "warm"
   | "lavender"
   | "forest"
-  | "sunset";
+  | "sunset"
+  | "confetti"
+  | "seaside"
+  | "storybook";
 
 interface SettingsPageProps {
   theme: ThemePreference;
@@ -190,6 +193,15 @@ export function SettingsPage({
                   </SelectItem>
                   <SelectItem value="sunset">
                     {t("settings.colorThemeSunset")}
+                  </SelectItem>
+                  <SelectItem value="confetti">
+                    {t("settings.colorThemeConfetti")}
+                  </SelectItem>
+                  <SelectItem value="seaside">
+                    {t("settings.colorThemeSeaside")}
+                  </SelectItem>
+                  <SelectItem value="storybook">
+                    {t("settings.colorThemeStorybook")}
                   </SelectItem>
                 </SelectContent>
               </Select>

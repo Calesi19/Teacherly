@@ -78,7 +78,10 @@ type ColorTheme =
   | "warm"
   | "lavender"
   | "forest"
-  | "sunset";
+  | "sunset"
+  | "confetti"
+  | "seaside"
+  | "storybook";
 const THEME_KEY = "app-theme";
 const COLOR_THEME_KEY = "app-color-theme";
 
@@ -98,7 +101,10 @@ function useAppTheme() {
       s === "warm" ||
       s === "lavender" ||
       s === "forest" ||
-      s === "sunset"
+      s === "sunset" ||
+      s === "confetti" ||
+      s === "seaside" ||
+      s === "storybook"
     ) return s;
     return "pastel";
   });
