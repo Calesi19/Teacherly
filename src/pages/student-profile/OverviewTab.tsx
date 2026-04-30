@@ -145,8 +145,17 @@ export function OverviewTab({
   const hoveredAttendance = hoveredAttendanceKey
     ? attendanceChartData.find((item) => item.key === hoveredAttendanceKey)
     : null;
+  const renderedAttendanceSegments = hoveredAttendanceKey
+    ? [
+        ...attendanceChartData.filter(
+          (item) => item.key !== hoveredAttendanceKey,
+        ),
+        ...attendanceChartData.filter(
+          (item) => item.key === hoveredAttendanceKey,
+        ),
+      ]
+    : attendanceChartData;
   const circumference = 2 * Math.PI * 44;
-  let attendanceOffset = 0;
 
   const gradedAssignments = assignments.filter(
     (assignment) => assignment.score !== null,
@@ -274,7 +283,22 @@ export function OverviewTab({
                     stroke="var(--border)"
                     strokeWidth="10"
                   />
-                  {attendanceChartData.map((item) => {
+                  {renderedAttendanceSegments.map((item) => {
+                    const originalOffset =
+                      attendanceChartData
+                        .slice(
+                          0,
+                          attendanceChartData.findIndex(
+                            (segment) => segment.key === item.key,
+                          ),
+                        )
+                        .reduce(
+                          (offset, segment) =>
+                            offset +
+                            (segment.value / attendanceSummary.totalDays) *
+                              circumference,
+                          0,
+                        );
                     const fraction = item.value / attendanceSummary.totalDays;
                     const dashLength = fraction * circumference;
                     const segment = (
@@ -287,7 +311,7 @@ export function OverviewTab({
                         stroke={item.color}
                         strokeWidth={item.key === hoveredAttendanceKey ? 16 : 10}
                         strokeDasharray={`${dashLength} ${circumference - dashLength}`}
-                        strokeDashoffset={-attendanceOffset}
+                        strokeDashoffset={-originalOffset}
                         strokeLinecap="round"
                         className="cursor-pointer transition-[stroke-width,opacity] duration-150"
                         opacity={item.value === 0 ? 0.2 : 1}
@@ -298,8 +322,6 @@ export function OverviewTab({
                         onBlur={() => setHoveredAttendanceKey(null)}
                       />
                     );
-
-                    attendanceOffset += dashLength;
                     return segment;
                   })}
                 </svg>
