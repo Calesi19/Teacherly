@@ -30,7 +30,7 @@ import { PageBackButton } from "../components/PageBackButton";
 import { useAssignmentDetail } from "../hooks/useAssignmentDetail";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
-import type { Assignment, GradeBand } from "../types/assignment";
+import type { Assignment } from "../types/assignment";
 
 interface AssignmentDetailPageProps {
   assignment: Assignment;
@@ -40,15 +40,6 @@ interface AssignmentDetailPageProps {
   onGoToAssignments: () => void;
   onDirtyChange?: (isDirty: boolean) => void;
 }
-
-const BAND_COLORS: Record<GradeBand, { bar: string; text: string }> = {
-  A: { bar: "bg-success", text: "text-success" },
-  B: { bar: "bg-accent", text: "text-accent" },
-  C: { bar: "bg-warning", text: "text-warning" },
-  D: { bar: "bg-warning/60", text: "text-warning" },
-  F: { bar: "bg-danger", text: "text-danger" },
-  N: { bar: "bg-foreground/10", text: "text-muted" },
-};
 
 interface NoteModalState {
   studentId: number;
@@ -226,10 +217,6 @@ export function AssignmentDetailPage({
           />
           <div>
             <h2 className="text-2xl font-bold">{assignment.title}</h2>
-            <p className="mt-0.5 text-sm text-muted">
-              {assignment.period_name} · {assignment.max_score}{" "}
-              {t("assignmentDetail.ptsMax")}
-            </p>
           </div>
         </div>
         {hasChanges && (
@@ -238,14 +225,6 @@ export function AssignmentDetailPage({
           </Button>
         )}
       </div>
-
-      {assignment.description && (
-        <SectionCard className="mb-6 bg-muted/40">
-          <p className="whitespace-pre-wrap text-sm text-foreground/80">
-            {assignment.description}
-          </p>
-        </SectionCard>
-      )}
 
       {loading ? (
         <div className="flex justify-center py-16">
@@ -261,74 +240,39 @@ export function AssignmentDetailPage({
       ) : (
         <div className="flex min-h-0 flex-1 flex-col">
           <SectionCard className="mb-6 flex flex-col gap-4 bg-muted/40">
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs uppercase tracking-wide text-muted">
-                  {t("assignmentDetail.average")}
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t("assignmentDetail.worth")}
                 </span>
                 <span className="text-2xl font-bold">
-                  {stats.average !== null ? stats.average.toFixed(1) : "—"}
-                  <span className="ml-1 text-sm font-normal text-muted">
-                    / {assignment.max_score}
+                  {assignment.max_score}
+                  <span className="ml-1 text-sm font-normal text-muted-foreground">
+                    {t("assignmentDetail.ptsMax")}
                   </span>
                 </span>
               </div>
               <div className="flex flex-col gap-0.5">
-                <span className="text-xs uppercase tracking-wide text-muted">
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t("assignmentDetail.graded")}
                 </span>
                 <span className="text-2xl font-bold">
                   {stats.gradedCount}
-                  <span className="ml-1 text-sm font-normal text-muted">
-                    / {scores.length}{" "}
-                    {scores.length !== 1
-                      ? t("assignmentDetail.studentsSuffix")
-                      : t("assignmentDetail.studentSuffix")}
+                  <span className="ml-1 text-sm font-normal text-muted-foreground">
+                    / {scores.length}
                   </span>
                 </span>
               </div>
             </div>
-
-            {stats.distribution.length > 0 && (
-              <div className="flex flex-col gap-2">
-                <div className="flex h-3 overflow-hidden rounded-full">
-                  {stats.distribution.map((distribution) => (
-                    <div
-                      key={distribution.band}
-                      className={cn(
-                        BAND_COLORS[distribution.band].bar,
-                        "h-full",
-                      )}
-                      style={{ width: `${distribution.percentage}%` }}
-                      title={`${distribution.band === "N" ? t("assignmentDetail.notScored") : distribution.band}: ${distribution.count} ${distribution.count !== 1 ? t("assignmentDetail.studentsSuffix") : t("assignmentDetail.studentSuffix")}`}
-                    />
-                  ))}
-                </div>
-                <div className="flex flex-wrap gap-3">
-                  {stats.distribution.map((distribution) => (
-                    <div
-                      key={distribution.band}
-                      className="flex items-center gap-1"
-                    >
-                      <span
-                        className={cn(
-                          "text-xs font-semibold",
-                          BAND_COLORS[distribution.band].text,
-                        )}
-                      >
-                        {distribution.band === "N"
-                          ? t("assignmentDetail.notScored")
-                          : distribution.band}
-                      </span>
-                      <span className="text-xs text-muted">
-                        {distribution.count} (
-                        {Math.round(distribution.percentage)}%)
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            <div className="flex flex-col gap-1.5">
+              <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                {t("assignmentDetail.description")}
+              </span>
+              <p className="whitespace-pre-wrap text-sm text-foreground/80">
+                {assignment.description?.trim() ||
+                  t("assignmentDetail.noDescription")}
+              </p>
+            </div>
           </SectionCard>
 
           <div className="flex min-h-0 flex-1 flex-col">
@@ -469,7 +413,7 @@ export function AssignmentDetailPage({
                                 </Badge>
                               )}
                               {row.score !== null && (
-                                <span className="text-sm text-muted">
+                                <span className="text-sm text-muted-foreground">
                                   {Math.round(
                                     (row.score / assignment.max_score) * 100,
                                   )}
@@ -494,7 +438,7 @@ export function AssignmentDetailPage({
                                   isExempt && "cursor-not-allowed opacity-50",
                                 )}
                               />
-                              <span className="w-12 shrink-0 text-xs text-muted">
+                              <span className="w-12 shrink-0 text-xs text-muted-foreground">
                                 / {assignment.max_score}
                               </span>
                             </div>

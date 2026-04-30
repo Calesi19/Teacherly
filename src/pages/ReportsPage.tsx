@@ -802,7 +802,9 @@ export function ReportsPage({ group }: ReportsPageProps) {
                         }
                       >
                         <SelectTrigger className="w-full">
-                          <SelectValue />
+                          <SelectValue>
+                            {gradesPeriod || t("reports.ui.allPeriods")}
+                          </SelectValue>
                         </SelectTrigger>
                         <SelectContent>
                           <SelectItem value="__all__">
@@ -933,7 +935,12 @@ export function ReportsPage({ group }: ReportsPageProps) {
                             }
                           >
                             <SelectTrigger className="w-full">
-                              <SelectValue />
+                              <SelectValue>
+                                {noteTagFilter
+                                  ? noteTagFilter.charAt(0).toUpperCase() +
+                                    noteTagFilter.slice(1)
+                                  : t("reports.ui.allTags")}
+                              </SelectValue>
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="__all__">
@@ -1086,17 +1093,19 @@ export function ReportsPage({ group }: ReportsPageProps) {
                             <span className="text-xs text-foreground/50">
                               {t("reports.ui.period")}
                             </span>
-                            <Select
-                              value={studentGradesPeriod || "__all__"}
-                              onValueChange={(value) =>
-                                setStudentGradesPeriod(
-                                  value === "__all__" ? "" : (value ?? ""),
-                                )
-                              }
-                            >
-                              <SelectTrigger className="w-full">
-                                <SelectValue />
-                              </SelectTrigger>
+                          <Select
+                            value={studentGradesPeriod || "__all__"}
+                            onValueChange={(value) =>
+                              setStudentGradesPeriod(
+                                value === "__all__" ? "" : (value ?? ""),
+                              )
+                            }
+                          >
+                            <SelectTrigger className="w-full">
+                              <SelectValue>
+                                {studentGradesPeriod || t("reports.ui.allPeriods")}
+                              </SelectValue>
+                            </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="__all__">
                                   {t("reports.ui.allPeriods")}
