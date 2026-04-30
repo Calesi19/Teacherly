@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { Student } from "../../types/student";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
+import { formatReportGender } from "../formatters";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -78,7 +79,9 @@ export function StudentRosterSection({ students, language }: Props) {
       {students.map((s) => (
         <View key={s.id} style={S.row}>
           <Text style={[S.cellBold, S.colName]}>{s.name}</Text>
-          <Text style={[S.cell, S.colGender]}>{s.gender ?? "—"}</Text>
+          <Text style={[S.cell, S.colGender]}>
+            {formatReportGender(s.gender, language)}
+          </Text>
           <Text style={[S.cell, S.colBirthdate]}>{fmt(s.birthdate)}</Text>
           <Text style={[S.cell, S.colId]}>{s.student_number ?? "—"}</Text>
           <Text style={[S.cell, S.colEnrolled]}>{fmt(s.enrollment_date)}</Text>

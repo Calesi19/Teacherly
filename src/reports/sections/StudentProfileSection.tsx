@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { Student } from "../../types/student";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
+import { formatReportGender } from "../formatters";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -37,7 +38,7 @@ export function StudentProfileSection({ student, language }: Props) {
 
   const fields: { label: string; value: string }[] = [
     { label: L.fieldFullName, value: student.name },
-    { label: L.fieldGender, value: student.gender ?? "—" },
+    { label: L.fieldGender, value: formatReportGender(student.gender, language) },
     { label: L.fieldDob, value: fmt(student.birthdate) },
     { label: L.fieldStudentId, value: student.student_number ?? "—" },
     { label: L.fieldEnrollmentDate, value: fmt(student.enrollment_date) },

@@ -2,24 +2,23 @@ import { useState, useCallback } from "react";
 import {
   Button,
   Checkbox,
-  EmptyState,
   Modal,
   Label,
   Input,
   Spinner,
-  TableRoot,
-  TableScrollContainer,
-  TableContent,
-  TableHeader,
-  TableColumn,
-  TableBody,
-  TableRow,
-  TableCell,
   useOverlayState,
 } from "@heroui/react";
 import { Inbox } from "lucide-react";
 import { useFamilyMembers } from "../hooks/useFamilyMembers";
 import { Breadcrumb } from "../components/Breadcrumb";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "../components/ui/table";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
 import type { NewFamilyMemberInput } from "../types/familyMember";
@@ -134,46 +133,60 @@ export function FamilyMembersPage({
 
       <div className="flex-1 flex flex-col min-h-0">
         {!loading && !error && (
-          <TableRoot variant="primary" className="flex-1 h-full">
-            <TableScrollContainer className="h-full">
-              <TableContent aria-label="Family members" selectionMode="none">
+          <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
+            <div className="min-h-0 flex-1 overflow-auto">
+              <Table>
                 <TableHeader>
-                  <TableColumn isRowHeader>Name</TableColumn>
-                  <TableColumn>Relationship</TableColumn>
-                  <TableColumn>Phone</TableColumn>
-                  <TableColumn>Email</TableColumn>
-                  <TableColumn>Emergency Contact</TableColumn>
+                  <TableRow>
+                    <TableHead>Name</TableHead>
+                    <TableHead>Relationship</TableHead>
+                    <TableHead>Phone</TableHead>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Emergency Contact</TableHead>
+                  </TableRow>
                 </TableHeader>
-                <TableBody
-                  renderEmptyState={() => (
-                    <EmptyState className="flex h-full w-full flex-col items-center justify-center gap-2 py-12 text-center">
-                      <Inbox className="size-6 text-muted" />
-                      <span className="text-sm font-medium text-muted">No family members yet</span>
-                      <span className="text-xs text-foreground/40">Click "+ Add Family Member" to add one.</span>
-                    </EmptyState>
-                  )}
-                >
+                <TableBody>
                   {familyMembers.map((fm) => (
-                    <TableRow key={fm.id} id={fm.id}>
+                    <TableRow key={fm.id}>
                       <TableCell className="font-medium">{fm.name}</TableCell>
                       <TableCell>{fm.relationship ?? <span className="text-foreground/30">—</span>}</TableCell>
                       <TableCell>
-                        {fm.phone
-                          ? <span className="inline-flex items-center">{fm.phone}<CopyButton value={fm.phone} /></span>
-                          : <span className="text-foreground/30">—</span>}
+                        {fm.phone ? (
+                          <span className="inline-flex items-center">
+                            {fm.phone}
+                            <CopyButton value={fm.phone} />
+                          </span>
+                        ) : (
+                          <span className="text-foreground/30">—</span>
+                        )}
                       </TableCell>
                       <TableCell>
-                        {fm.email
-                          ? <span className="inline-flex items-center">{fm.email}<CopyButton value={fm.email} /></span>
-                          : <span className="text-foreground/30">—</span>}
+                        {fm.email ? (
+                          <span className="inline-flex items-center">
+                            {fm.email}
+                            <CopyButton value={fm.email} />
+                          </span>
+                        ) : (
+                          <span className="text-foreground/30">—</span>
+                        )}
                       </TableCell>
-                      <TableCell>{fm.is_emergency_contact ? "Yes" : <span className="text-foreground/30">—</span>}</TableCell>
+                      <TableCell>
+                        {fm.is_emergency_contact ? "Yes" : <span className="text-foreground/30">—</span>}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
-              </TableContent>
-            </TableScrollContainer>
-          </TableRoot>
+              </Table>
+
+              {familyMembers.length === 0 && (
+                <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
+                  <Inbox className="size-6 text-muted" />
+                  <span className="text-sm font-medium text-muted">No family members yet</span>
+                  <span className="text-xs text-foreground/40">Click "+ Add Family Member" to add one.</span>
+                </div>
+              )}
+            </div>
+          </div>
         )}
       </div>
 
