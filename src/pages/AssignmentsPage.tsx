@@ -11,11 +11,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { Breadcrumb } from "../components/Breadcrumb";
@@ -217,25 +215,53 @@ export function AssignmentsPage({
       <div className="flex min-h-0 flex-1 flex-col">
         {!loading && !error && (
           <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
-            <div className="min-h-0 flex-1 overflow-auto">
-              <Table>
-                <TableHeader>
+            <div className="shrink-0 border-b border-border/45 bg-[color:color-mix(in_srgb,var(--success)_8%,var(--background)_92%)]">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-40" />
+                  <col className="w-12" />
+                </colgroup>
+                <thead>
                   <TableRow>
-                    <TableHead>{t("assignments.tableColumns.title")}</TableHead>
-                    <TableHead>{t("assignments.tableColumns.type")}</TableHead>
-                    <TableHead>
+                    <TableHead className="text-foreground/70">
+                      {t("assignments.tableColumns.title")}
+                    </TableHead>
+                    <TableHead className="text-foreground/70">
+                      {t("assignments.tableColumns.type")}
+                    </TableHead>
+                    <TableHead className="text-foreground/70">
                       {t("assignments.tableColumns.period")}
                     </TableHead>
-                    <TableHead>
+                    <TableHead className="text-foreground/70">
                       {t("assignments.tableColumns.maxScore")}
                     </TableHead>
-                    <TableHead>
+                    <TableHead className="text-foreground/70">
                       {t("assignments.tableColumns.graded")}
                     </TableHead>
-                    <TableHead>{t("assignments.tableColumns.date")}</TableHead>
-                    <TableHead />
+                    <TableHead className="text-foreground/70">
+                      {t("assignments.tableColumns.date")}
+                    </TableHead>
+                    <TableHead className="text-foreground/70" />
                   </TableRow>
-                </TableHeader>
+                </thead>
+              </table>
+            </div>
+            <div className="min-h-0 flex-1 overflow-auto">
+              <table className="w-full table-fixed text-sm">
+                <colgroup>
+                  <col />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-32" />
+                  <col className="w-40" />
+                  <col className="w-12" />
+                </colgroup>
                 <TableBody>
                   {filtered.map((assignment) => (
                     <TableRow
@@ -281,7 +307,7 @@ export function AssignmentsPage({
                     </TableRow>
                   ))}
                 </TableBody>
-              </Table>
+              </table>
 
               {filtered.length === 0 && (
                 <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
