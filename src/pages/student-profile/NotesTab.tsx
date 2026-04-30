@@ -70,7 +70,11 @@ export function NotesTab({
             }
           >
             <SelectTrigger className="w-36">
-              <SelectValue placeholder={t("studentProfile.notes.tags.all")} />
+              <SelectValue placeholder={t("studentProfile.notes.tags.all")}>
+                {noteTagFilter === "all"
+                  ? t("studentProfile.notes.tags.all")
+                  : t(`studentProfile.notes.tags.${noteTagFilter}`)}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">{t("studentProfile.notes.tags.all")}</SelectItem>

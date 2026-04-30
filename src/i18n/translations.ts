@@ -345,7 +345,7 @@ const en = {
       },
       tags: {
         label: "Tags",
-        all: "All",
+        all: "All tags",
         incident: "Incident",
         positive: "Positive",
         negative: "Negative",
@@ -1387,7 +1387,7 @@ const es: typeof en = {
       },
       tags: {
         label: "Etiquetas",
-        all: "Todas",
+        all: "Todas las etiquetas",
         incident: "Incidente",
         positive: "Positivo",
         negative: "Negativo",
