@@ -8,12 +8,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import {
-  Table,
   TableBody,
   TableCell,
+  TableHead,
   TableRow,
 } from "@/components/ui/table";
+import { Checkbox } from "@/components/ui/checkbox";
 import { useTranslation } from "../i18n/LanguageContext";
+import { cn } from "@/lib/utils";
 import type {
   DayAttendanceStatus,
   StudentDayStatus,
@@ -233,96 +235,123 @@ export function AttendanceDaySection({
 
   return (
     <>
-      <div className="rounded-2xl border border-border/60 bg-background overflow-hidden">
-        <div className="flex items-center gap-3 px-4 py-3 bg-background-secondary border-b border-border/60">
-          <input
-            type="checkbox"
-            checked={allSelected}
-            ref={(el) => {
-              if (el) el.indeterminate = !allSelected && someSelected;
-            }}
-            onChange={toggleSelectAll}
-            aria-label="Select all students"
-            className="w-4 h-4 cursor-pointer"
-          />
-          <span className="flex-1 font-semibold text-sm">
-            {t("attendance.studentsHeader")}
-          </span>
-          {someSelected && (
-            <div className="flex items-center gap-1">
-              <span className="text-xs text-foreground/50 mr-1">
-                {selected.size} {t("attendance.selected")}
-              </span>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleBulk("present")}
-              >
-                {t("attendance.status.present")}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleBulk("absent")}
-              >
-                {t("attendance.status.absent")}
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => handleBulk("late")}
-              >
-                {t("attendance.status.late")}
-              </Button>
-            </div>
-          )}
+      <div className="flex min-h-0 flex-1 flex-col">
+        <div className="mb-4 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            {someSelected && (
+              <>
+                <span className="text-sm text-muted-foreground mr-2">
+                  {selected.size} {t("attendance.selected")}
+                </span>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulk("present")}
+                >
+                  {t("attendance.status.present")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulk("absent")}
+                >
+                  {t("attendance.status.absent")}
+                </Button>
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  onClick={() => handleBulk("late")}
+                >
+                  {t("attendance.status.late")}
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setSelected(new Set())}
+                >
+                  {t("students.clear")}
+                </Button>
+              </>
+            )}
+          </div>
         </div>
 
-        <div className="min-h-0 flex-1 overflow-auto">
-          <Table>
-            <TableBody>
-              {rows.map((row) => (
-                <TableRow key={row.student_id}>
-                  <TableCell className="w-10 pr-0">
-                    <input
-                      type="checkbox"
-                      checked={selected.has(row.student_id)}
-                      onChange={() => toggleSelect(row.student_id)}
-                      aria-label={`Select ${row.student_name}`}
-                      className="w-4 h-4 cursor-pointer"
+        <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
+          <div className="shrink-0 border-b border-border/45 bg-[color:color-mix(in_srgb,var(--success)_8%,var(--background)_92%)]">
+            <table className="w-full table-fixed text-sm">
+              <colgroup>
+                <col className="w-10" />
+                <col className="w-64" />
+                <col />
+              </colgroup>
+              <thead>
+                <TableRow>
+                  <TableHead className="w-10 pr-0">
+                    <Checkbox
+                      checked={allSelected}
+                      onCheckedChange={() => toggleSelectAll()}
+                      aria-label="Select all students"
                     />
-                  </TableCell>
-                  <TableCell className="text-sm font-medium">
-                    {row.student_name}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-wrap items-center gap-1">
-                      {DAY_STATUSES.map((status) => (
-                        <button
-                          key={status}
-                          onClick={() => handleStatusClick(row, status)}
-                          className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
-                            row.status === status
-                              ? status === "present"
-                                ? "border-success/30 bg-success/15 text-success"
-                                : status === "absent"
-                                  ? "border-danger/30 bg-danger/15 text-danger"
-                                  : status === "late"
-                                    ? "border-warning/30 bg-warning/15 text-warning"
-                                    : "border-accent/25 bg-accent/10 text-accent"
-                              : "border-transparent text-foreground/40 hover:bg-foreground/5 hover:text-foreground"
-                          }`}
-                          aria-pressed={row.status === status}
-                        >
-                          {statusLabels[status]}
-                        </button>
-                      ))}
-                    </div>
-                  </TableCell>
+                  </TableHead>
+                  <TableHead className="text-foreground/70">
+                    {t("attendance.studentsHeader")}
+                  </TableHead>
+                  <TableHead className="text-foreground/70" />
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </thead>
+            </table>
+          </div>
+
+          <div className="min-h-0 flex-1 overflow-auto">
+            <table className="w-full table-fixed text-sm">
+              <colgroup>
+                <col className="w-10" />
+                <col className="w-64" />
+                <col />
+              </colgroup>
+              <TableBody>
+                {rows.map((row) => (
+                  <TableRow key={row.student_id}>
+                    <TableCell className="w-10 pr-0">
+                      <Checkbox
+                        checked={selected.has(row.student_id)}
+                        onCheckedChange={() => toggleSelect(row.student_id)}
+                        aria-label={`Select ${row.student_name}`}
+                      />
+                    </TableCell>
+                    <TableCell className="text-sm font-medium">
+                      {row.student_name}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap items-center gap-1">
+                        {DAY_STATUSES.map((status) => (
+                          <button
+                            key={status}
+                            onClick={() => handleStatusClick(row, status)}
+                            className={cn(
+                              "rounded-md border px-2 py-1 text-xs font-medium transition-colors",
+                              row.status === status
+                                ? status === "present"
+                                  ? "border-success/30 bg-success/15 text-success"
+                                  : status === "absent"
+                                    ? "border-danger/30 bg-danger/15 text-danger"
+                                    : status === "late"
+                                      ? "border-warning/30 bg-warning/15 text-warning"
+                                      : "border-accent/25 bg-accent/10 text-accent"
+                                : "border-transparent text-foreground/40 hover:bg-foreground/5 hover:text-foreground",
+                            )}
+                            aria-pressed={row.status === status}
+                          >
+                            {statusLabels[status]}
+                          </button>
+                        ))}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </table>
+          </div>
         </div>
       </div>
 

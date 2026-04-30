@@ -78,7 +78,7 @@ export function AttendancePage({
         ]}
       />
 
-      <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+      <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
         <div>
           <h2 className="text-2xl font-bold">{t("attendance.title")}</h2>
         </div>
@@ -182,7 +182,7 @@ export function AttendancePage({
         !isCanceled &&
         periodsForDay.length > 0 &&
         allStudents.length > 0 && (
-          <div className="mt-2">
+          <div className="flex min-h-0 flex-1 flex-col">
             <AttendanceDaySection
               rows={dayStatuses}
               onMarkPresent={(id) => withPastDateConfirm(() => markPresent(id))}

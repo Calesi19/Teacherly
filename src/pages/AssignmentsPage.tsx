@@ -56,7 +56,13 @@ function formatDate(dateStr: string): string {
   });
 }
 
-function getGradedStatusClass(dateStr: string): string {
+function getGradedStatusClass(
+  gradedCount: number,
+  totalCount: number,
+  dateStr: string,
+): string {
+  if (gradedCount >= totalCount) return "text-foreground/50";
+
   const assignmentDate = new Date(dateStr);
   const today = new Date();
 
@@ -286,7 +292,7 @@ export function AssignmentsPage({
                         {assignment.max_score} {t("assignments.pts")}
                       </TableCell>
                       <TableCell
-                        className={`text-sm ${getGradedStatusClass(assignment.created_at)}`}
+                        className={`text-sm ${getGradedStatusClass(assignment.graded_count, assignment.student_count, assignment.created_at)}`}
                       >
                         {assignment.graded_count} / {assignment.student_count}
                       </TableCell>
