@@ -107,6 +107,7 @@ export function AssignmentsTab({
                     <TableHead>
                       {t("studentProfile.assignments.columns.period")}
                     </TableHead>
+                    <TableHead className="text-right" />
                     <TableHead className="text-right">
                       {t("studentProfile.assignments.columns.score")}
                     </TableHead>
@@ -123,6 +124,20 @@ export function AssignmentsTab({
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {assignment.period_name}
+                      </TableCell>
+                      <TableCell className="text-right text-sm">
+                        {assignment.score !== null ? (
+                          <span
+                            className={getScoreColorClass(
+                              assignment.score,
+                              assignment.max_score,
+                            )}
+                          >
+                            {formatScorePercentage(assignment.score, assignment.max_score)}%
+                          </span>
+                        ) : (
+                          <span className="text-foreground/30">—</span>
+                        )}
                       </TableCell>
                       <TableCell className="text-right text-sm">
                         {assignment.score !== null ? (

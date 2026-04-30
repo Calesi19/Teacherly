@@ -24,6 +24,17 @@ function getActiveStatus(startDate: string | null | undefined, endDate: string |
   return afterStart && beforeEnd ? "active" : "inactive";
 }
 
+function getGradeTranslationKey(grade: string): string {
+  if (/^\d+$/.test(grade)) {
+    const numeric = Number(grade);
+    const suffix =
+      numeric === 1 ? "st" : numeric === 2 ? "nd" : numeric === 3 ? "rd" : "th";
+    return `${grade}${suffix}`;
+  }
+
+  return grade;
+}
+
 export function GroupCard({ group, isSelected, onClick }: GroupCardProps) {
   const { t } = useTranslation();
   const start = formatMonthYear(group.start_date);
@@ -62,7 +73,8 @@ export function GroupCard({ group, isSelected, onClick }: GroupCardProps) {
         {group.grade && (
           <span className="flex items-center gap-1.5 text-xs text-foreground/50">
             <GraduationCap size={12} />
-            {t(`groups.addGroupModal.grades.${group.grade}`)} {t("groups.card.grade")}
+            {t(`groups.addGroupModal.grades.${getGradeTranslationKey(group.grade)}`)}{" "}
+            {t("groups.card.grade")}
           </span>
         )}
         {dateRange && (
