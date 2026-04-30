@@ -20,7 +20,13 @@ import type { LanguagePreference } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
 type ThemePreference = "light" | "dark" | "system";
-type ColorTheme = "pastel" | "classic" | "warm";
+type ColorTheme =
+  | "pastel"
+  | "classic"
+  | "warm"
+  | "lavender"
+  | "forest"
+  | "sunset";
 
 interface SettingsPageProps {
   theme: ThemePreference;
@@ -163,7 +169,7 @@ export function SettingsPage({
                   onColorThemeChange((value ?? "pastel") as ColorTheme)
                 }
               >
-                <SelectTrigger className="w-44 shrink-0">
+                <SelectTrigger className="w-48 shrink-0">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -175,6 +181,15 @@ export function SettingsPage({
                   </SelectItem>
                   <SelectItem value="warm">
                     {t("settings.colorThemeWarm")}
+                  </SelectItem>
+                  <SelectItem value="lavender">
+                    {t("settings.colorThemeLavender")}
+                  </SelectItem>
+                  <SelectItem value="forest">
+                    {t("settings.colorThemeForest")}
+                  </SelectItem>
+                  <SelectItem value="sunset">
+                    {t("settings.colorThemeSunset")}
                   </SelectItem>
                 </SelectContent>
               </Select>

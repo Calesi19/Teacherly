@@ -72,7 +72,13 @@ const ReportsPage = lazy(() =>
 );
 
 type ThemePreference = "light" | "dark" | "system";
-type ColorTheme = "pastel" | "classic" | "warm";
+type ColorTheme =
+  | "pastel"
+  | "classic"
+  | "warm"
+  | "lavender"
+  | "forest"
+  | "sunset";
 const THEME_KEY = "app-theme";
 const COLOR_THEME_KEY = "app-color-theme";
 
@@ -86,7 +92,14 @@ function useAppTheme() {
   });
   const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
     const s = localStorage.getItem(COLOR_THEME_KEY);
-    if (s === "pastel" || s === "classic" || s === "warm") return s;
+    if (
+      s === "pastel" ||
+      s === "classic" ||
+      s === "warm" ||
+      s === "lavender" ||
+      s === "forest" ||
+      s === "sunset"
+    ) return s;
     return "pastel";
   });
 

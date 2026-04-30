@@ -66,7 +66,9 @@ export function InfoField({
 }) {
   return (
     <div className="flex flex-col gap-0.5">
-      <span className="text-xs uppercase tracking-wide text-muted">{label}</span>
+      <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+        {label}
+      </span>
       <span className="text-sm font-medium text-foreground">
         {value ?? <span className="text-foreground/30">—</span>}
       </span>
@@ -101,13 +103,13 @@ export function SectionHeader({
 }) {
   return (
     <div className="mb-4 flex items-center justify-between">
-      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted">
+      <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
         {title}
       </h3>
       <button
         type="button"
         onClick={onEdit}
-        className="inline-flex items-center gap-1 text-xs text-foreground/40 transition-colors hover:text-foreground/70"
+        className="inline-flex items-center gap-1 text-xs text-muted-foreground transition-colors hover:text-foreground"
         aria-label={ariaLabel}
       >
         <Pencil size={12} />
@@ -139,9 +141,9 @@ export function TableEmptyState({
 }) {
   return (
     <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">
-      <Inbox className="size-6 text-muted" />
-      <span className="text-sm font-medium text-muted">{title}</span>
-      {hint ? <span className="text-xs text-foreground/40">{hint}</span> : null}
+      <Inbox className="size-6 text-muted-foreground" />
+      <span className="text-sm font-medium text-muted-foreground">{title}</span>
+      {hint ? <span className="text-xs text-muted-foreground">{hint}</span> : null}
     </div>
   );
 }

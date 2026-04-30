@@ -175,7 +175,7 @@ export function OverviewTab({
                       )}
                     </div>
                     {contact.relationship ? (
-                      <span className="text-xs text-muted">{contact.relationship}</span>
+                      <span className="text-xs text-muted-foreground">{contact.relationship}</span>
                     ) : null}
                     {contact.phone ? (
                       <span className="inline-flex items-center text-xs text-foreground/60">
@@ -237,7 +237,7 @@ export function OverviewTab({
                       </span>
                     ) : null}
                     {address.country ? (
-                      <span className="text-xs text-muted">{address.country}</span>
+                      <span className="text-xs text-muted-foreground">{address.country}</span>
                     ) : null}
                   </div>
                 ))}
@@ -263,7 +263,7 @@ export function OverviewTab({
             <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
               {services?.has_special_education ? (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-xs uppercase tracking-wide text-muted">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t("studentProfile.health.specialEducation")}
                   </span>
                   <span className="text-sm font-medium text-foreground">
@@ -273,7 +273,7 @@ export function OverviewTab({
               ) : null}
               {therapyLabels.length > 0 ? (
                 <div className="flex flex-col gap-1">
-                  <span className="text-xs uppercase tracking-wide text-muted">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t("studentProfile.health.attendsTherapy")}
                   </span>
                   <div className="flex flex-wrap gap-1">
@@ -287,7 +287,7 @@ export function OverviewTab({
               ) : null}
               {services && services.medical_plan !== "none" ? (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-xs uppercase tracking-wide text-muted">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t("studentProfile.health.medicalInsurance")}
                   </span>
                   <span className="text-sm font-medium text-foreground">
@@ -299,7 +299,7 @@ export function OverviewTab({
               ) : null}
               {services?.has_treatment ? (
                 <div className="flex flex-col gap-0.5">
-                  <span className="text-xs uppercase tracking-wide text-muted">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t("studentProfile.health.medicalTreatment")}
                   </span>
                   <span className="text-sm font-medium text-foreground">
@@ -309,7 +309,7 @@ export function OverviewTab({
               ) : null}
               {services?.allergies ? (
                 <div className="flex flex-col gap-0.5 sm:col-span-2">
-                  <span className="text-xs uppercase tracking-wide text-muted">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t("studentProfile.health.allergies")}
                   </span>
                   <span className="text-sm font-medium text-foreground">
@@ -319,7 +319,7 @@ export function OverviewTab({
               ) : null}
               {services?.conditions ? (
                 <div className="flex flex-col gap-0.5 sm:col-span-2">
-                  <span className="text-xs uppercase tracking-wide text-muted">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {t("servicesPage.conditionsLabel")}
                   </span>
                   <span className="text-sm font-medium text-foreground">
@@ -397,7 +397,7 @@ export function OverviewTab({
             <div className="flex flex-col gap-3">
               {observationGroups.map((groupItem) => (
                 <div key={groupItem.label} className="flex flex-col gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted">
+                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                     {groupItem.label}
                   </span>
                   <div className="flex flex-wrap gap-1.5">
