@@ -1,5 +1,6 @@
 import { useState, useMemo } from "react";
 import { Inbox, Trash2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -40,12 +41,33 @@ const TAG_OPTIONS: AssignmentTag[] = [
   "Project",
 ];
 
+const COURSE_CHIP_STYLES = [
+  "border-transparent bg-sky-100 text-sky-700 dark:bg-sky-500/18 dark:text-sky-200",
+  "border-transparent bg-emerald-100 text-emerald-700 dark:bg-emerald-500/18 dark:text-emerald-200",
+  "border-transparent bg-amber-100 text-amber-700 dark:bg-amber-500/18 dark:text-amber-200",
+  "border-transparent bg-rose-100 text-rose-700 dark:bg-rose-500/18 dark:text-rose-200",
+  "border-transparent bg-violet-100 text-violet-700 dark:bg-violet-500/18 dark:text-violet-200",
+  "border-transparent bg-cyan-100 text-cyan-700 dark:bg-cyan-500/18 dark:text-cyan-200",
+];
+
 function formatDate(dateStr: string): string {
   return new Date(dateStr).toLocaleDateString(undefined, {
     month: "short",
     day: "numeric",
     year: "numeric",
   });
+}
+
+function getCourseChipClass(periodName: string): string {
+  const seed = Array.from(periodName).reduce(
+    (total, char) => total + char.charCodeAt(0),
+    0,
+  );
+  return COURSE_CHIP_STYLES[seed % COURSE_CHIP_STYLES.length];
+}
+
+function getCourseInitial(periodName: string): string {
+  return periodName.trim().charAt(0).toUpperCase();
 }
 
 export function AssignmentsPage({
@@ -217,7 +239,14 @@ export function AssignmentsPage({
                         {tagLabels[assignment.tag] ?? assignment.tag}
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
-                        {assignment.period_name}
+                        <Badge
+                          className={`gap-1.5 px-2.5 py-1 ${getCourseChipClass(assignment.period_name)}`}
+                        >
+                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-current/14 text-[10px] font-semibold">
+                            {getCourseInitial(assignment.period_name)}
+                          </span>
+                          <span>{assignment.period_name}</span>
+                        </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {assignment.max_score} {t("assignments.pts")}
