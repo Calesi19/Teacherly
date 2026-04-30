@@ -148,6 +148,14 @@ export function AssignmentDetailPage({
     return dbScore !== null ? String(dbScore) : "";
   };
 
+  const getLiveScore = (value: string): number | null => {
+    const trimmed = value.trim();
+    if (trimmed === "") return null;
+
+    const parsed = parseFloat(trimmed);
+    return Number.isNaN(parsed) ? null : parsed;
+  };
+
   const handleChange = (studentId: number, value: string) => {
     setPendingScores((prev) => {
       const next = new Map(prev);
@@ -311,8 +319,9 @@ export function AssignmentDetailPage({
                         row.student_id,
                         row.score,
                       );
+                      const liveScore = getLiveScore(displayVal);
                       const isExtraCredit =
-                        row.score !== null && row.score > assignment.max_score;
+                        liveScore !== null && liveScore > assignment.max_score;
                       const isExempt = pendingExempt.has(row.student_id)
                         ? (pendingExempt.get(row.student_id) ?? false)
                         : row.exempt === 1;
@@ -428,10 +437,10 @@ export function AssignmentDetailPage({
                                   {t("assignmentDetail.extraCredit")}
                                 </Badge>
                               )}
-                              {row.score !== null && (
+                              {liveScore !== null && (
                                 <span className="text-sm text-muted-foreground">
                                   {Math.round(
-                                    (row.score / assignment.max_score) * 100,
+                                    (liveScore / assignment.max_score) * 100,
                                   )}
                                   %
                                 </span>
