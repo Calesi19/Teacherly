@@ -16,9 +16,7 @@ const SECTION_KEYS = [
   "section6",
 ] as const;
 
-export function PrivacyPolicyPage({
-  onGoToSettings,
-}: PrivacyPolicyPageProps) {
+export function PrivacyPolicyPage({ onGoToSettings }: PrivacyPolicyPageProps) {
   const { t } = useTranslation();
 
   return (
@@ -31,15 +29,9 @@ export function PrivacyPolicyPage({
       />
 
       <div className="mb-6 flex items-start gap-3">
-        <PageBackButton
-          label={t("common.back")}
-          onClick={onGoToSettings}
-        />
+        <PageBackButton label={t("common.back")} onClick={onGoToSettings} />
         <div>
           <h2 className="text-2xl font-bold">{t("legal.privacy.title")}</h2>
-          <p className="mt-0.5 text-sm text-muted">
-            {t("legal.privacy.description")}
-          </p>
         </div>
       </div>
 
