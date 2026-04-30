@@ -16,11 +16,9 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import {
-  Table,
   TableBody,
   TableCell,
   TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { cn } from "@/lib/utils";
@@ -277,18 +275,36 @@ export function AssignmentDetailPage({
 
           <div className="flex min-h-0 flex-1 flex-col">
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
-              <div className="min-h-0 flex-1 overflow-auto">
-                <Table>
-                  <TableHeader>
+              <div className="shrink-0 border-b border-border/45 bg-[color:color-mix(in_srgb,var(--success)_8%,var(--background)_92%)]">
+                <table className="w-full table-fixed text-sm">
+                  <colgroup>
+                    <col className="w-8" />
+                    <col />
+                    <col className="w-32" />
+                    <col className="w-72" />
+                  </colgroup>
+                  <thead>
                     <TableRow>
-                      <TableHead> </TableHead>
-                      <TableHead>{t("students.tableColumns.name")}</TableHead>
-                      <TableHead> </TableHead>
-                      <TableHead className="text-right">
+                      <TableHead className="w-8" />
+                      <TableHead className="text-foreground/70">
+                        {t("students.tableColumns.name")}
+                      </TableHead>
+                      <TableHead className="text-foreground/70" />
+                      <TableHead className="text-right text-foreground/70">
                         {t("assignmentDetail.scoreColumn")}
                       </TableHead>
                     </TableRow>
-                  </TableHeader>
+                  </thead>
+                </table>
+              </div>
+              <div className="min-h-0 flex-1 overflow-auto">
+                <table className="w-full table-fixed text-sm">
+                  <colgroup>
+                    <col className="w-8" />
+                    <col />
+                    <col className="w-32" />
+                    <col className="w-72" />
+                  </colgroup>
                   <TableBody>
                     {scores.map((row) => {
                       const displayVal = getDisplayValue(
@@ -447,7 +463,7 @@ export function AssignmentDetailPage({
                       );
                     })}
                   </TableBody>
-                </Table>
+                </table>
 
                 {scores.length === 0 && (
                   <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">

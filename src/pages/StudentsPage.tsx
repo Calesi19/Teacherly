@@ -195,12 +195,11 @@ export function StudentsPage({
     }
   };
 
-  const bulkNoteTitle =
-    selectedStudents.length === 1
-      ? t("students.bulkNoteModal.titleSingular")
-      : t("students.bulkNoteModal.titlePlural", {
-          count: selectedStudents.length,
-        });
+  const genderLabels: Record<string, string> = {
+    Male: t("students.addStudentModal.male"),
+    Female: t("students.addStudentModal.female"),
+    Other: t("students.addStudentModal.other"),
+  };
 
   return (
     <TooltipProvider>
@@ -463,7 +462,9 @@ export function StudentsPage({
                     <SelectTrigger className="w-full">
                       <SelectValue
                         placeholder={t("students.addStudentModal.selectGender")}
-                      />
+                      >
+                        {form.gender ? genderLabels[form.gender] : undefined}
+                      </SelectValue>
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="Male">
