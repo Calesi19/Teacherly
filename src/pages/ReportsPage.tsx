@@ -725,7 +725,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
   return (
     <div className="flex h-full flex-col">
       <div className="flex min-h-0 flex-1">
-        <div className="flex w-88 shrink-0 flex-col overflow-y-auto border-r border-border pr-3">
+        <div className="flex w-88 shrink-0 flex-col overflow-y-auto border-r border-border px-3">
           <div className="shrink-0 px-3 pt-8">
             <h2 className="text-2xl font-bold">{t("reports.ui.title")}</h2>
           </div>
@@ -1102,19 +1102,20 @@ export function ReportsPage({ group }: ReportsPageProps) {
                             <span className="text-xs text-foreground/50">
                               {t("reports.ui.period")}
                             </span>
-                          <Select
-                            value={studentGradesPeriod || "__all__"}
-                            onValueChange={(value) =>
-                              setStudentGradesPeriod(
-                                value === "__all__" ? "" : (value ?? ""),
-                              )
-                            }
-                          >
-                            <SelectTrigger className="w-full">
-                              <SelectValue>
-                                {studentGradesPeriod || t("reports.ui.allPeriods")}
-                              </SelectValue>
-                            </SelectTrigger>
+                            <Select
+                              value={studentGradesPeriod || "__all__"}
+                              onValueChange={(value) =>
+                                setStudentGradesPeriod(
+                                  value === "__all__" ? "" : (value ?? ""),
+                                )
+                              }
+                            >
+                              <SelectTrigger className="w-full">
+                                <SelectValue>
+                                  {studentGradesPeriod ||
+                                    t("reports.ui.allPeriods")}
+                                </SelectValue>
+                              </SelectTrigger>
                               <SelectContent>
                                 <SelectItem value="__all__">
                                   {t("reports.ui.allPeriods")}
