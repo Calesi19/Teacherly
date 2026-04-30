@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Spinner, Label, Input } from "@heroui/react";
 import { useStudentServices } from "../hooks/useStudentServices";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { PageBackButton } from "../components/PageBackButton";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
@@ -43,7 +44,7 @@ function SelectCard({
       onClick={onToggle}
       className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all select-none ${
         selected
-          ? "border-accent bg-accent/10 text-accent"
+          ? "border-accent bg-accent text-accent-foreground"
           : "border-border bg-background text-foreground/60 hover:border-foreground/30 hover:text-foreground"
       }`}
     >
@@ -108,9 +109,15 @@ export function ServicesPage({
       />
 
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">{t("servicesPage.title")}</h2>
-          <p className="text-sm text-muted">{student.name}</p>
+        <div className="flex items-start gap-3">
+          <PageBackButton
+            label={t("common.back")}
+            onClick={onGoToStudentProfile}
+          />
+          <div>
+            <h2 className="text-2xl font-bold">{t("servicesPage.title")}</h2>
+            <p className="text-sm text-muted-foreground">{student.name}</p>
+          </div>
         </div>
         <Button variant="primary" size="sm" onPress={handleSave} isDisabled={submitting}>
           {submitting ? <Spinner size="sm" /> : t("common.save")}
@@ -128,7 +135,7 @@ export function ServicesPage({
       ) : (
         <div className="flex flex-col gap-8 max-w-2xl pb-10">
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("servicesPage.sectionSpecialEducation")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("servicesPage.sectionSpecialEducation")}</h3>
             <div className="flex flex-wrap gap-2">
               <SelectCard
                 label={t("servicesPage.hasSpecialEducation")}
@@ -139,7 +146,7 @@ export function ServicesPage({
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("servicesPage.sectionTherapies")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("servicesPage.sectionTherapies")}</h3>
             <div className="flex flex-wrap gap-2">
               <SelectCard
                 label={t("servicesPage.speechTherapy")}
@@ -170,7 +177,7 @@ export function ServicesPage({
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("servicesPage.sectionMedicalInsurance")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("servicesPage.sectionMedicalInsurance")}</h3>
             <div className="flex flex-wrap gap-2">
               {(["none", "private", "government"] as const).map((option) => (
                 <button
@@ -179,7 +186,7 @@ export function ServicesPage({
                   onClick={() => setForm((f) => ({ ...f, medical_plan: option }))}
                   className={`px-4 py-2.5 rounded-xl border text-sm font-medium transition-all select-none ${
                     form.medical_plan === option
-                      ? "border-accent bg-accent/10 text-accent"
+                      ? "border-accent bg-accent text-accent-foreground"
                       : "border-border bg-background text-foreground/60 hover:border-foreground/30 hover:text-foreground"
                   }`}
                 >
@@ -190,7 +197,7 @@ export function ServicesPage({
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("servicesPage.sectionTreatment")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("servicesPage.sectionTreatment")}</h3>
             <div className="flex flex-wrap gap-2">
               <SelectCard
                 label={t("servicesPage.hasTreatment")}
@@ -201,7 +208,7 @@ export function ServicesPage({
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("servicesPage.sectionAllergies")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("servicesPage.sectionAllergies")}</h3>
             <div className="flex flex-col gap-1.5">
               <Label htmlFor="allergies">{t("servicesPage.allergiesLabel")}</Label>
               <Input

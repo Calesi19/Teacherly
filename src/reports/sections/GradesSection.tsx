@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { StudentGradeRow } from "../fetchStudentReportData";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
+import { formatScore } from "../../lib/formatScore";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -137,7 +138,7 @@ export function GradesSection({ grades, periodFilter, language }: Props) {
               <View key={i} style={S.row}>
                 <Text style={[S.cellBold, S.colTitle]}>{g.assignmentTitle}</Text>
                 <Text style={[S.cellRight, S.colScore]}>
-                  {g.score !== null ? `${g.score}/${g.maxScore}` : "—"}
+                  {g.score !== null ? `${formatScore(g.score)} / ${formatScore(g.maxScore)}` : "—"}
                 </Text>
                 <Text style={[S.cellGrade, S.colGrade, gradeStyle(grade)]}>{grade}</Text>
               </View>

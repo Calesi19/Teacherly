@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { AssignmentReportData } from "../fetchGroupReportData";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
+import { formatScore, formatScorePercentage } from "../../lib/formatScore";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -136,7 +137,7 @@ export function GradeSummarySection({ assignments, periodFilter, language }: Pro
                 <View key={s.studentId} style={S.row}>
                   <Text style={S.cellName}>{s.studentName}</Text>
                   <Text style={S.cellScore}>
-                    {s.score !== null ? `${s.score} / ${a.maxScore}` : "—"}
+                    {s.score !== null ? `${formatScore(s.score)} / ${formatScore(a.maxScore)}` : "—"}
                   </Text>
                   <Text style={[S.cellGrade, gradeStyle(gl)]}>{gl}</Text>
                 </View>
@@ -147,7 +148,7 @@ export function GradeSummarySection({ assignments, periodFilter, language }: Pro
               <Text style={S.avgLabel}>{L.classAverage}</Text>
               <Text style={S.avgValue}>
                 {a.average !== null
-                  ? `${a.average.toFixed(1)} / ${a.maxScore} (${((a.average / a.maxScore) * 100).toFixed(1)}%)`
+                  ? `${formatScore(a.average)} / ${formatScore(a.maxScore)} (${formatScorePercentage(a.average, a.maxScore)}%)`
                   : L.noScores}
               </Text>
             </View>

@@ -15,10 +15,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { TabsContent } from "@/components/ui/tabs";
+import { formatScore, formatScorePercentage } from "@/lib/formatScore";
 import { useTranslation } from "../../i18n/LanguageContext";
 import type { StudentAssignmentPreview } from "../../types/assignment";
 import { LoadingSpinner, TableEmptyState } from "./shared";
 import { formatShortDate } from "./utils";
+
+function getScoreColorClass(score: number, maxScore: number) {
+  const percentage = Number(formatScorePercentage(score, maxScore));
+
+  if (percentage >= 90) return "text-success";
+  if (percentage >= 80) return "text-blue-600 dark:text-blue-300";
+  if (percentage >= 70) return "text-warning";
+  if (percentage >= 60) return "text-orange-600 dark:text-orange-300";
+  return "text-danger";
+}
 
 interface AssignmentsTabProps {
   assignments: StudentAssignmentPreview[];
@@ -116,17 +127,16 @@ export function AssignmentsTab({
                       <TableCell className="text-right text-sm">
                         {assignment.score !== null ? (
                           <span
-                            className={
-                              assignment.score > assignment.max_score
-                                ? "text-warning"
-                                : "text-foreground"
-                            }
+                            className={getScoreColorClass(
+                              assignment.score,
+                              assignment.max_score,
+                            )}
                           >
-                            {assignment.score}/{assignment.max_score}
+                            {formatScore(assignment.score)} / {formatScore(assignment.max_score)}
                           </span>
                         ) : (
                           <span className="text-foreground/30">
-                            —/{assignment.max_score}
+                            — / {formatScore(assignment.max_score)}
                           </span>
                         )}
                       </TableCell>

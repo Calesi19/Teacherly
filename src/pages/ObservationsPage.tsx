@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Spinner } from "@heroui/react";
 import { useStudentObservations } from "../hooks/useStudentObservations";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { PageBackButton } from "../components/PageBackButton";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
@@ -69,7 +70,7 @@ function SelectCard({
       onClick={onToggle}
       className={`px-3 py-2.5 rounded-xl border text-sm font-medium text-left transition-all select-none ${
         selected
-          ? "border-accent bg-accent/10 text-accent"
+          ? "border-accent bg-accent text-accent-foreground"
           : "border-border bg-background text-foreground/60 hover:border-foreground/30 hover:text-foreground"
       }`}
     >
@@ -163,9 +164,15 @@ export function ObservationsPage({
       />
 
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">{t("observationsPage.title")}</h2>
-          <p className="text-sm text-muted">{student.name}</p>
+        <div className="flex items-start gap-3">
+          <PageBackButton
+            label={t("common.back")}
+            onClick={onGoToStudentProfile}
+          />
+          <div>
+            <h2 className="text-2xl font-bold">{t("observationsPage.title")}</h2>
+            <p className="text-sm text-muted-foreground">{student.name}</p>
+          </div>
         </div>
         <Button variant="primary" size="sm" onPress={handleSave} isDisabled={submitting}>
           {submitting ? <Spinner size="sm" /> : t("common.save")}
@@ -183,7 +190,7 @@ export function ObservationsPage({
       ) : (
         <div className="flex flex-col gap-8 max-w-2xl pb-10">
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("observationsPage.sectionLearningDyslexia")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("observationsPage.sectionLearningDyslexia")}</h3>
             <div className="grid grid-cols-2 gap-2">
               <SelectCard label={t("studentProfile.observations.readingWriting")} selected={form.obs_reading_writing} onToggle={() => toggle("obs_reading_writing")} />
               <SelectCard label={t("studentProfile.observations.mirrorNumbers")} selected={form.obs_mirror_numbers} onToggle={() => toggle("obs_mirror_numbers")} />
@@ -193,7 +200,7 @@ export function ObservationsPage({
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("observationsPage.sectionAttentionHyperactivity")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("observationsPage.sectionAttentionHyperactivity")}</h3>
             <div className="grid grid-cols-2 gap-2">
               <SelectCard label={t("studentProfile.observations.disorganizedWork")} selected={form.obs_disorganized_work} onToggle={() => toggle("obs_disorganized_work")} />
               <SelectCard label={t("studentProfile.observations.inattentionDetail")} selected={form.obs_inattention_detail} onToggle={() => toggle("obs_inattention_detail")} />
@@ -216,7 +223,7 @@ export function ObservationsPage({
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("observationsPage.sectionSocialOppositional")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("observationsPage.sectionSocialOppositional")}</h3>
             <div className="grid grid-cols-2 gap-2">
               <SelectCard label={t("studentProfile.observations.easilyAngered")} selected={form.obs_easily_angered} onToggle={() => toggle("obs_easily_angered")} />
               <SelectCard label={t("studentProfile.observations.argues")} selected={form.obs_argues} onToggle={() => toggle("obs_argues")} />
@@ -230,7 +237,7 @@ export function ObservationsPage({
           </section>
 
           <section className="flex flex-col gap-3">
-            <h3 className="text-xs font-semibold text-muted uppercase tracking-wide">{t("observationsPage.sectionOtherIndicators")}</h3>
+            <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{t("observationsPage.sectionOtherIndicators")}</h3>
             <div className="grid grid-cols-2 gap-2">
               <SelectCard label={t("studentProfile.observations.incompleteHomework")} selected={form.obs_incomplete_homework} onToggle={() => toggle("obs_incomplete_homework")} />
               <SelectCard label={t("studentProfile.observations.frequentAbsences")} selected={form.obs_frequent_absences} onToggle={() => toggle("obs_frequent_absences")} />

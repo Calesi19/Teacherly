@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { Button, Spinner } from "@heroui/react";
 import { useStudentAccommodations } from "../hooks/useStudentAccommodations";
 import { Breadcrumb } from "../components/Breadcrumb";
+import { PageBackButton } from "../components/PageBackButton";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 import type { Student } from "../types/student";
@@ -41,13 +42,13 @@ function SelectCard({
       onClick={onToggle}
       className={`px-4 py-3 rounded-xl border text-left transition-all select-none flex flex-col gap-0.5 ${
         selected
-          ? "border-accent bg-accent/10 text-accent"
+          ? "border-accent bg-accent text-accent-foreground"
           : "border-border bg-background text-foreground/70 hover:border-foreground/30 hover:text-foreground"
       }`}
     >
       <span className="text-sm font-medium">{label}</span>
       {sublabel && (
-        <span className={`text-xs ${selected ? "text-accent/70" : "text-muted"}`}>{sublabel}</span>
+        <span className={`text-xs ${selected ? "text-accent-foreground/75" : "text-muted-foreground"}`}>{sublabel}</span>
       )}
     </button>
   );
@@ -105,9 +106,15 @@ export function AccommodationsPage({
       />
 
       <div className="flex items-center justify-between mb-6">
-        <div>
-          <h2 className="text-2xl font-bold">{t("accommodationsPage.title")}</h2>
-          <p className="text-sm text-muted">{student.name}</p>
+        <div className="flex items-start gap-3">
+          <PageBackButton
+            label={t("common.back")}
+            onClick={onGoToStudentProfile}
+          />
+          <div>
+            <h2 className="text-2xl font-bold">{t("accommodationsPage.title")}</h2>
+            <p className="text-sm text-muted-foreground">{student.name}</p>
+          </div>
         </div>
         <Button variant="primary" size="sm" onPress={handleSave} isDisabled={submitting}>
           {submitting ? <Spinner size="sm" /> : t("common.save")}
@@ -124,7 +131,7 @@ export function AccommodationsPage({
         </div>
       ) : (
         <div className="flex flex-col gap-4 max-w-2xl">
-          <p className="text-sm text-muted">{t("accommodationsPage.instruction")}</p>
+          <p className="text-sm text-muted-foreground">{t("accommodationsPage.instruction")}</p>
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
             <SelectCard
               label={t("accommodationsPage.deskPlacement")}

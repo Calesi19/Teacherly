@@ -21,6 +21,7 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
+import { formatScore, formatScorePercentage } from "@/lib/formatScore";
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "../components/Breadcrumb";
 import { ConfirmModal } from "../components/ConfirmModal";
@@ -252,7 +253,7 @@ export function AssignmentDetailPage({
                   {t("assignmentDetail.worth")}
                 </span>
                 <span className="text-2xl font-bold">
-                  {assignment.max_score}
+                  {formatScore(assignment.max_score)}
                   <span className="ml-1 text-sm font-normal text-muted-foreground">
                     {t("assignmentDetail.ptsMax")}
                   </span>
@@ -439,8 +440,9 @@ export function AssignmentDetailPage({
                               )}
                               {liveScore !== null && (
                                 <span className="text-sm text-muted-foreground">
-                                  {Math.round(
-                                    (liveScore / assignment.max_score) * 100,
+                                  {formatScorePercentage(
+                                    liveScore,
+                                    assignment.max_score,
                                   )}
                                   %
                                 </span>
@@ -464,7 +466,7 @@ export function AssignmentDetailPage({
                                 )}
                               />
                               <span className="w-12 shrink-0 text-xs text-muted-foreground">
-                                / {assignment.max_score}
+                                / {formatScore(assignment.max_score)}
                               </span>
                             </div>
                           </TableCell>

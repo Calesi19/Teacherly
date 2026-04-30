@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { StudentCourseSummary } from "../fetchStudentReportData";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
+import { formatScore, formatScorePercentage } from "../../lib/formatScore";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -91,10 +92,10 @@ export function StudentGradeSummarySection({ courses, language }: Props) {
             const grade = gradeLetter(c.totalScore, c.totalMax);
             const pct =
               c.totalScore !== null && c.totalMax > 0
-                ? `${((c.totalScore / c.totalMax) * 100).toFixed(1)}%`
+                ? `${formatScorePercentage(c.totalScore, c.totalMax)}%`
                 : "—";
             const scoreStr =
-              c.totalScore !== null ? `${c.totalScore}/${c.totalMax}` : "—";
+              c.totalScore !== null ? `${formatScore(c.totalScore)} / ${formatScore(c.totalMax)}` : "—";
             return (
               <View key={c.periodName} style={S.row}>
                 <Text style={S.cellCourse}>{c.periodName}</Text>

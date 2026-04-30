@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Ambulance, ShieldUser, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
+import { formatScore, formatScorePercentage } from "@/lib/formatScore";
 import { cn } from "@/lib/utils";
 import { useTranslation } from "../../i18n/LanguageContext";
 import type { Group } from "../../types/group";
@@ -373,8 +374,8 @@ export function OverviewTab({
             <div className="flex flex-col gap-4">
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {gradesByClass.map((classGrade) => {
-                  const percentage = Math.round(
-                    (classGrade.score / classGrade.maxScore) * 100,
+                  const percentage = Number(
+                    formatScorePercentage(classGrade.score, classGrade.maxScore),
                   );
 
                   return (
@@ -387,7 +388,7 @@ export function OverviewTab({
                           {classGrade.periodName}
                         </div>
                         <div className="text-xs opacity-75">
-                          {classGrade.score}/{classGrade.maxScore}
+                          {formatScore(classGrade.score)} / {formatScore(classGrade.maxScore)}
                         </div>
                       </div>
                       <div className="relative mx-auto aspect-[2/1] w-full max-w-[180px]">
@@ -420,7 +421,7 @@ export function OverviewTab({
                             textAnchor="middle"
                             className="fill-current text-xl font-bold"
                           >
-                            {percentage}%
+                            {formatScore(percentage)}%
                           </text>
                         </svg>
                       </div>
@@ -544,171 +545,173 @@ export function OverviewTab({
           </SectionCard>
         </div>
 
-        <SectionCard className="flex flex-col gap-3">
-          <SectionHeader
-            title={t("studentProfile.overview.health")}
-            onEdit={onGoToServices}
-            ariaLabel="Edit health"
-            editLabel={t("common.edit")}
-          />
-          {loadingServices ? (
-            <LoadingSpinner />
-          ) : !hasHealthContent ? (
-            <p className="text-sm text-foreground/40">
-              {t("studentProfile.overview.noHealth")}
-            </p>
-          ) : (
-            <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
-              {services?.has_special_education ? (
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("studentProfile.health.specialEducation")}
-                  </span>
-                  <span className="text-sm font-medium text-foreground">
-                    {t("studentProfile.health.yes")}
-                  </span>
-                </div>
-              ) : null}
-              {therapyLabels.length > 0 ? (
-                <div className="flex flex-col gap-1">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("studentProfile.health.attendsTherapy")}
-                  </span>
-                  <div className="flex flex-wrap gap-1">
-                    {therapyLabels.map((label) => (
-                      <Badge key={label} variant="secondary">
-                        {label}
-                      </Badge>
-                    ))}
+        <SectionCard className="flex flex-col divide-y divide-border/60">
+          <section className="pb-5">
+            <SectionHeader
+              title={t("studentProfile.overview.health")}
+              onEdit={onGoToServices}
+              ariaLabel="Edit health"
+              editLabel={t("common.edit")}
+            />
+            {loadingServices ? (
+              <LoadingSpinner />
+            ) : !hasHealthContent ? (
+              <p className="text-sm text-foreground/40">
+                {t("studentProfile.overview.noHealth")}
+              </p>
+            ) : (
+              <div className="grid grid-cols-1 gap-x-6 gap-y-3 sm:grid-cols-2">
+                {services?.has_special_education ? (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("studentProfile.health.specialEducation")}
+                    </span>
+                    <span className="text-sm font-medium text-foreground">
+                      {t("studentProfile.health.yes")}
+                    </span>
                   </div>
-                </div>
-              ) : null}
-              {services && services.medical_plan !== "none" ? (
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("studentProfile.health.medicalInsurance")}
-                  </span>
-                  <span className="text-sm font-medium text-foreground">
-                    {services.medical_plan === "private"
-                      ? t("servicesPage.medicalPrivate")
-                      : t("servicesPage.medicalGovernment")}
-                  </span>
-                </div>
-              ) : null}
-              {services?.has_treatment ? (
-                <div className="flex flex-col gap-0.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("studentProfile.health.medicalTreatment")}
-                  </span>
-                  <span className="text-sm font-medium text-foreground">
-                    {t("studentProfile.health.active")}
-                  </span>
-                </div>
-              ) : null}
-              {services?.allergies ? (
-                <div className="flex flex-col gap-0.5 sm:col-span-2">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("studentProfile.health.allergies")}
-                  </span>
-                  <span className="text-sm font-medium text-foreground">
-                    {services.allergies}
-                  </span>
-                </div>
-              ) : null}
-              {services?.conditions ? (
-                <div className="flex flex-col gap-0.5 sm:col-span-2">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {t("servicesPage.conditionsLabel")}
-                  </span>
-                  <span className="text-sm font-medium text-foreground">
-                    {services.conditions}
-                  </span>
-                </div>
-              ) : null}
-            </div>
-          )}
-        </SectionCard>
-
-        <SectionCard className="flex flex-col gap-3">
-          <SectionHeader
-            title={t("studentProfile.overview.accommodations")}
-            onEdit={onGoToAccommodations}
-            ariaLabel="Edit accommodations"
-            editLabel={t("common.edit")}
-          />
-          {loadingAccommodations ? (
-            <LoadingSpinner />
-          ) : !hasAccommodationContent ? (
-            <p className="text-sm text-foreground/40">
-              {t("studentProfile.overview.noAccommodations")}
-            </p>
-          ) : (
-            <div className="flex flex-wrap gap-1.5">
-              {accommodations?.desk_placement ? (
-                <Badge variant="secondary">
-                  {t("studentProfile.accommodations.deskPlacement")}
-                </Badge>
-              ) : null}
-              {accommodations?.extended_time ? (
-                <Badge variant="secondary">
-                  {t("studentProfile.accommodations.extendedTime")}
-                </Badge>
-              ) : null}
-              {accommodations?.shorter_assignments ? (
-                <Badge variant="secondary">
-                  {t("studentProfile.accommodations.shorterAssignments")}
-                </Badge>
-              ) : null}
-              {accommodations?.use_abacus ? (
-                <Badge variant="secondary">
-                  {t("studentProfile.accommodations.abacus")}
-                </Badge>
-              ) : null}
-              {accommodations?.simple_instructions ? (
-                <Badge variant="secondary">
-                  {t("studentProfile.accommodations.simpleInstructions")}
-                </Badge>
-              ) : null}
-              {accommodations?.visual_examples ? (
-                <Badge variant="secondary">
-                  {t("studentProfile.accommodations.visualExamples")}
-                </Badge>
-              ) : null}
-            </div>
-          )}
-        </SectionCard>
-
-        <SectionCard className="flex flex-col gap-3">
-          <SectionHeader
-            title={t("studentProfile.overview.observations")}
-            onEdit={onGoToObservations}
-            ariaLabel="Edit observations"
-            editLabel={t("common.edit")}
-          />
-          {loadingObservations ? (
-            <LoadingSpinner />
-          ) : observationGroups.length === 0 ? (
-            <p className="text-sm text-foreground/40">
-              {t("studentProfile.overview.noObservations")}
-            </p>
-          ) : (
-            <div className="flex flex-col gap-3">
-              {observationGroups.map((groupItem) => (
-                <div key={groupItem.label} className="flex flex-col gap-1.5">
-                  <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-                    {groupItem.label}
-                  </span>
-                  <div className="flex flex-wrap gap-1.5">
-                    {groupItem.items.map((item) => (
-                      <Badge key={item} variant="secondary">
-                        {item}
-                      </Badge>
-                    ))}
+                ) : null}
+                {therapyLabels.length > 0 ? (
+                  <div className="flex flex-col gap-1">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("studentProfile.health.attendsTherapy")}
+                    </span>
+                    <div className="flex flex-wrap gap-1">
+                      {therapyLabels.map((label) => (
+                        <Badge key={label} variant="secondary">
+                          {label}
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ) : null}
+                {services && services.medical_plan !== "none" ? (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("studentProfile.health.medicalInsurance")}
+                    </span>
+                    <span className="text-sm font-medium text-foreground">
+                      {services.medical_plan === "private"
+                        ? t("servicesPage.medicalPrivate")
+                        : t("servicesPage.medicalGovernment")}
+                    </span>
+                  </div>
+                ) : null}
+                {services?.has_treatment ? (
+                  <div className="flex flex-col gap-0.5">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("studentProfile.health.medicalTreatment")}
+                    </span>
+                    <span className="text-sm font-medium text-foreground">
+                      {t("studentProfile.health.active")}
+                    </span>
+                  </div>
+                ) : null}
+                {services?.allergies ? (
+                  <div className="flex flex-col gap-0.5 sm:col-span-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("studentProfile.health.allergies")}
+                    </span>
+                    <span className="text-sm font-medium text-foreground">
+                      {services.allergies}
+                    </span>
+                  </div>
+                ) : null}
+                {services?.conditions ? (
+                  <div className="flex flex-col gap-0.5 sm:col-span-2">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t("servicesPage.conditionsLabel")}
+                    </span>
+                    <span className="text-sm font-medium text-foreground">
+                      {services.conditions}
+                    </span>
+                  </div>
+                ) : null}
+              </div>
+            )}
+          </section>
+
+          <section className="py-5">
+            <SectionHeader
+              title={t("studentProfile.overview.accommodations")}
+              onEdit={onGoToAccommodations}
+              ariaLabel="Edit accommodations"
+              editLabel={t("common.edit")}
+            />
+            {loadingAccommodations ? (
+              <LoadingSpinner />
+            ) : !hasAccommodationContent ? (
+              <p className="text-sm text-foreground/40">
+                {t("studentProfile.overview.noAccommodations")}
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-1.5">
+                {accommodations?.desk_placement ? (
+                  <Badge variant="secondary">
+                    {t("studentProfile.accommodations.deskPlacement")}
+                  </Badge>
+                ) : null}
+                {accommodations?.extended_time ? (
+                  <Badge variant="secondary">
+                    {t("studentProfile.accommodations.extendedTime")}
+                  </Badge>
+                ) : null}
+                {accommodations?.shorter_assignments ? (
+                  <Badge variant="secondary">
+                    {t("studentProfile.accommodations.shorterAssignments")}
+                  </Badge>
+                ) : null}
+                {accommodations?.use_abacus ? (
+                  <Badge variant="secondary">
+                    {t("studentProfile.accommodations.abacus")}
+                  </Badge>
+                ) : null}
+                {accommodations?.simple_instructions ? (
+                  <Badge variant="secondary">
+                    {t("studentProfile.accommodations.simpleInstructions")}
+                  </Badge>
+                ) : null}
+                {accommodations?.visual_examples ? (
+                  <Badge variant="secondary">
+                    {t("studentProfile.accommodations.visualExamples")}
+                  </Badge>
+                ) : null}
+              </div>
+            )}
+          </section>
+
+          <section className="pt-5">
+            <SectionHeader
+              title={t("studentProfile.overview.observations")}
+              onEdit={onGoToObservations}
+              ariaLabel="Edit observations"
+              editLabel={t("common.edit")}
+            />
+            {loadingObservations ? (
+              <LoadingSpinner />
+            ) : observationGroups.length === 0 ? (
+              <p className="text-sm text-foreground/40">
+                {t("studentProfile.overview.noObservations")}
+              </p>
+            ) : (
+              <div className="flex flex-col gap-3">
+                {observationGroups.map((groupItem) => (
+                  <div key={groupItem.label} className="flex flex-col gap-1.5">
+                    <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                      {groupItem.label}
+                    </span>
+                    <div className="flex flex-wrap gap-1.5">
+                      {groupItem.items.map((item) => (
+                        <Badge key={item} variant="secondary">
+                          {item}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
         </SectionCard>
       </div>
     </TabsContent>

@@ -21,6 +21,7 @@ import { ConfirmModal } from "../components/ConfirmModal";
 import { AddAssignmentModal } from "../components/AddAssignmentModal";
 import { useAssignments } from "../hooks/useAssignments";
 import { useTranslation } from "../i18n/LanguageContext";
+import { formatScore } from "../lib/formatScore";
 import type { Group } from "../types/group";
 import type { Assignment, AssignmentTag } from "../types/assignment";
 
@@ -289,7 +290,7 @@ export function AssignmentsPage({
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
-                        {assignment.max_score} {t("assignments.pts")}
+                        {formatScore(assignment.max_score)} {t("assignments.pts")}
                       </TableCell>
                       <TableCell
                         className={`text-sm ${getGradedStatusClass(assignment.graded_count, assignment.student_count, assignment.created_at)}`}
