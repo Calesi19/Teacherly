@@ -277,7 +277,7 @@ export function AttendanceDaySection({
         </div>
 
         <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
-          <div className="shrink-0 border-b border-border/45 bg-[color:color-mix(in_srgb,var(--success)_8%,var(--background)_92%)]">
+          <div className="shrink-0 border-b border-border/45 bg-[color:var(--table-header)]">
             <table className="w-full table-fixed text-sm">
               <colgroup>
                 <col className="w-10" />

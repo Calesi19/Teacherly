@@ -74,6 +74,66 @@ function formatBirthdate(birthdate: string | null): string {
   })} (${age})`;
 }
 
+function MarsIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="10" cy="14" r="5" />
+      <path d="m14 10 6-6" />
+      <path d="M15 4h5v5" />
+    </svg>
+  );
+}
+
+function VenusIcon({ className }: { className?: string }) {
+  return (
+    <svg
+      className={className}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="8" r="5" />
+      <path d="M12 13v8" />
+      <path d="M9 18h6" />
+    </svg>
+  );
+}
+
+function getGenderIcon(gender: string | null) {
+  const normalized = gender?.trim().toLowerCase();
+
+  if (normalized === "male" || normalized === "masculino") {
+    return {
+      Icon: MarsIcon,
+      className: "bg-blue-500/10 text-blue-600 dark:text-blue-300",
+      labelKey: "students.addStudentModal.male",
+    };
+  }
+
+  if (normalized === "female" || normalized === "femenino") {
+    return {
+      Icon: VenusIcon,
+      className: "bg-pink-500/10 text-pink-600 dark:text-pink-300",
+      labelKey: "students.addStudentModal.female",
+    };
+  }
+
+  return null;
+}
+
 interface StudentsPageProps {
   group: Group;
   onGoToGroups: () => void;
@@ -282,7 +342,7 @@ export function StudentsPage({
         <div className="flex min-h-0 flex-1 flex-col">
           {!loading && !error && (
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
-              <div className="shrink-0 border-b border-border/45 bg-[color:color-mix(in_srgb,var(--success)_8%,var(--background)_92%)]">
+              <div className="shrink-0 border-b border-border/45 bg-[color:var(--table-header)]">
                 <table className="w-full table-fixed text-sm">
                   <colgroup>
                     <col className="w-10" />
@@ -307,9 +367,10 @@ export function StudentsPage({
                       <TableHead className="text-foreground/70">
                         {t("students.tableColumns.name")}
                       </TableHead>
-                      <TableHead className="text-foreground/70">
-                        {t("students.tableColumns.gender")}
-                      </TableHead>
+                      <TableHead
+                        className="text-foreground/70"
+                        aria-label={t("students.tableColumns.gender")}
+                      />
                       <TableHead className="text-foreground/70">
                         {t("students.tableColumns.birthdate")}
                       </TableHead>
@@ -359,8 +420,33 @@ export function StudentsPage({
                         <TableCell className="font-medium">
                           {student.name}
                         </TableCell>
-                        <TableCell className="text-sm text-foreground/50">
-                          {student.gender || "—"}
+                        <TableCell>
+                          {(() => {
+                            const genderIcon = getGenderIcon(student.gender);
+
+                            if (!genderIcon) {
+                              return (
+                                <span className="text-sm text-foreground/30">
+                                  —
+                                </span>
+                              );
+                            }
+
+                            const Icon = genderIcon.Icon;
+
+                            return (
+                              <span
+                                className={cn(
+                                  "inline-flex size-7 items-center justify-center rounded-md",
+                                  genderIcon.className,
+                                )}
+                                title={t(genderIcon.labelKey)}
+                                aria-label={t(genderIcon.labelKey)}
+                              >
+                                <Icon className="size-4" />
+                              </span>
+                            );
+                          })()}
                         </TableCell>
                         <TableCell className="text-sm text-foreground/50">
                           {formatBirthdate(student.birthdate)}

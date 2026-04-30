@@ -217,7 +217,7 @@ export function CommandPalette({
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        className="w-full max-w-2xl overflow-hidden rounded-[28px] border border-black/5 bg-neutral-100 text-foreground shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-white/8 dark:bg-neutral-900"
+        className="w-full max-w-2xl overflow-hidden rounded-xl border border-black/5 bg-neutral-100 text-foreground shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-white/8 dark:bg-neutral-900"
         onKeyDown={handleKeyDown}
       >
         <h2 id={headingId} className="sr-only">
@@ -228,7 +228,7 @@ export function CommandPalette({
           <label htmlFor="command-palette-search" className="sr-only">
             {t("commandPalette.searchLabel")}
           </label>
-          <div className="flex items-center gap-3 rounded-2xl bg-neutral-200 px-4 py-3 dark:bg-neutral-800">
+          <div className="flex items-center gap-3 rounded-lg bg-neutral-200 px-4 py-3 dark:bg-neutral-800">
             <Search size={18} className="text-neutral-500 dark:text-neutral-400" />
             <input
               id="command-palette-search"
@@ -254,7 +254,7 @@ export function CommandPalette({
         <div className="max-h-[30rem] overflow-y-auto px-3 py-3">
           {!query.trim() ? (
             recentItems.length === 0 ? (
-              <div className="flex min-h-44 flex-col items-center justify-center rounded-[22px] bg-neutral-200/80 px-6 text-center dark:bg-neutral-800/80">
+              <div className="flex min-h-44 flex-col items-center justify-center rounded-lg bg-neutral-200/80 px-6 text-center dark:bg-neutral-800/80">
                 <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                   {t("commandPalette.emptyState")}
                 </p>
@@ -264,7 +264,7 @@ export function CommandPalette({
               </div>
             ) : (
               <div>
-                <div className="mb-3 rounded-[22px] bg-neutral-200/80 px-4 py-3 dark:bg-neutral-800/80">
+                <div className="mb-3 rounded-lg bg-neutral-200/80 px-4 py-3 dark:bg-neutral-800/80">
                   <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                     {t("commandPalette.emptyState")}
                   </p>
@@ -337,7 +337,7 @@ export function CommandPalette({
               </div>
             )
           ) : query.trim() && filteredItems.length === 0 ? (
-            <div className="flex min-h-44 flex-col items-center justify-center rounded-[22px] bg-neutral-200/80 px-6 text-center dark:bg-neutral-800/80">
+            <div className="flex min-h-44 flex-col items-center justify-center rounded-lg bg-neutral-200/80 px-6 text-center dark:bg-neutral-800/80">
               <p className="text-sm font-medium text-neutral-900 dark:text-neutral-100">
                 {t("commandPalette.noResults")}
               </p>

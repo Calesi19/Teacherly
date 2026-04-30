@@ -45,7 +45,7 @@
   --chart-3: #f5c88b;
   --chart-4: #c8b6ff;
   --chart-5: #f4a7b9;
-  --radius: 0.875rem;
+  --radius: 0.5rem;
   --sidebar: #f3fbfb;
   --sidebar-foreground: #334155;
   --sidebar-primary: #86c8f6;
@@ -55,6 +55,7 @@
   --sidebar-border: rgba(152, 206, 223, 0.42);
   --sidebar-ring: #9ad2ef;
   --surface: rgba(255, 253, 251, 0.78);
+  --table-header: color-mix(in srgb, var(--success) 8%, var(--background) 92%);
 }
 
 :root[data-font-size="regular"] {
@@ -115,7 +116,7 @@ body,
 .app-container {
   background-color: var(--app-background);
   border: 1px solid color-mix(in srgb, var(--border) 88%, transparent);
-  border-radius: 24px;
+  border-radius: 12px;
   overflow: hidden;
   height: 100%;
   width: 100%;
@@ -229,6 +230,7 @@ body,
   --sidebar-border: rgba(196, 228, 240, 0.14);
   --sidebar-ring: #7db8de;
   --surface: rgba(40, 59, 69, 0.72);
+  --table-header: color-mix(in srgb, var(--success) 8%, var(--background) 92%);
 }
 
 :root[data-color-theme="classic"] {
@@ -271,6 +273,7 @@ body,
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --surface: rgba(255, 255, 255, 0.78);
+  --table-header: color-mix(in srgb, var(--foreground) 4%, var(--background) 96%);
 }
 
 .dark[data-color-theme="classic"] {
@@ -313,6 +316,7 @@ body,
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
   --surface: rgba(39, 39, 42, 0.74);
+  --table-header: color-mix(in srgb, var(--foreground) 7%, var(--background) 93%);
 }
 
 :root[data-color-theme="warm"] {

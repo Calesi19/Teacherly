@@ -96,7 +96,7 @@ export function AssignmentsTab({
                     <TableHead>
                       {t("studentProfile.assignments.columns.period")}
                     </TableHead>
-                    <TableHead>
+                    <TableHead className="text-right">
                       {t("studentProfile.assignments.columns.score")}
                     </TableHead>
                     <TableHead>
@@ -113,7 +113,7 @@ export function AssignmentsTab({
                       <TableCell className="text-sm text-foreground/50">
                         {assignment.period_name}
                       </TableCell>
-                      <TableCell className="text-sm">
+                      <TableCell className="text-right text-sm">
                         {assignment.score !== null ? (
                           <span
                             className={
@@ -122,14 +122,13 @@ export function AssignmentsTab({
                                 : "text-foreground"
                             }
                           >
-                            {assignment.score}
+                            {assignment.score}/{assignment.max_score}
                           </span>
                         ) : (
-                          <span className="text-foreground/30">—</span>
+                          <span className="text-foreground/30">
+                            —/{assignment.max_score}
+                          </span>
                         )}
-                        <span className="ml-0.5 text-xs text-muted">
-                          / {assignment.max_score}
-                        </span>
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-foreground/50">
                         {formatShortDate(assignment.created_at)}
