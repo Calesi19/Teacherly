@@ -820,7 +820,7 @@ body,
 }
 
 :root[data-color-theme="storybook"] {
-  --app-background: #f7f2eb;
+  --app-background: #faf7f2;
   --background: #fffffe;
   --foreground: #473841;
   --card: #fffffe;

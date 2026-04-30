@@ -6,8 +6,8 @@ import {
   BookOpen,
   ClipboardCheck,
   FileText,
-  School,
   Settings,
+  UserGroupIcon,
   Users,
 } from "../lib/lucide-compat";
 import { useTranslation } from "../i18n/LanguageContext";
@@ -65,7 +65,7 @@ export function Sidebar({
       {
         id: "group",
         label: t("sidebar.group"),
-        icon: School,
+        icon: UserGroupIcon,
         active: currentPage === "group",
         onClick: nav(onGoToGroup),
         disabled: !currentGroup,
@@ -143,11 +143,11 @@ export function Sidebar({
   );
 
   return (
-    <aside className="h-screen p-3">
+    <aside className="h-screen">
       <motion.div
         animate={{ width: 248 }}
         transition={{ type: "spring", bounce: 0.28, duration: 0.75 }}
-        className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[color:var(--sidebar-border)] bg-[color:var(--sidebar)] p-2 text-foreground shadow-sm transition-colors duration-300 ease-out"
+        className="relative flex h-full flex-col overflow-hidden border-r border-[color:var(--sidebar-border)] bg-[color:var(--sidebar)] p-2 text-foreground transition-colors duration-300 ease-out"
       >
         <motion.div
           transition={{ duration: 0.35 }}
