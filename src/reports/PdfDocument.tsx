@@ -91,7 +91,6 @@ export function PdfDocument({
               <Text style={styles.headerSub}>{subtitle}</Text>
             ) : null}
           </View>
-          <Text style={styles.headerApp}>{APP_NAME}</Text>
         </View>
 
         <View style={styles.content}>{children}</View>
