@@ -66,7 +66,11 @@ export function AssignmentsTab({
                 <SelectTrigger className="w-44">
                   <SelectValue
                     placeholder={t("studentProfile.assignments.allPeriods")}
-                  />
+                  >
+                    {assignmentPeriodFilter === "all"
+                      ? t("studentProfile.assignments.allPeriods")
+                      : assignmentPeriodFilter}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">

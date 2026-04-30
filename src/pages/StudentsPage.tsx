@@ -195,6 +195,13 @@ export function StudentsPage({
     }
   };
 
+  const bulkNoteTitle =
+    selectedStudents.length === 1
+      ? t("students.bulkNoteModal.titleSingular")
+      : t("students.bulkNoteModal.titlePlural", {
+          count: selectedStudents.length,
+        });
+
   const genderLabels: Record<string, string> = {
     Male: t("students.addStudentModal.male"),
     Female: t("students.addStudentModal.female"),

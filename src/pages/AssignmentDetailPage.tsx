@@ -278,19 +278,19 @@ export function AssignmentDetailPage({
               <div className="shrink-0 border-b border-border/45 bg-[color:color-mix(in_srgb,var(--success)_8%,var(--background)_92%)]">
                 <table className="w-full table-fixed text-sm">
                   <colgroup>
-                    <col className="w-8" />
+                    <col className="w-12" />
                     <col />
                     <col className="w-32" />
                     <col className="w-72" />
                   </colgroup>
                   <thead>
                     <TableRow>
-                      <TableHead className="w-8" />
+                      <TableHead className="w-12" />
                       <TableHead className="text-foreground/70">
                         {t("students.tableColumns.name")}
                       </TableHead>
                       <TableHead className="text-foreground/70" />
-                      <TableHead className="text-right text-foreground/70">
+                      <TableHead className="text-right text-foreground/70 pr-14">
                         {t("assignmentDetail.scoreColumn")}
                       </TableHead>
                     </TableRow>
@@ -300,7 +300,7 @@ export function AssignmentDetailPage({
               <div className="min-h-0 flex-1 overflow-auto">
                 <table className="w-full table-fixed text-sm">
                   <colgroup>
-                    <col className="w-8" />
+                    <col className="w-12" />
                     <col />
                     <col className="w-32" />
                     <col className="w-72" />

@@ -83,7 +83,12 @@ export function VisitationDialog({
                 <SelectTrigger className="w-full">
                   <SelectValue
                     placeholder={t("studentProfile.logVisitationModal.selectVisitor")}
-                  />
+                  >
+                    {selectedVisitorKey === "new"
+                      ? t("studentProfile.logVisitationModal.newVisitor")
+                      : contacts.find((c) => String(c.id) === selectedVisitorKey)
+                          ?.name}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {contacts.map((contact) => (
