@@ -285,9 +285,9 @@ export function StudentsPage({
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
               <div className="min-h-0 flex-1 overflow-auto">
                 <Table>
-                  <TableHeader>
+                  <TableHeader className="[&_tr]:bg-[color:color-mix(in_srgb,var(--accent)_10%,var(--background)_90%)]">
                     <TableRow>
-                      <TableHead className="w-10 pr-0">
+                      <TableHead className="w-10 pr-0 text-accent">
                         <Checkbox
                           aria-label="Select all"
                           checked={allFilteredSelected}
@@ -297,13 +297,13 @@ export function StudentsPage({
                           disabled={filtered.length === 0}
                         />
                       </TableHead>
-                      <TableHead>{t("students.tableColumns.name")}</TableHead>
-                      <TableHead>{t("students.tableColumns.gender")}</TableHead>
-                      <TableHead>
+                      <TableHead className="text-accent">{t("students.tableColumns.name")}</TableHead>
+                      <TableHead className="text-accent">{t("students.tableColumns.gender")}</TableHead>
+                      <TableHead className="text-accent">
                         {t("students.tableColumns.birthdate")}
                       </TableHead>
-                      <TableHead />
-                      <TableHead>
+                      <TableHead className="text-accent" />
+                      <TableHead className="text-accent">
                         {t("students.tableColumns.studentId")}
                       </TableHead>
                     </TableRow>
