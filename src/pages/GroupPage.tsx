@@ -115,7 +115,8 @@ function buildUpcomingBirthdays(students: Student[]) {
         nextBirthday.setFullYear(today.getFullYear() + 1);
       }
 
-      const currentAge = nextBirthday.getFullYear() - birthdate.getFullYear() - 1;
+      const currentAge =
+        nextBirthday.getFullYear() - birthdate.getFullYear() - 1;
       const turningAge = currentAge + 1;
 
       return {
@@ -136,12 +137,16 @@ export function GroupPage({
   onGoToSchedule,
 }: GroupPageProps) {
   const { t, language } = useTranslation();
-  const { periods, loading: loadingSchedule, error: scheduleError } = useSchedule(
-    group.id,
-  );
-  const { students, loading: loadingStudents, error: studentsError } = useStudents(
-    group.id,
-  );
+  const {
+    periods,
+    loading: loadingSchedule,
+    error: scheduleError,
+  } = useSchedule(group.id);
+  const {
+    students,
+    loading: loadingStudents,
+    error: studentsError,
+  } = useStudents(group.id);
 
   const locale = getLocale(language);
   const courseSummaries = buildCourseSummaries(periods);
@@ -165,12 +170,14 @@ export function GroupPage({
                 <p className="text-sm font-medium text-accent">
                   {t("groups.overview.kicker")}
                 </p>
-                <h2 className="text-3xl font-bold tracking-tight">{group.name}</h2>
+                <h2 className="text-3xl font-bold tracking-tight">
+                  {group.name}
+                </h2>
               </div>
 
               <div className="flex flex-wrap gap-2 text-sm text-foreground/70">
                 {group.school_name ? (
-                  <span className="rounded-full bg-background/70 px-3 py-1">
+                  <span className="rounded-full bg-background/70 pr-3 py-1">
                     {group.school_name}
                   </span>
                 ) : null}
@@ -188,13 +195,15 @@ export function GroupPage({
             </div>
 
             <div className="flex flex-col items-start gap-3 lg:items-end">
-              <div className="rounded-2xl border border-border/60 bg-background/75 px-4 py-3 text-left">
+              <div className="rounded-2xl bg-background/75 px-4 py-3 text-right">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
                   {t("groups.overview.studentCount")}
                 </p>
                 <p className="text-2xl font-bold">{group.student_count}</p>
               </div>
-              <Button onClick={onGoToEditGroup}>{t("dashboard.editGroup")}</Button>
+              <Button onClick={onGoToEditGroup}>
+                {t("dashboard.editGroup")}
+              </Button>
             </div>
           </div>
         </SectionCard>
@@ -242,7 +251,9 @@ export function GroupPage({
                   <div className="text-sm text-foreground/60 sm:text-right">
                     <p>{`${course.firstStart} - ${course.lastEnd}`}</p>
                     <p>
-                      {t("groups.overview.courseMeetings", { count: course.count })}
+                      {t("groups.overview.courseMeetings", {
+                        count: course.count,
+                      })}
                     </p>
                   </div>
                 </div>
@@ -273,25 +284,27 @@ export function GroupPage({
             </div>
           ) : (
             <div className="space-y-2">
-              {upcomingBirthdays.map(({ student, nextBirthday, turningAge }) => (
-                <div
-                  key={student.id}
-                  className="flex items-center justify-between gap-4 rounded-xl border border-border/50 px-4 py-3"
-                >
-                  <div>
-                    <p className="font-medium">{student.name}</p>
-                    <p className="text-sm text-foreground/55">
-                      {nextBirthday.toLocaleDateString(locale, {
-                        month: "long",
-                        day: "numeric",
-                      })}
-                    </p>
+              {upcomingBirthdays.map(
+                ({ student, nextBirthday, turningAge }) => (
+                  <div
+                    key={student.id}
+                    className="flex items-center justify-between gap-4 rounded-xl border border-border/50 px-4 py-3"
+                  >
+                    <div>
+                      <p className="font-medium">{student.name}</p>
+                      <p className="text-sm text-foreground/55">
+                        {nextBirthday.toLocaleDateString(locale, {
+                          month: "long",
+                          day: "numeric",
+                        })}
+                      </p>
+                    </div>
+                    <div className="text-sm text-foreground/60">
+                      {t("groups.overview.turningAge", { age: turningAge })}
+                    </div>
                   </div>
-                  <div className="text-sm text-foreground/60">
-                    {t("groups.overview.turningAge", { age: turningAge })}
-                  </div>
-                </div>
-              ))}
+                ),
+              )}
             </div>
           )}
         </SectionCard>
