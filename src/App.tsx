@@ -83,8 +83,10 @@ type ColorTheme =
   | "confetti"
   | "seaside"
   | "storybook";
+type FontSizePreference = "regular" | "large" | "extra-large";
 const THEME_KEY = "app-theme";
 const COLOR_THEME_KEY = "app-color-theme";
+const FONT_SIZE_KEY = "app-font-size";
 
 migrateLegacyAppStorage();
 
@@ -109,6 +111,11 @@ function useAppTheme() {
     ) return s;
     return "pastel";
   });
+  const [fontSize, setFontSizeState] = useState<FontSizePreference>(() => {
+    const s = localStorage.getItem(FONT_SIZE_KEY);
+    if (s === "regular" || s === "large" || s === "extra-large") return s;
+    return "regular";
+  });
 
   const apply = useCallback((pref: ThemePreference) => {
     const resolved =
@@ -124,6 +131,10 @@ function useAppTheme() {
 
   const applyColorTheme = useCallback((palette: ColorTheme) => {
     document.documentElement.setAttribute("data-color-theme", palette);
+  }, []);
+
+  const applyFontSize = useCallback((size: FontSizePreference) => {
+    document.documentElement.setAttribute("data-font-size", size);
   }, []);
 
   const setTheme = useCallback(
@@ -144,9 +155,19 @@ function useAppTheme() {
     [applyColorTheme],
   );
 
+  const setFontSize = useCallback(
+    (size: FontSizePreference) => {
+      localStorage.setItem(FONT_SIZE_KEY, size);
+      setFontSizeState(size);
+      applyFontSize(size);
+    },
+    [applyFontSize],
+  );
+
   useLayoutEffect(() => {
     apply(theme);
     applyColorTheme(colorTheme);
+    applyFontSize(fontSize);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -157,7 +178,7 @@ function useAppTheme() {
     return () => media.removeEventListener("change", handler);
   }, [theme, apply]);
 
-  return { theme, setTheme, colorTheme, setColorTheme };
+  return { theme, setTheme, colorTheme, setColorTheme, fontSize, setFontSize };
 }
 
 type Route =
@@ -194,7 +215,8 @@ function App() {
 function AppContent() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { t } = useTranslation();
-  const { theme, setTheme, colorTheme, setColorTheme } = useAppTheme();
+  const { theme, setTheme, colorTheme, setColorTheme, fontSize, setFontSize } =
+    useAppTheme();
   const [route, setRoute] = useState<Route>({ page: "groups" });
   const [assignmentDetailDirty, setAssignmentDetailDirty] = useState(false);
   const [pendingSidebarNav, setPendingSidebarNav] = useState<(() => void) | null>(null);
@@ -734,6 +756,8 @@ function AppContent() {
             onThemeChange={setTheme}
             colorTheme={colorTheme}
             onColorThemeChange={setColorTheme}
+            fontSize={fontSize}
+            onFontSizeChange={setFontSize}
             onGoToTermsOfService={goToTermsOfService}
             onGoToPrivacyPolicy={goToPrivacyPolicy}
           />

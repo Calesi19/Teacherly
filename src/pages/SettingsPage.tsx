@@ -28,12 +28,15 @@ type ColorTheme =
   | "confetti"
   | "seaside"
   | "storybook";
+type FontSizePreference = "regular" | "large" | "extra-large";
 
 interface SettingsPageProps {
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
   colorTheme: ColorTheme;
   onColorThemeChange: (theme: ColorTheme) => void;
+  fontSize: FontSizePreference;
+  onFontSizeChange: (size: FontSizePreference) => void;
   onGoToTermsOfService: () => void;
   onGoToPrivacyPolicy: () => void;
 }
@@ -57,6 +60,8 @@ export function SettingsPage({
   onThemeChange,
   colorTheme,
   onColorThemeChange,
+  fontSize,
+  onFontSizeChange,
   onGoToTermsOfService,
   onGoToPrivacyPolicy,
 }: SettingsPageProps) {
@@ -183,6 +188,44 @@ export function SettingsPage({
                   </SelectItem>
                   <SelectItem value="storybook">
                     {t("settings.colorThemeStorybook")}
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </SettingsCard>
+
+            <SettingsCard className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">
+                  {t("settings.fontSize")}
+                </span>
+                <span className="text-xs text-foreground/50">
+                  {t("settings.fontSizeDescription")}
+                </span>
+              </div>
+              <Select
+                value={fontSize}
+                onValueChange={(value) =>
+                  onFontSizeChange((value ?? "regular") as FontSizePreference)
+                }
+              >
+                <SelectTrigger className="w-40 shrink-0">
+                  <SelectValue>
+                    {fontSize === "large"
+                      ? t("settings.fontSizeLarge")
+                      : fontSize === "extra-large"
+                        ? t("settings.fontSizeExtraLarge")
+                        : t("settings.fontSizeRegular")}
+                  </SelectValue>
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="regular">
+                    {t("settings.fontSizeRegular")}
+                  </SelectItem>
+                  <SelectItem value="large">
+                    {t("settings.fontSizeLarge")}
+                  </SelectItem>
+                  <SelectItem value="extra-large">
+                    {t("settings.fontSizeExtraLarge")}
                   </SelectItem>
                 </SelectContent>
               </Select>

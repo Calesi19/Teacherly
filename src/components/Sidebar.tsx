@@ -6,11 +6,11 @@ import {
   BookOpen,
   ClipboardCheck,
   FileText,
+  School,
   Settings,
   Users,
 } from "../lib/lucide-compat";
 import { useTranslation } from "../i18n/LanguageContext";
-import { UserGroupIcon } from "../lib/lucide-compat";
 import type { Group } from "../types/group";
 
 interface SidebarProps {
@@ -65,7 +65,7 @@ export function Sidebar({
       {
         id: "group",
         label: t("sidebar.group"),
-        icon: UserGroupIcon,
+        icon: School,
         active: currentPage === "group",
         onClick: nav(onGoToGroup),
         disabled: !currentGroup,

@@ -57,6 +57,18 @@
   --surface: rgba(255, 253, 251, 0.78);
 }
 
+:root[data-font-size="regular"] {
+  font-size: 16px;
+}
+
+:root[data-font-size="large"] {
+  font-size: 18px;
+}
+
+:root[data-font-size="extra-large"] {
+  font-size: 20px;
+}
+
 /* Window Bar CSS */
 .window-bar {
   height: 30px;
