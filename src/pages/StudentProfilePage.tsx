@@ -474,6 +474,10 @@ export function StudentProfilePage({
           <OverviewTab
             student={s}
             group={group}
+            assignments={assignments}
+            loadingAssignments={loadingAssignments}
+            attendanceSummary={attendanceSummary}
+            loadingAttendance={loadingAttendance}
             contacts={contacts}
             loadingContacts={loadingContacts}
             addresses={addresses}

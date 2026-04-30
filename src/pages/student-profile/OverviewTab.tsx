@@ -1,6 +1,8 @@
+import { useMemo, useState } from "react";
 import { Ambulance, ShieldUser, Star } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { TabsContent } from "@/components/ui/tabs";
+import { cn } from "@/lib/utils";
 import { useTranslation } from "../../i18n/LanguageContext";
 import type { Group } from "../../types/group";
 import type { Contact } from "../../types/contact";
@@ -8,6 +10,8 @@ import type { Address } from "../../types/address";
 import type { Student } from "../../types/student";
 import type { StudentServices } from "../../types/studentServices";
 import type { StudentAccommodations } from "../../types/studentAccommodations";
+import type { StudentAssignmentPreview } from "../../types/assignment";
+import type { StudentAttendanceSummary } from "../../hooks/useStudentAttendance";
 import {
   CopyButton,
   IconTooltip,
@@ -23,9 +27,38 @@ interface ObservationGroup {
   items: string[];
 }
 
+function getGradeColorClass(percentage: number) {
+  if (percentage >= 90) {
+    return "border-success/30 bg-success/10 text-success";
+  }
+  if (percentage >= 80) {
+    return "border-blue-500/30 bg-blue-500/10 text-blue-600 dark:text-blue-300";
+  }
+  if (percentage >= 70) {
+    return "border-warning/35 bg-warning/10 text-warning";
+  }
+  if (percentage >= 60) {
+    return "border-orange-500/35 bg-orange-500/10 text-orange-600 dark:text-orange-300";
+  }
+  return "border-danger/35 bg-danger/10 text-danger";
+}
+
+const ATTENDANCE_CHART_COLORS = {
+  present: "var(--success)",
+  absent: "var(--danger)",
+  late: "var(--warning)",
+  partial: "var(--accent)",
+} as const;
+
+type AttendanceChartKey = keyof typeof ATTENDANCE_CHART_COLORS;
+
 interface OverviewTabProps {
   student: Student;
   group: Group;
+  assignments: StudentAssignmentPreview[];
+  loadingAssignments: boolean;
+  attendanceSummary: StudentAttendanceSummary;
+  loadingAttendance: boolean;
   contacts: Contact[];
   loadingContacts: boolean;
   addresses: Address[];
@@ -50,6 +83,10 @@ interface OverviewTabProps {
 export function OverviewTab({
   student,
   group,
+  assignments,
+  loadingAssignments,
+  attendanceSummary,
+  loadingAttendance,
   contacts,
   loadingContacts,
   addresses,
@@ -71,6 +108,78 @@ export function OverviewTab({
   onGoToObservations,
 }: OverviewTabProps) {
   const { t } = useTranslation();
+  const attendanceChartData = useMemo(() => {
+    const presentOnly = Math.max(
+      attendanceSummary.totalDays -
+        attendanceSummary.absent -
+        attendanceSummary.late -
+        attendanceSummary.partial,
+      0,
+    );
+
+    return [
+      {
+        key: "present",
+        value: presentOnly,
+        color: ATTENDANCE_CHART_COLORS.present,
+      },
+      {
+        key: "absent",
+        value: attendanceSummary.absent,
+        color: ATTENDANCE_CHART_COLORS.absent,
+      },
+      {
+        key: "late",
+        value: attendanceSummary.late,
+        color: ATTENDANCE_CHART_COLORS.late,
+      },
+      {
+        key: "partial",
+        value: attendanceSummary.partial,
+        color: ATTENDANCE_CHART_COLORS.partial,
+      },
+    ] satisfies { key: AttendanceChartKey; value: number; color: string }[];
+  }, [attendanceSummary]);
+  const [hoveredAttendanceKey, setHoveredAttendanceKey] =
+    useState<AttendanceChartKey | null>(null);
+  const hoveredAttendance = hoveredAttendanceKey
+    ? attendanceChartData.find((item) => item.key === hoveredAttendanceKey)
+    : null;
+  const circumference = 2 * Math.PI * 44;
+  let attendanceOffset = 0;
+
+  const gradedAssignments = assignments.filter(
+    (assignment) => assignment.score !== null,
+  );
+  const gradeTotals = gradedAssignments.reduce(
+    (totals, assignment) => ({
+      score: totals.score + (assignment.score ?? 0),
+      maxScore: totals.maxScore + assignment.max_score,
+    }),
+    { score: 0, maxScore: 0 },
+  );
+  const gradePercentage =
+    gradeTotals.maxScore > 0
+      ? Math.round((gradeTotals.score / gradeTotals.maxScore) * 100)
+      : null;
+  const gradesByClass = Array.from(
+    gradedAssignments
+      .reduce((map, assignment) => {
+        const current = map.get(assignment.period_name) ?? {
+          periodName: assignment.period_name,
+          score: 0,
+          maxScore: 0,
+          count: 0,
+        };
+
+        current.score += assignment.score ?? 0;
+        current.maxScore += assignment.max_score;
+        current.count += 1;
+        map.set(assignment.period_name, current);
+        return map;
+      }, new Map<string, { periodName: string; score: number; maxScore: number; count: number }>())
+      .values(),
+  ).sort((a, b) => a.periodName.localeCompare(b.periodName));
 
   return (
     <TabsContent value="overview" className="flex-1 overflow-y-auto pt-4">
@@ -132,6 +241,190 @@ export function OverviewTab({
               }
             />
           </div>
+        </SectionCard>
+
+        <SectionCard className="flex flex-col gap-4">
+          <div>
+            <div>
+              <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+                {t("studentProfile.overview.attendanceSummary")}
+              </h3>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {t("studentProfile.attendance.summary.totalDays")}:{" "}
+                {attendanceSummary.totalDays}
+              </p>
+            </div>
+          </div>
+
+          {loadingAttendance ? (
+            <LoadingSpinner />
+          ) : attendanceSummary.totalDays === 0 ? (
+            <p className="text-sm text-foreground/40">
+              {t("studentProfile.attendance.noAttendance")}
+            </p>
+          ) : (
+            <div className="grid gap-4 lg:grid-cols-[minmax(0,220px)_1fr] lg:items-center">
+              <div className="relative mx-auto aspect-square w-full max-w-[220px]">
+                <svg viewBox="0 0 120 120" className="h-full w-full -rotate-90">
+                  <circle
+                    cx="60"
+                    cy="60"
+                    r="44"
+                    fill="none"
+                    stroke="var(--border)"
+                    strokeWidth="10"
+                  />
+                  {attendanceChartData.map((item) => {
+                    const fraction = item.value / attendanceSummary.totalDays;
+                    const dashLength = fraction * circumference;
+                    const segment = (
+                      <circle
+                        key={item.key}
+                        cx="60"
+                        cy="60"
+                        r="44"
+                        fill="none"
+                        stroke={item.color}
+                        strokeWidth={item.key === hoveredAttendanceKey ? 16 : 10}
+                        strokeDasharray={`${dashLength} ${circumference - dashLength}`}
+                        strokeDashoffset={-attendanceOffset}
+                        strokeLinecap="round"
+                        className="cursor-pointer transition-[stroke-width,opacity] duration-150"
+                        opacity={item.value === 0 ? 0.2 : 1}
+                        onMouseEnter={() => setHoveredAttendanceKey(item.key)}
+                        onMouseLeave={() => setHoveredAttendanceKey(null)}
+                        tabIndex={0}
+                        onFocus={() => setHoveredAttendanceKey(item.key)}
+                        onBlur={() => setHoveredAttendanceKey(null)}
+                      />
+                    );
+
+                    attendanceOffset += dashLength;
+                    return segment;
+                  })}
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
+                  <span className="text-3xl font-bold text-foreground">
+                    {hoveredAttendance?.value ?? attendanceSummary.totalDays}
+                  </span>
+                  <span className="text-xs font-medium text-muted-foreground">
+                    {hoveredAttendance
+                      ? t(`studentProfile.attendance.summary.${hoveredAttendance.key}`)
+                      : t("studentProfile.attendance.summary.totalDays")}
+                  </span>
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                {attendanceChartData.map((item) => {
+                  const isActive = item.key === hoveredAttendanceKey;
+
+                  return (
+                    <button
+                      key={item.key}
+                      type="button"
+                      onMouseEnter={() => setHoveredAttendanceKey(item.key)}
+                      onMouseLeave={() => setHoveredAttendanceKey(null)}
+                      onFocus={() => setHoveredAttendanceKey(item.key)}
+                      onBlur={() => setHoveredAttendanceKey(null)}
+                      className={cn(
+                        "flex items-center justify-between gap-3 rounded-lg border px-3 py-2 text-left transition-colors",
+                        isActive
+                          ? "border-foreground/20 bg-muted/55"
+                          : "border-border/60 hover:bg-muted/30",
+                      )}
+                    >
+                      <span className="flex min-w-0 items-center gap-2">
+                        <span
+                          className="size-2.5 shrink-0 rounded-sm"
+                          style={{ backgroundColor: item.color }}
+                        />
+                        <span className="truncate text-sm font-medium text-foreground">
+                          {t(`studentProfile.attendance.summary.${item.key}`)}
+                        </span>
+                      </span>
+                      <span className="shrink-0 text-sm font-semibold text-foreground">
+                        {item.value}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </SectionCard>
+
+        <SectionCard className="flex flex-col gap-4">
+          <div>
+            <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
+              {t("studentProfile.overview.gradeSummary")}
+            </h3>
+          </div>
+          {loadingAssignments ? (
+            <LoadingSpinner />
+          ) : gradedAssignments.length === 0 ? (
+            <p className="text-sm text-foreground/40">
+              {t("studentProfile.overview.noGrades")}
+            </p>
+          ) : (
+            <div className="flex flex-col gap-4">
+              <div
+                className={cn(
+                  "flex flex-wrap items-end justify-between gap-3 rounded-lg border px-4 py-3",
+                  getGradeColorClass(gradePercentage ?? 0),
+                )}
+              >
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-xs font-semibold uppercase tracking-wide opacity-75">
+                    {t("studentProfile.overview.overallGrade")}
+                  </span>
+                  <span className="text-2xl font-bold">
+                    {gradePercentage}%
+                  </span>
+                </div>
+                <div className="text-right">
+                  <div className="text-sm font-semibold">
+                    {gradeTotals.score}/{gradeTotals.maxScore}
+                  </div>
+                  <div className="text-xs opacity-75">
+                    {t("studentProfile.overview.gradedAssignments", {
+                      count: gradedAssignments.length,
+                    })}
+                  </div>
+                </div>
+              </div>
+
+              <div className="grid gap-2 sm:grid-cols-2">
+                {gradesByClass.map((classGrade) => {
+                  const percentage = Math.round(
+                    (classGrade.score / classGrade.maxScore) * 100,
+                  );
+
+                  return (
+                    <div
+                      key={classGrade.periodName}
+                      className={cn(
+                        "flex items-center justify-between gap-3 rounded-lg border px-3 py-2",
+                        getGradeColorClass(percentage),
+                      )}
+                    >
+                      <div className="min-w-0">
+                        <div className="truncate text-sm font-medium">
+                          {classGrade.periodName}
+                        </div>
+                        <div className="text-xs opacity-75">
+                          {classGrade.score}/{classGrade.maxScore}
+                        </div>
+                      </div>
+                      <span className="shrink-0 text-sm font-semibold">
+                        {percentage}%
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </SectionCard>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
