@@ -20,14 +20,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { TableCell, TableHead, TableRow } from "@/components/ui/table";
 import {
   Tooltip,
   TooltipContent,
@@ -283,11 +276,19 @@ export function StudentsPage({
         <div className="flex min-h-0 flex-1 flex-col">
           {!loading && !error && (
             <div className="flex h-full flex-1 flex-col overflow-hidden rounded-xl border bg-background">
-              <div className="min-h-0 flex-1 overflow-auto">
-                <Table>
-                  <TableHeader className="[&_tr]:bg-[color:color-mix(in_srgb,var(--accent)_10%,var(--background)_90%)]">
+              <div className="shrink-0 border-b border-border/45 bg-[color:color-mix(in_srgb,var(--success)_8%,var(--background)_92%)]">
+                <table className="w-full table-fixed text-sm">
+                  <colgroup>
+                    <col className="w-10" />
+                    <col />
+                    <col className="w-32" />
+                    <col className="w-40" />
+                    <col className="w-20" />
+                    <col className="w-32" />
+                  </colgroup>
+                  <thead>
                     <TableRow>
-                      <TableHead className="w-10 pr-0 text-accent">
+                      <TableHead className="w-10 pr-0 text-foreground/70">
                         <Checkbox
                           aria-label="Select all"
                           checked={allFilteredSelected}
@@ -297,18 +298,34 @@ export function StudentsPage({
                           disabled={filtered.length === 0}
                         />
                       </TableHead>
-                      <TableHead className="text-accent">{t("students.tableColumns.name")}</TableHead>
-                      <TableHead className="text-accent">{t("students.tableColumns.gender")}</TableHead>
-                      <TableHead className="text-accent">
+                      <TableHead className="text-foreground/70">
+                        {t("students.tableColumns.name")}
+                      </TableHead>
+                      <TableHead className="text-foreground/70">
+                        {t("students.tableColumns.gender")}
+                      </TableHead>
+                      <TableHead className="text-foreground/70">
                         {t("students.tableColumns.birthdate")}
                       </TableHead>
-                      <TableHead className="text-accent" />
-                      <TableHead className="text-accent">
+                      <TableHead className="text-foreground/70" />
+                      <TableHead className="text-foreground/70">
                         {t("students.tableColumns.studentId")}
                       </TableHead>
                     </TableRow>
-                  </TableHeader>
-                  <TableBody>
+                  </thead>
+                </table>
+              </div>
+              <div className="min-h-0 flex-1 overflow-auto">
+                <table className="w-full table-fixed text-sm">
+                  <colgroup>
+                    <col className="w-10" />
+                    <col />
+                    <col className="w-32" />
+                    <col className="w-40" />
+                    <col className="w-20" />
+                    <col className="w-32" />
+                  </colgroup>
+                  <tbody>
                     {filtered.map((student) => (
                       <TableRow
                         key={student.id}
@@ -386,8 +403,8 @@ export function StudentsPage({
                         </TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
-                </Table>
+                  </tbody>
+                </table>
 
                 {filtered.length === 0 && (
                   <div className="flex flex-col items-center justify-center gap-2 py-12 text-center">

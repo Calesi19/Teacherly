@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { CalendarDays, CalendarX } from "lucide-react";
+import { ArrowLeftRight, CalendarDays, CalendarX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { AppDatePicker } from "@/components/ui/app-date-picker";
 
@@ -62,6 +62,12 @@ export function AttendancePage({
     }
   };
 
+  const isToday = date === todayStr();
+  const today = todayStr();
+  const isTodayInRange =
+    (!group.start_date || today >= group.start_date) &&
+    (!group.end_date || today <= group.end_date);
+
   return (
     <div className="flex h-full flex-col px-6 pt-8 pb-6 pl-3">
       <Breadcrumb
@@ -78,6 +84,17 @@ export function AttendancePage({
         </div>
 
         <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+          {!isToday && isTodayInRange && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setDate(today)}
+              className="sm:order-first"
+            >
+              <ArrowLeftRight size={14} />
+              {t("attendance.today")}
+            </Button>
+          )}
           <AppDatePicker
             value={date}
             onChange={setDate}

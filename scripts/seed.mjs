@@ -42,33 +42,78 @@ const insertStudent = seed(
    VALUES (?, ?, ?, ?, ?, ?)`
 );
 
-const g1Students = [
-  ['Emma Johnson',    'Female', '2015-03-22', 'STU001'],
-  ['Liam Martinez',   'Male',   '2015-07-14', 'STU002'],
-  ['Sophia Chen',     'Female', '2015-11-05', 'STU003'],
-  ['Noah Williams',   'Male',   '2016-01-30', 'STU004'],
-  ['Olivia Brown',    'Female', '2015-09-18', 'STU005'],
-  ['Elijah Davis',    'Male',   '2015-06-03', 'STU006'],
-  ['Ava Thompson',    'Female', '2015-12-22', 'STU007'],
-  ['James Garcia',    'Male',   '2016-02-11', 'STU008'],
-].map(([name, gender, birthdate, number]) => ({
-  id: insertStudent.run(g1, name, gender, birthdate, number, '2024-09-02').lastInsertRowid,
-  name,
-}));
+const studentTemplates = {
+  g1: [
+    ['Emma Johnson',    'Female', '2015-03-22'],
+    ['Liam Martinez',   'Male',   '2015-07-14'],
+    ['Sophia Chen',     'Female', '2015-11-05'],
+    ['Noah Williams',   'Male',   '2016-01-30'],
+    ['Olivia Brown',    'Female', '2015-09-18'],
+    ['Elijah Davis',    'Male',   '2015-06-03'],
+    ['Ava Thompson',    'Female', '2015-12-22'],
+    ['James Garcia',    'Male',   '2016-02-11'],
+  ],
+  g2: [
+    ['Isabella Wilson', 'Female', '2014-04-09'],
+    ['Mason Anderson',  'Male',   '2014-08-17'],
+    ['Mia Taylor',      'Female', '2014-12-01'],
+    ['Ethan Moore',     'Male',   '2015-02-25'],
+    ['Charlotte Lee',   'Female', '2014-07-30'],
+    ['Aiden Jackson',   'Male',   '2014-10-14'],
+    ['Amelia White',    'Female', '2014-05-19'],
+    ['Lucas Harris',    'Male',   '2015-01-08'],
+  ],
+};
 
-const g2Students = [
-  ['Isabella Wilson', 'Female', '2014-04-09', 'STU009'],
-  ['Mason Anderson',  'Male',   '2014-08-17', 'STU010'],
-  ['Mia Taylor',      'Female', '2014-12-01', 'STU011'],
-  ['Ethan Moore',     'Male',   '2015-02-25', 'STU012'],
-  ['Charlotte Lee',   'Female', '2014-07-30', 'STU013'],
-  ['Aiden Jackson',   'Male',   '2014-10-14', 'STU014'],
-  ['Amelia White',    'Female', '2014-05-19', 'STU015'],
-  ['Lucas Harris',    'Male',   '2015-01-08', 'STU016'],
-].map(([name, gender, birthdate, number]) => ({
-  id: insertStudent.run(g2, name, gender, birthdate, number, '2024-09-02').lastInsertRowid,
-  name,
-}));
+function buildStudentSet(groupId, baseNumber, templates, count, enrollmentDate) {
+  const firstNames = [
+    'Maya', 'Ethan', 'Lucas', 'Aria', 'Henry', 'Nora', 'Leo', 'Zoe',
+    'Kai', 'Luna', 'Owen', 'Ivy', 'Felix', 'Elena', 'Noel', 'Sofia',
+  ];
+  const lastNames = [
+    'Rivera', 'Patel', 'Nguyen', 'Walker', 'Lopez', 'Hughes', 'Ross', 'Bailey',
+    'Carter', 'Murphy', 'Bennett', 'Reed', 'Howard', 'King', 'Brooks', 'Price',
+  ];
+  const birthdays = [
+    '2014-03-04', '2014-04-12', '2014-05-20', '2014-06-08',
+    '2014-07-16', '2014-08-24', '2014-09-11', '2014-10-19',
+    '2014-11-27', '2015-01-06', '2015-02-14', '2015-03-23',
+    '2015-04-30', '2015-06-09', '2015-07-18', '2015-08-26',
+  ];
+
+  const students = [];
+  const rows = Array.from({ length: count }, (_, i) => {
+    if (i < templates.length) {
+      const [name, gender, birthdate] = templates[i];
+      return { name, gender, birthdate };
+    }
+
+    const templateIndex = i - templates.length;
+    const first = firstNames[templateIndex % firstNames.length];
+    const last = lastNames[(templateIndex + groupId) % lastNames.length];
+    const gender = templateIndex % 2 === 0 ? 'Female' : 'Male';
+    const birthdate = birthdays[templateIndex % birthdays.length];
+    return { name: `${first} ${last}`, gender, birthdate };
+  });
+
+  rows.forEach((row, index) => {
+    const studentNumber = `STU${String(baseNumber + index).padStart(3, '0')}`;
+    const id = insertStudent.run(
+      groupId,
+      row.name,
+      row.gender,
+      row.birthdate,
+      studentNumber,
+      enrollmentDate,
+    ).lastInsertRowid;
+    students.push({ id, name: row.name });
+  });
+
+  return students;
+}
+
+const g1Students = buildStudentSet(g1, 1, studentTemplates.g1, 24, '2024-09-02');
+const g2Students = buildStudentSet(g2, 25, studentTemplates.g2, 24, '2024-09-02');
 
 const allStudents = [...g1Students, ...g2Students];
 
@@ -79,24 +124,10 @@ const insertContact = seed(
    VALUES (?, ?, ?, ?, ?, ?, ?)`
 );
 
-const contactData = [
-  ['Maria Johnson',    'Mother', '555-0101', 'maria.johnson@email.com',     1, 1],
-  ['Robert Martinez',  'Father', '555-0102', 'r.martinez@email.com',        1, 1],
-  ['Lily Chen',        'Mother', '555-0103', 'lily.chen@email.com',         1, 1],
-  ['David Williams',   'Father', '555-0104', 'd.williams@email.com',        1, 1],
-  ['Sarah Brown',      'Mother', '555-0105', 'sarah.brown@email.com',       1, 1],
-  ['Michael Davis',    'Father', '555-0106', 'm.davis@email.com',           1, 1],
-  ['Jennifer Thompson','Mother', '555-0107', 'j.thompson@email.com',        1, 1],
-  ['Carlos Garcia',    'Father', '555-0108', 'c.garcia@email.com',          1, 1],
-  ['Patricia Wilson',  'Mother', '555-0109', 'p.wilson@email.com',          1, 1],
-  ['Daniel Anderson',  'Father', '555-0110', 'd.anderson@email.com',        1, 1],
-  ['Linda Taylor',     'Mother', '555-0111', 'l.taylor@email.com',          1, 1],
-  ['Christopher Moore','Father', '555-0112', 'c.moore@email.com',           1, 1],
-  ['Barbara Lee',      'Mother', '555-0113', 'b.lee@email.com',             1, 1],
-  ['Matthew Jackson',  'Father', '555-0114', 'm.jackson@email.com',         1, 1],
-  ['Susan White',      'Mother', '555-0115', 's.white@email.com',           1, 1],
-  ['Anthony Harris',   'Father', '555-0116', 'a.harris@email.com',          1, 1],
-];
+function splitName(name) {
+  const [first, last = ''] = name.split(' ');
+  return { first, last };
+}
 
 // Extra emergency contacts for some students
 const extraContacts = [
@@ -104,11 +135,32 @@ const extraContacts = [
   [2, 'Wei Chen',        'Grandfather', '555-0203', null,                    1, 0],
   [4, 'Karen Brown',     'Aunt',        '555-0205', 'k.brown@email.com',     1, 0],
   [8, 'George Wilson',   'Grandfather', '555-0209', null,                    1, 0],
+  [12, 'Sana Taylor',    'Aunt',        '555-0212', null,                    1, 0],
+  [16, 'Ibrahim Moore',  'Grandfather', '555-0216', null,                    1, 0],
+  [20, 'Rosa Garcia',    'Aunt',        '555-0220', 'r.garcia@email.com',    1, 0],
+  [24, 'Marta Wilson',   'Grandmother', '555-0224', null,                    1, 0],
+  [28, 'Nora Anderson',  'Aunt',        '555-0228', null,                    1, 0],
+  [32, 'Evan Taylor',    'Uncle',       '555-0232', null,                    1, 0],
+  [36, 'Jada Lee',       'Grandmother', '555-0236', null,                    1, 0],
+  [40, 'Owen White',     'Uncle',       '555-0240', null,                    1, 0],
 ];
 
-allStudents.forEach(({ id }, i) => {
-  const [name, rel, phone, email, isEmerg, isPrimary] = contactData[i];
-  insertContact.run(id, name, rel, phone, email, isEmerg, isPrimary);
+allStudents.forEach(({ id, name }, i) => {
+  const { first, last } = splitName(name);
+  const contactFirst = i % 2 === 0 ? 'Maria' : 'Carlos';
+  const contactLast = last || first;
+  const relation = i % 2 === 0 ? 'Mother' : 'Father';
+  const phone = `555-${String(1001 + i).padStart(4, '0')}`;
+  const email = `${contactFirst.toLowerCase()}.${contactLast.toLowerCase()}@email.com`;
+  insertContact.run(
+    id,
+    `${contactFirst} ${contactLast}`,
+    relation,
+    phone,
+    email,
+    1,
+    1,
+  );
 });
 
 for (const [studentIndex, name, rel, phone, email, isEmerg, isPrimary] of extraContacts) {
@@ -127,6 +179,14 @@ const streets = [
   '654 Cedar Blvd', '987 Birch Ln', '159 Walnut Dr', '753 Spruce Ct',
   '246 Ash Way', '802 Poplar St', '135 Hickory Pl', '579 Willow Ave',
   '468 Chestnut Rd', '913 Sycamore Blvd', '624 Magnolia Dr', '371 Cypress Ln',
+  '180 Aspen Dr', '412 Fern St', '905 Laurel Ave', '268 Alder Ct',
+  '730 Cypress Dr', '111 Meadow Ln', '502 Orchard Rd', '889 Harbor St',
+  '304 Sunset Blvd', '617 Brook Ave', '225 Ridge Rd', '998 Summit Pl',
+  '141 Valley Way', '376 Park Ln', '808 Garden Dr', '553 Lake St',
+  '190 Prairie Ave', '447 Canyon Ct', '721 River Rd', '260 Hilltop Dr',
+  '884 Grove St', '315 Birchwood Ln', '639 Stone Rd', '127 Palm Ave',
+  '568 Willow Ct', '402 Maplewood Dr', '975 Forest St', '233 Cedar Ln',
+  '716 Pinecrest Ave', '342 Elmwood Rd', '804 Magnolia Ct', '590 Aspen Way',
 ];
 
 allStudents.forEach(({ id }, i) => {
@@ -174,6 +234,8 @@ const periods = [
   ['Reading', '09:00', '09:45', 1],
   ['Science', '10:00', '10:45', 2],
   ['Writing', '11:00', '11:45', 3],
+  ['Social Studies', '12:30', '13:15', 4],
+  ['Art', '13:30', '14:15', 5],
 ];
 
 // Mon–Fri (1–5) for each group
@@ -202,7 +264,21 @@ const g1Assignments = [
   insertAssignment.run(g1, 'Reading', 'Book Report – Charlotte\'s Web', 'Min 1 page',        100, 'Project'),
   insertAssignment.run(g1, 'Science', 'Plant Life Cycle Diagram', 'Label all stages',        30,  'Homework'),
   insertAssignment.run(g1, 'Math',    'Unit 1 Exam',              null,                      100, 'Exam'),
+  insertAssignment.run(g1, 'Writing', 'Narrative Draft',          'Use the checklist',        25,  'Homework'),
+  insertAssignment.run(g1, 'Social Studies', 'Map Labeling',     'Label all regions',        20,  'Homework'),
+  insertAssignment.run(g1, 'Art',     'Color Wheel Practice',     null,                       15,  'Project'),
 ].map(r => r.lastInsertRowid);
+
+const g1AssignmentMeta = [
+  { id: g1Assignments[0], max: 20 },
+  { id: g1Assignments[1], max: 100 },
+  { id: g1Assignments[2], max: 100 },
+  { id: g1Assignments[3], max: 30 },
+  { id: g1Assignments[4], max: 100 },
+  { id: g1Assignments[5], max: 25 },
+  { id: g1Assignments[6], max: 20 },
+  { id: g1Assignments[7], max: 15 },
+];
 
 const g2Assignments = [
   insertAssignment.run(g2, 'Math',    'Fractions Worksheet',      'Pages 12–13',             20,  'Homework'),
@@ -210,7 +286,21 @@ const g2Assignments = [
   insertAssignment.run(g2, 'Reading', 'Comprehension – Chapter 4', 'Answer all 10 questions', 50, 'Homework'),
   insertAssignment.run(g2, 'Writing', 'Personal Narrative Essay', 'Min 3 paragraphs',        100, 'Project'),
   insertAssignment.run(g2, 'Math',    'Mid-Term Exam',            null,                      100, 'Exam'),
+  insertAssignment.run(g2, 'Science', 'Matter Sorting Lab',       'Sort each item correctly',  25,  'Homework'),
+  insertAssignment.run(g2, 'Social Studies', 'State Symbols Quiz', null,                      40,  'Quiz'),
+  insertAssignment.run(g2, 'Art',     'Self-Portrait Sketch',     'Add color if time allows',  20,  'Project'),
 ].map(r => r.lastInsertRowid);
+
+const g2AssignmentMeta = [
+  { id: g2Assignments[0], max: 20 },
+  { id: g2Assignments[1], max: 100 },
+  { id: g2Assignments[2], max: 50 },
+  { id: g2Assignments[3], max: 100 },
+  { id: g2Assignments[4], max: 100 },
+  { id: g2Assignments[5], max: 25 },
+  { id: g2Assignments[6], max: 40 },
+  { id: g2Assignments[7], max: 20 },
+];
 
 // ── Assignment Scores ─────────────────────────────────────────────────────────
 
@@ -223,19 +313,23 @@ function randomScore(max) {
   return Math.round((0.6 + Math.random() * 0.4) * max * 10) / 10;
 }
 
-for (const assignId of g1Assignments) {
+function scoreForAssignment(max) {
+  return randomScore(max);
+}
+
+for (const { id: assignId, max } of g1AssignmentMeta) {
   for (const { id: studentId } of g1Students) {
     const exempt = Math.random() < 0.05 ? 1 : 0;
     const late   = Math.random() < 0.1  ? 1 : 0;
-    insertScore.run(assignId, studentId, exempt ? null : randomScore(20), exempt, late, null);
+    insertScore.run(assignId, studentId, exempt ? null : scoreForAssignment(max), exempt, late, null);
   }
 }
 
-for (const assignId of g2Assignments) {
+for (const { id: assignId, max } of g2AssignmentMeta) {
   for (const { id: studentId } of g2Students) {
     const exempt = Math.random() < 0.05 ? 1 : 0;
     const late   = Math.random() < 0.1  ? 1 : 0;
-    insertScore.run(assignId, studentId, exempt ? null : randomScore(20), exempt, late, null);
+    insertScore.run(assignId, studentId, exempt ? null : scoreForAssignment(max), exempt, late, null);
   }
 }
 
@@ -300,6 +394,10 @@ const noteTemplates = [
   ['Referred to counselor for follow-up.',                       'referral'],
   ['Struggled with fractions — will need extra support.',        'negative'],
   ['Showed great leadership during group activity.',             'positive'],
+  ['Needs reminder to bring materials to class.',                 'attendance'],
+  ['Completed reading task early and helped others.',            'positive'],
+  ['Check in about handwriting legibility.',                      'referral'],
+  ['Demonstrated strong problem solving on today\'s task.',       'positive'],
 ];
 
 allStudents.forEach(({ id }, i) => {
@@ -307,6 +405,10 @@ allStudents.forEach(({ id }, i) => {
   const t2 = noteTemplates[(i + 4) % noteTemplates.length];
   insertNote.run(id, t1[0], t1[1]);
   insertNote.run(id, t2[0], t2[1]);
+  if (i % 3 === 0) {
+    const t3 = noteTemplates[(i + 8) % noteTemplates.length];
+    insertNote.run(id, t3[0], t3[1]);
+  }
 });
 
 // ── Done ──────────────────────────────────────────────────────────────────────

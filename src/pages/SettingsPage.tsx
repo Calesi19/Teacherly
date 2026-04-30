@@ -208,7 +208,13 @@ export function SettingsPage({
                 }
               >
                 <SelectTrigger className="w-36 shrink-0">
-                  <SelectValue />
+                  <SelectValue>
+                    {languagePreference === "system"
+                      ? t("settings.languageSystem")
+                      : languagePreference === "en"
+                        ? t("settings.languageEnglish")
+                        : t("settings.languageSpanish")}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="system">
@@ -217,8 +223,8 @@ export function SettingsPage({
                       {t("settings.languageSystem")}
                     </span>
                   </SelectItem>
-                  <SelectItem value="en">English</SelectItem>
-                  <SelectItem value="es">Español</SelectItem>
+                  <SelectItem value="en">{t("settings.languageEnglish")}</SelectItem>
+                  <SelectItem value="es">{t("settings.languageSpanish")}</SelectItem>
                 </SelectContent>
               </Select>
             </SettingsCard>
