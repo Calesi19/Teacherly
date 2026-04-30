@@ -717,7 +717,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
     <div className="flex h-full flex-col">
       <div className="flex min-h-0 flex-1">
         <div className="flex w-88 shrink-0 flex-col overflow-y-auto border-r border-border pr-3">
-          <div className="shrink-0 px-3 pt-3">
+          <div className="shrink-0 px-3 pt-8">
             <h2 className="text-2xl font-bold">{t("reports.ui.title")}</h2>
           </div>
 

@@ -72,7 +72,9 @@ const ReportsPage = lazy(() =>
 );
 
 type ThemePreference = "light" | "dark" | "system";
+type ColorTheme = "pastel" | "classic" | "warm";
 const THEME_KEY = "app-theme";
+const COLOR_THEME_KEY = "app-color-theme";
 
 migrateLegacyAppStorage();
 
@@ -81,6 +83,11 @@ function useAppTheme() {
     const s = localStorage.getItem(THEME_KEY);
     if (s === "light" || s === "dark" || s === "system") return s;
     return "system";
+  });
+  const [colorTheme, setColorThemeState] = useState<ColorTheme>(() => {
+    const s = localStorage.getItem(COLOR_THEME_KEY);
+    if (s === "pastel" || s === "classic" || s === "warm") return s;
+    return "pastel";
   });
 
   const apply = useCallback((pref: ThemePreference) => {
@@ -95,6 +102,10 @@ function useAppTheme() {
     document.documentElement.setAttribute("data-theme", resolved);
   }, []);
 
+  const applyColorTheme = useCallback((palette: ColorTheme) => {
+    document.documentElement.setAttribute("data-color-theme", palette);
+  }, []);
+
   const setTheme = useCallback(
     (pref: ThemePreference) => {
       localStorage.setItem(THEME_KEY, pref);
@@ -104,8 +115,18 @@ function useAppTheme() {
     [apply],
   );
 
+  const setColorTheme = useCallback(
+    (palette: ColorTheme) => {
+      localStorage.setItem(COLOR_THEME_KEY, palette);
+      setColorThemeState(palette);
+      applyColorTheme(palette);
+    },
+    [applyColorTheme],
+  );
+
   useLayoutEffect(() => {
     apply(theme);
+    applyColorTheme(colorTheme);
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   useEffect(() => {
@@ -116,7 +137,7 @@ function useAppTheme() {
     return () => media.removeEventListener("change", handler);
   }, [theme, apply]);
 
-  return { theme, setTheme };
+  return { theme, setTheme, colorTheme, setColorTheme };
 }
 
 type Route =
@@ -152,7 +173,7 @@ function App() {
 function AppContent() {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const { t } = useTranslation();
-  const { theme, setTheme } = useAppTheme();
+  const { theme, setTheme, colorTheme, setColorTheme } = useAppTheme();
   const [route, setRoute] = useState<Route>({ page: "groups" });
   const [assignmentDetailDirty, setAssignmentDetailDirty] = useState(false);
   const [pendingSidebarNav, setPendingSidebarNav] = useState<(() => void) | null>(null);
@@ -673,6 +694,8 @@ function AppContent() {
           <SettingsPage
             theme={theme}
             onThemeChange={setTheme}
+            colorTheme={colorTheme}
+            onColorThemeChange={setColorTheme}
             onGoToTermsOfService={goToTermsOfService}
             onGoToPrivacyPolicy={goToPrivacyPolicy}
             group={route.group}

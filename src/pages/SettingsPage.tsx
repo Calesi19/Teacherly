@@ -20,10 +20,13 @@ import type { LanguagePreference } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
 
 type ThemePreference = "light" | "dark" | "system";
+type ColorTheme = "pastel" | "classic" | "warm";
 
 interface SettingsPageProps {
   theme: ThemePreference;
   onThemeChange: (theme: ThemePreference) => void;
+  colorTheme: ColorTheme;
+  onColorThemeChange: (theme: ColorTheme) => void;
   onGoToTermsOfService: () => void;
   onGoToPrivacyPolicy: () => void;
   group?: Group | null;
@@ -48,6 +51,8 @@ function SettingsCard({
 export function SettingsPage({
   theme,
   onThemeChange,
+  colorTheme,
+  onColorThemeChange,
   onGoToTermsOfService,
   onGoToPrivacyPolicy,
   group,
@@ -138,6 +143,38 @@ export function SettingsPage({
                       <Monitor size={14} />
                       {t("settings.system")}
                     </span>
+                  </SelectItem>
+                </SelectContent>
+              </Select>
+            </SettingsCard>
+
+            <SettingsCard className="flex items-center justify-between gap-4">
+              <div className="flex flex-col gap-0.5">
+                <span className="text-sm font-medium">
+                  {t("settings.colorTheme")}
+                </span>
+                <span className="text-xs text-foreground/50">
+                  {t("settings.colorThemeDescription")}
+                </span>
+              </div>
+              <Select
+                value={colorTheme}
+                onValueChange={(value) =>
+                  onColorThemeChange((value ?? "pastel") as ColorTheme)
+                }
+              >
+                <SelectTrigger className="w-44 shrink-0">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="pastel">
+                    {t("settings.colorThemePastel")}
+                  </SelectItem>
+                  <SelectItem value="classic">
+                    {t("settings.colorThemeClassic")}
+                  </SelectItem>
+                  <SelectItem value="warm">
+                    {t("settings.colorThemeWarm")}
                   </SelectItem>
                 </SelectContent>
               </Select>
