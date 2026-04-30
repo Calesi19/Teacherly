@@ -521,6 +521,7 @@ export function AssignmentDetailPage({
         title={t("assignmentDetail.saveModalTitle")}
         description={t("assignmentDetail.saveModalDescription")}
         confirmLabel={t("common.save")}
+        confirmVariant="default"
         loading={saving}
       />
 

@@ -3,10 +3,18 @@ import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
 } from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 import { useTranslation } from "../i18n/LanguageContext";
 import type {
   DayAttendanceStatus,
@@ -272,46 +280,69 @@ export function AttendanceDaySection({
           )}
         </div>
 
-        <div className="divide-y divide-border/40">
-          {rows.map((row) => (
-            <div
-              key={row.student_id}
-              className="flex items-center gap-3 px-4 py-2.5"
-            >
-              <input
-                type="checkbox"
-                checked={selected.has(row.student_id)}
-                onChange={() => toggleSelect(row.student_id)}
-                aria-label={`Select ${row.student_name}`}
-                className="w-4 h-4 cursor-pointer"
-              />
-              <span className="flex-1 text-sm font-medium">
-                {row.student_name}
-              </span>
-              <div className="flex items-center gap-1">
-                {DAY_STATUSES.map((status) => (
-                  <button
-                    key={status}
-                    onClick={() => handleStatusClick(row, status)}
-                    className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
-                      row.status === status
-                        ? status === "present"
-                          ? "border-success/30 bg-success/15 text-success"
-                          : status === "absent"
-                            ? "border-danger/30 bg-danger/15 text-danger"
-                            : status === "late"
-                              ? "border-warning/30 bg-warning/15 text-warning"
-                              : "border-accent/25 bg-accent/10 text-accent"
-                        : "border-transparent text-foreground/40 hover:bg-foreground/5 hover:text-foreground"
-                    }`}
-                    aria-pressed={row.status === status}
-                  >
-                    {statusLabels[status]}
-                  </button>
-                ))}
-              </div>
-            </div>
-          ))}
+        <div className="min-h-0 flex-1 overflow-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-10 pr-0">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    ref={(el) => {
+                      if (el) el.indeterminate = !allSelected && someSelected;
+                    }}
+                    onChange={toggleSelectAll}
+                    aria-label="Select all students"
+                    className="w-4 h-4 cursor-pointer"
+                  />
+                </TableHead>
+                <TableHead>{t("students.tableColumns.name")}</TableHead>
+                <TableHead>{t("studentProfile.attendance.columns.status")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map((row) => (
+                <TableRow key={row.student_id}>
+                  <TableCell className="w-10 pr-0">
+                    <input
+                      type="checkbox"
+                      checked={selected.has(row.student_id)}
+                      onChange={() => toggleSelect(row.student_id)}
+                      aria-label={`Select ${row.student_name}`}
+                      className="w-4 h-4 cursor-pointer"
+                    />
+                  </TableCell>
+                  <TableCell className="text-sm font-medium">
+                    {row.student_name}
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex flex-wrap items-center gap-1">
+                      {DAY_STATUSES.map((status) => (
+                        <button
+                          key={status}
+                          onClick={() => handleStatusClick(row, status)}
+                          className={`rounded-md border px-2 py-1 text-xs font-medium transition-colors ${
+                            row.status === status
+                              ? status === "present"
+                                ? "border-success/30 bg-success/15 text-success"
+                                : status === "absent"
+                                  ? "border-danger/30 bg-danger/15 text-danger"
+                                  : status === "late"
+                                    ? "border-warning/30 bg-warning/15 text-warning"
+                                    : "border-accent/25 bg-accent/10 text-accent"
+                              : "border-transparent text-foreground/40 hover:bg-foreground/5 hover:text-foreground"
+                          }`}
+                          aria-pressed={row.status === status}
+                        >
+                          {statusLabels[status]}
+                        </button>
+                      ))}
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
 

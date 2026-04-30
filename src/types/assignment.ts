@@ -9,6 +9,8 @@ export interface Assignment {
   max_score: number;
   tag: AssignmentTag;
   created_at: string;
+  graded_count: number;
+  student_count: number;
 }
 
 export interface NewAssignmentInput {

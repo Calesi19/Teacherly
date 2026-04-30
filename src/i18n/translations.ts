@@ -553,6 +553,7 @@ const en = {
       type: "Type",
       period: "Course",
       maxScore: "Max Score",
+      graded: "Graded",
       date: "Date",
     },
     deleteModal: {
@@ -1597,6 +1598,7 @@ const es: typeof en = {
       type: "Tipo",
       period: "Curso",
       maxScore: "Punt. máx.",
+      graded: "Calificados",
       date: "Fecha",
     },
     deleteModal: {

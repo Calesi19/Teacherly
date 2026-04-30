@@ -15,6 +15,7 @@ interface ConfirmModalProps {
   title: string;
   description?: string;
   confirmLabel?: string;
+  confirmVariant?: "default" | "destructive";
   loading?: boolean;
 }
 
@@ -25,6 +26,7 @@ export function ConfirmModal({
   title,
   description,
   confirmLabel,
+  confirmVariant = "destructive",
   loading = false,
 }: ConfirmModalProps) {
   const { t } = useTranslation();
@@ -47,7 +49,12 @@ export function ConfirmModal({
           <Button type="button" variant="ghost" disabled={loading} onClick={onClose}>
             {t("confirmModal.cancel")}
           </Button>
-          <Button type="button" variant="destructive" disabled={loading} onClick={handleConfirm}>
+          <Button
+            type="button"
+            variant={confirmVariant}
+            disabled={loading}
+            onClick={handleConfirm}
+          >
             {loading ? (
               <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
             ) : (

@@ -28,10 +28,35 @@ export function useAssignments(
       setLoading(true);
       const db = await Database.load(DB_URL);
       const rows = await db.select<Assignment[]>(
-        `SELECT id, group_id, period_name, title, description, max_score, tag, created_at
-         FROM assignments
-         WHERE group_id = ? AND is_deleted = 0
-         ORDER BY created_at DESC`,
+        `SELECT a.id,
+                a.group_id,
+                a.period_name,
+                a.title,
+                a.description,
+                a.max_score,
+                a.tag,
+                a.created_at,
+                COALESCE(g.graded_count, 0) AS graded_count,
+                COALESCE(s.student_count, 0) AS student_count
+         FROM assignments a
+         LEFT JOIN (
+           SELECT assignment_id,
+                  COUNT(*) AS graded_count
+           FROM assignment_scores
+           WHERE is_deleted = 0
+             AND score IS NOT NULL
+             AND COALESCE(exempt, 0) = 0
+           GROUP BY assignment_id
+         ) g ON g.assignment_id = a.id
+         LEFT JOIN (
+           SELECT group_id,
+                  COUNT(*) AS student_count
+           FROM students
+           WHERE is_deleted = 0
+           GROUP BY group_id
+         ) s ON s.group_id = a.group_id
+         WHERE a.group_id = ? AND a.is_deleted = 0
+         ORDER BY a.created_at DESC`,
         [groupId]
       );
       setAssignments(rows);

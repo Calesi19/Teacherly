@@ -196,6 +196,9 @@ export function AssignmentsPage({
                     <TableHead>
                       {t("assignments.tableColumns.maxScore")}
                     </TableHead>
+                    <TableHead>
+                      {t("assignments.tableColumns.graded")}
+                    </TableHead>
                     <TableHead>{t("assignments.tableColumns.date")}</TableHead>
                     <TableHead />
                   </TableRow>
@@ -218,6 +221,9 @@ export function AssignmentsPage({
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {assignment.max_score} {t("assignments.pts")}
+                      </TableCell>
+                      <TableCell className="text-sm text-foreground/50">
+                        {assignment.graded_count} / {assignment.student_count}
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {formatDate(assignment.created_at)}
