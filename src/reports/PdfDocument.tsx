@@ -1,6 +1,5 @@
 import { Document, Page, View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { ReactNode } from "react";
-import { APP_NAME } from "../appConfig";
 import { translations } from "../i18n/translations";
 import type { Language } from "../i18n/translations";
 

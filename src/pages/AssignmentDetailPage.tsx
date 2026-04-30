@@ -1,5 +1,6 @@
-import { useState, useEffect } from "react";
-import { Check, Inbox, MoreHorizontal } from "lucide-react";
+import { useState, useEffect, useMemo } from "react";
+import Database from "@tauri-apps/plugin-sql";
+import { Check, Inbox, MoreHorizontal, Pencil } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -9,6 +10,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,9 +37,10 @@ import { Breadcrumb } from "../components/Breadcrumb";
 import { ConfirmModal } from "../components/ConfirmModal";
 import { PageBackButton } from "../components/PageBackButton";
 import { useAssignmentDetail } from "../hooks/useAssignmentDetail";
+import { useSchedule } from "../hooks/useSchedule";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
-import type { Assignment } from "../types/assignment";
+import type { Assignment, AssignmentTag } from "../types/assignment";
 
 interface AssignmentDetailPageProps {
   assignment: Assignment;
@@ -45,6 +56,16 @@ interface NoteModalState {
   studentName: string;
   currentNote: string | null;
 }
+
+const DB_URL = "sqlite:teacherly.db";
+const TAG_OPTIONS: AssignmentTag[] = [
+  "Exam",
+  "Quiz",
+  "Homework",
+  "Extra Credit",
+  "Project",
+  "Other",
+];
 
 function SectionCard({
   children,
@@ -68,6 +89,7 @@ export function AssignmentDetailPage({
   onGoToAssignments,
   onDirtyChange,
 }: AssignmentDetailPageProps) {
+  const [currentAssignment, setCurrentAssignment] = useState(assignment);
   const {
     scores,
     loading,
@@ -77,8 +99,9 @@ export function AssignmentDetailPage({
     setLate,
     setNote,
     stats,
-  } = useAssignmentDetail(assignment.id, group.id, assignment.max_score);
+  } = useAssignmentDetail(currentAssignment.id, group.id, currentAssignment.max_score);
   const { t } = useTranslation();
+  const { periods } = useSchedule(group.id);
 
   const [pendingScores, setPendingScores] = useState<Map<number, string>>(
     new Map(),
@@ -98,6 +121,51 @@ export function AssignmentDetailPage({
   const [saveModalOpen, setSaveModalOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [pendingNav, setPendingNav] = useState<(() => void) | null>(null);
+  const [editOpen, setEditOpen] = useState(false);
+  const [editForm, setEditForm] = useState({
+    title: assignment.title,
+    description: assignment.description ?? "",
+    max_score: String(assignment.max_score),
+    period_name: assignment.period_name,
+    tag: assignment.tag,
+  });
+  const [savingDetails, setSavingDetails] = useState(false);
+  const [editError, setEditError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setCurrentAssignment(assignment);
+    setEditForm({
+      title: assignment.title,
+      description: assignment.description ?? "",
+      max_score: String(assignment.max_score),
+      period_name: assignment.period_name,
+      tag: assignment.tag,
+    });
+  }, [assignment]);
+
+  const uniquePeriodNames = useMemo(() => {
+    const seen = new Set<string>();
+    const result: string[] = [];
+    for (const period of periods) {
+      if (!seen.has(period.name)) {
+        seen.add(period.name);
+        result.push(period.name);
+      }
+    }
+    if (currentAssignment.period_name && !seen.has(currentAssignment.period_name)) {
+      result.push(currentAssignment.period_name);
+    }
+    return result;
+  }, [currentAssignment.period_name, periods]);
+
+  const tagLabels: Record<AssignmentTag, string> = {
+    Exam: t("assignments.tags.exam"),
+    Quiz: t("assignments.tags.quiz"),
+    Homework: t("assignments.tags.homework"),
+    "Extra Credit": t("assignments.tags.extraCredit"),
+    Project: t("assignments.tags.project"),
+    Other: t("assignments.tags.other"),
+  };
 
   const hasChanges =
     pendingScores.size > 0 || pendingLate.size > 0 || pendingExempt.size > 0;
@@ -113,6 +181,70 @@ export function AssignmentDetailPage({
       callback();
     }
   }
+
+  const openEditDialog = () => {
+    setEditForm({
+      title: currentAssignment.title,
+      description: currentAssignment.description ?? "",
+      max_score: String(currentAssignment.max_score),
+      period_name: currentAssignment.period_name,
+      tag: currentAssignment.tag,
+    });
+    setEditError(null);
+    setEditOpen(true);
+  };
+
+  const closeEditDialog = () => {
+    setEditError(null);
+    setEditOpen(false);
+  };
+
+  const handleDetailsSave = async (event: React.FormEvent) => {
+    event.preventDefault();
+    const parsedMaxScore = parseFloat(editForm.max_score);
+    if (
+      !editForm.title.trim() ||
+      Number.isNaN(parsedMaxScore) ||
+      parsedMaxScore <= 0 ||
+      !editForm.period_name ||
+      !editForm.tag
+    ) {
+      return;
+    }
+
+    setSavingDetails(true);
+    setEditError(null);
+    try {
+      const db = await Database.load(DB_URL);
+      await db.execute(
+        `UPDATE assignments
+         SET title = ?, description = ?, max_score = ?, period_name = ?, tag = ?
+         WHERE id = ? AND is_deleted = 0`,
+        [
+          editForm.title.trim(),
+          editForm.description.trim() || null,
+          parsedMaxScore,
+          editForm.period_name,
+          editForm.tag,
+          currentAssignment.id,
+        ],
+      );
+
+      setCurrentAssignment((prev) => ({
+        ...prev,
+        title: editForm.title.trim(),
+        description: editForm.description.trim() || null,
+        max_score: parsedMaxScore,
+        period_name: editForm.period_name,
+        tag: editForm.tag as AssignmentTag,
+      }));
+      setEditOpen(false);
+    } catch (err) {
+      setEditError(String(err));
+    } finally {
+      setSavingDetails(false);
+    }
+  };
 
   const openNoteModal = (
     studentId: number,
@@ -212,7 +344,7 @@ export function AssignmentDetailPage({
             label: t("assignments.breadcrumb"),
             onClick: () => guardedNav(onGoToAssignments),
           },
-          { label: assignment.title },
+          { label: currentAssignment.title },
         ]}
       />
 
@@ -223,14 +355,20 @@ export function AssignmentDetailPage({
             onClick={() => guardedNav(onGoToAssignments)}
           />
           <div>
-            <h2 className="text-2xl font-bold">{assignment.title}</h2>
+            <h2 className="text-2xl font-bold">{currentAssignment.title}</h2>
           </div>
         </div>
-        {hasChanges && (
-          <Button size="sm" onClick={() => setSaveModalOpen(true)}>
-            {t("common.save")}
+        <div className="flex items-center gap-2">
+          <Button size="sm" variant="outline" onClick={openEditDialog}>
+            <Pencil className="size-4" />
+            {t("common.edit")}
           </Button>
-        )}
+          {hasChanges && (
+            <Button size="sm" onClick={() => setSaveModalOpen(true)}>
+              {t("common.save")}
+            </Button>
+          )}
+        </div>
       </div>
 
       {loading ? (
@@ -253,7 +391,7 @@ export function AssignmentDetailPage({
                   {t("assignmentDetail.worth")}
                 </span>
                 <span className="text-2xl font-bold">
-                  {formatScore(assignment.max_score)}
+                  {formatScore(currentAssignment.max_score)}
                   <span className="ml-1 text-sm font-normal text-muted-foreground">
                     {t("assignmentDetail.ptsMax")}
                   </span>
@@ -276,7 +414,7 @@ export function AssignmentDetailPage({
                 {t("assignmentDetail.description")}
               </span>
               <p className="whitespace-pre-wrap text-sm text-foreground/80">
-                {assignment.description?.trim() ||
+                {currentAssignment.description?.trim() ||
                   t("assignmentDetail.noDescription")}
               </p>
             </div>
@@ -322,7 +460,8 @@ export function AssignmentDetailPage({
                       );
                       const liveScore = getLiveScore(displayVal);
                       const isExtraCredit =
-                        liveScore !== null && liveScore > assignment.max_score;
+                        liveScore !== null &&
+                        liveScore > currentAssignment.max_score;
                       const isExempt = pendingExempt.has(row.student_id)
                         ? (pendingExempt.get(row.student_id) ?? false)
                         : row.exempt === 1;
@@ -442,7 +581,7 @@ export function AssignmentDetailPage({
                                 <span className="text-sm text-muted-foreground">
                                   {formatScorePercentage(
                                     liveScore,
-                                    assignment.max_score,
+                                    currentAssignment.max_score,
                                   )}
                                   %
                                 </span>
@@ -466,7 +605,7 @@ export function AssignmentDetailPage({
                                 )}
                               />
                               <span className="w-12 shrink-0 text-xs text-muted-foreground">
-                                / {formatScore(assignment.max_score)}
+                                / {formatScore(currentAssignment.max_score)}
                               </span>
                             </div>
                           </TableCell>
@@ -489,6 +628,157 @@ export function AssignmentDetailPage({
           </div>
         </div>
       )}
+
+      <Dialog
+        open={editOpen}
+        onOpenChange={(open) => {
+          if (!open && !savingDetails) closeEditDialog();
+        }}
+      >
+        <DialogContent>
+          <form onSubmit={handleDetailsSave}>
+            <DialogHeader>
+              <DialogTitle>{t("assignmentDetail.editDetails")}</DialogTitle>
+            </DialogHeader>
+
+            <div className="flex flex-col gap-4 py-4">
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="edit-assignment-title">
+                  {t("assignments.addModal.titleLabel")}
+                </Label>
+                <Input
+                  id="edit-assignment-title"
+                  value={editForm.title}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, title: e.target.value })
+                  }
+                  placeholder={t("assignments.addModal.titlePlaceholder")}
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="edit-assignment-description">
+                  {t("assignments.addModal.descriptionLabel")}
+                </Label>
+                <textarea
+                  id="edit-assignment-description"
+                  rows={3}
+                  value={editForm.description}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, description: e.target.value })
+                  }
+                  placeholder={t("assignments.addModal.descriptionPlaceholder")}
+                  className="flex w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-xs transition-colors focus-visible:ring-1 focus-visible:ring-ring focus-visible:outline-none"
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label htmlFor="edit-assignment-max-score">
+                  {t("assignments.addModal.maxScoreLabel")}
+                </Label>
+                <Input
+                  id="edit-assignment-max-score"
+                  type="number"
+                  min="0"
+                  step="any"
+                  value={editForm.max_score}
+                  onChange={(e) =>
+                    setEditForm({ ...editForm, max_score: e.target.value })
+                  }
+                  placeholder={t("assignments.addModal.maxScorePlaceholder")}
+                  required
+                />
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label>{t("assignments.addModal.periodLabel")}</Label>
+                {uniquePeriodNames.length === 0 ? (
+                  <select
+                    disabled
+                    className="flex h-9 w-full cursor-not-allowed rounded-md border border-input bg-background px-3 py-1 text-sm opacity-50"
+                  >
+                    <option>{t("assignments.addModal.noPeriods")}</option>
+                  </select>
+                ) : (
+                  <Select
+                    value={editForm.period_name || undefined}
+                    onValueChange={(value) =>
+                      setEditForm({ ...editForm, period_name: value ?? "" })
+                    }
+                  >
+                    <SelectTrigger className="w-full">
+                      <SelectValue
+                        placeholder={t("assignments.addModal.selectPeriod")}
+                      />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {uniquePeriodNames.map((name) => (
+                        <SelectItem key={name} value={name}>
+                          {name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label>{t("assignments.addModal.tagLabel")}</Label>
+                <div className="flex flex-wrap gap-2">
+                  {TAG_OPTIONS.map((tag) => {
+                    const isSelected = editForm.tag === tag;
+                    return (
+                      <Badge
+                        key={tag}
+                        variant={isSelected ? "default" : "outline"}
+                        className={cn(
+                          "cursor-pointer transition-transform active:scale-95",
+                          !isSelected &&
+                            "text-foreground/60 hover:text-foreground",
+                        )}
+                        onClick={() => setEditForm({ ...editForm, tag })}
+                      >
+                        {tagLabels[tag]}
+                      </Badge>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {editError && <p className="text-sm text-danger">{editError}</p>}
+            </div>
+
+            <DialogFooter>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={closeEditDialog}
+                disabled={savingDetails}
+              >
+                {t("common.cancel")}
+              </Button>
+              <Button
+                type="submit"
+                disabled={
+                  savingDetails ||
+                  !editForm.title.trim() ||
+                  !editForm.max_score ||
+                  !editForm.period_name ||
+                  !editForm.tag ||
+                  uniquePeriodNames.length === 0
+                }
+              >
+                {savingDetails ? (
+                  <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                ) : (
+                  t("common.save")
+                )}
+              </Button>
+            </DialogFooter>
+          </form>
+        </DialogContent>
+      </Dialog>
 
       <Dialog
         open={noteOpen}

@@ -133,7 +133,7 @@ export function AssignmentsPage({
   };
 
   return (
-    <div className="flex h-full flex-col px-6 pt-8 pb-3 pl-3">
+    <div className="flex h-full flex-col px-10 pt-8 pb-3 pl-3">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -290,7 +290,8 @@ export function AssignmentsPage({
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
-                        {formatScore(assignment.max_score)} {t("assignments.pts")}
+                        {formatScore(assignment.max_score)}{" "}
+                        {t("assignments.pts")}
                       </TableCell>
                       <TableCell
                         className={`text-sm ${getGradedStatusClass(assignment.graded_count, assignment.student_count, assignment.created_at)}`}

@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { StudentGradeRow } from "../fetchStudentReportData";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
-import { formatScore } from "../../lib/formatScore";
+import { formatScore, formatScorePercentage } from "../../lib/formatScore";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -49,6 +49,7 @@ const S = StyleSheet.create({
   cellGrade: { fontFamily: "Helvetica-Bold", fontSize: 8.5, textAlign: "right" },
   colTitle: { flex: 4 },
   colScore: { flex: 2 },
+  colPercent: { flex: 1 },
   colGrade: { flex: 1 },
   gradeA: { color: "#15803d" },
   gradeB: { color: "#16a34a" },
@@ -130,16 +131,20 @@ export function GradesSection({ grades, periodFilter, language }: Props) {
           <View style={S.thead}>
             <Text style={[S.hCell, S.colTitle]}>{L.colAssignment}</Text>
             <Text style={[S.hCellRight, S.colScore]}>{L.colScore}</Text>
+            <Text style={[S.hCellRight, S.colPercent]} />
             <Text style={[S.hCellRight, S.colGrade]}>{L.colGrade}</Text>
           </View>
           {group.rows.map((g, i) => {
             const grade = gradeLetter(g.score, g.maxScore);
+            const percentage =
+              g.score !== null ? `${formatScorePercentage(g.score, g.maxScore)}%` : "—";
             return (
               <View key={i} style={S.row}>
                 <Text style={[S.cellBold, S.colTitle]}>{g.assignmentTitle}</Text>
                 <Text style={[S.cellRight, S.colScore]}>
                   {g.score !== null ? `${formatScore(g.score)} / ${formatScore(g.maxScore)}` : "—"}
                 </Text>
+                <Text style={[S.cellRight, S.colPercent]}>{percentage}</Text>
                 <Text style={[S.cellGrade, S.colGrade, gradeStyle(grade)]}>{grade}</Text>
               </View>
             );
