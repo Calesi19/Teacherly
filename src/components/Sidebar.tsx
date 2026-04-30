@@ -1,7 +1,14 @@
 import { useMemo, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { cn } from "@/lib/utils";
-import { BookOpen, ClipboardCheck, FileText, Settings, Users } from "../lib/lucide-compat";
+import {
+  ArrowLeftRight,
+  BookOpen,
+  ClipboardCheck,
+  FileText,
+  Settings,
+  Users,
+} from "../lib/lucide-compat";
 import { useTranslation } from "../i18n/LanguageContext";
 import { UserGroupIcon } from "../lib/lucide-compat";
 import type { Group } from "../types/group";
@@ -15,6 +22,7 @@ interface SidebarProps {
   onGoToAttendance: () => void;
   onGoToAssignments: () => void;
   onGoToReports: () => void;
+  onChangeGroup: () => void;
   onGoToSettings: () => void;
   onClose?: () => void;
 }
@@ -40,6 +48,7 @@ export function Sidebar({
   onGoToAttendance,
   onGoToAssignments,
   onGoToReports,
+  onChangeGroup,
   onGoToSettings,
   onClose,
 }: SidebarProps) {
@@ -102,6 +111,7 @@ export function Sidebar({
       onGoToAttendance,
       onGoToGroup,
       onGoToReports,
+      onChangeGroup,
       onGoToSettings,
       onGoToStudents,
       t,
@@ -118,6 +128,18 @@ export function Sidebar({
       disabled: false,
     }),
     [currentPage, onGoToSettings, t],
+  );
+
+  const changeGroupItem = useMemo(
+    () => ({
+      id: "change-group",
+      label: t("sidebar.changeGroup"),
+      icon: ArrowLeftRight,
+      active: currentPage === "groups",
+      onClick: nav(onChangeGroup),
+      disabled: false,
+    }),
+    [currentPage, onChangeGroup, t],
   );
 
   return (
@@ -206,64 +228,125 @@ export function Sidebar({
               );
             })}
 
-            <button
-              type="button"
-              onMouseEnter={() => setHoveredIndex(navItems.length)}
-              onClick={settingsItem.onClick}
-              className={cn(
-                "relative mt-auto flex min-h-12 items-center overflow-hidden rounded-md border border-transparent px-3 text-left transition-[color,border-color,background-color,box-shadow] duration-250",
-                settingsItem.active
-                  ? "text-accent"
-                  : "text-neutral-700 dark:text-neutral-200/70",
-              )}
-            >
-              <AnimatePresence>
-                {settingsItem.active && (
-                  <motion.span
-                    className="absolute inset-0 z-0 rounded-md border border-[color:color-mix(in_srgb,var(--sidebar-border)_82%,white_18%)] bg-[linear-gradient(135deg,rgba(255,255,255,0.58),rgba(255,255,255,0.34))] shadow-[inset_0_1px_0_rgba(255,255,255,0.46),0_10px_24px_rgba(98,108,118,0.14)] backdrop-blur-xl dark:border-[color:color-mix(in_srgb,var(--sidebar-border)_90%,white_10%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.05))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(8,18,26,0.22)]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{ duration: 0.18, ease: "easeOut" }}
-                  />
-                )}
-              </AnimatePresence>
-
-              <AnimatePresence>
-                {hoveredIndex === navItems.length && !settingsItem.active && (
-                  <motion.span
-                    layoutId="sidebar-hover-bg"
-                    className="absolute inset-0 z-0 rounded-md border border-[color:color-mix(in_srgb,var(--sidebar-border)_72%,white_28%)] bg-[linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.18))] backdrop-blur-lg dark:border-[color:color-mix(in_srgb,var(--sidebar-border)_82%,white_18%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))]"
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    exit={{ opacity: 0 }}
-                    transition={{
-                      type: "spring",
-                      stiffness: 350,
-                      damping: 30,
-                    }}
-                  />
-                )}
-              </AnimatePresence>
-
-              <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
-                <Settings size={18} />
-              </span>
-
-              <motion.span
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ duration: 0.16 }}
+            <div className="mt-auto flex flex-col gap-1">
+              <button
+                type="button"
+                onMouseEnter={() => setHoveredIndex(navItems.length)}
+                onClick={changeGroupItem.onClick}
                 className={cn(
-                  "relative z-10 truncate pr-3 text-sm tracking-tight",
-                  settingsItem.active
-                    ? "font-medium text-accent"
+                  "relative flex min-h-12 items-center overflow-hidden rounded-md border border-transparent px-3 text-left transition-[color,border-color,background-color,box-shadow] duration-250",
+                  changeGroupItem.active
+                    ? "text-accent"
                     : "text-neutral-700 dark:text-neutral-200/70",
                 )}
               >
-                {settingsItem.label}
-              </motion.span>
-            </button>
+                <AnimatePresence>
+                  {changeGroupItem.active && (
+                    <motion.span
+                      className="absolute inset-0 z-0 rounded-md border border-[color:color-mix(in_srgb,var(--sidebar-border)_82%,white_18%)] bg-[linear-gradient(135deg,rgba(255,255,255,0.58),rgba(255,255,255,0.34))] shadow-[inset_0_1px_0_rgba(255,255,255,0.46),0_10px_24px_rgba(98,108,118,0.14)] backdrop-blur-xl dark:border-[color:color-mix(in_srgb,var(--sidebar-border)_90%,white_10%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.05))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(8,18,26,0.22)]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {hoveredIndex === navItems.length && !changeGroupItem.active && (
+                    <motion.span
+                      layoutId="sidebar-hover-bg"
+                      className="absolute inset-0 z-0 rounded-md border border-[color:color-mix(in_srgb,var(--sidebar-border)_72%,white_28%)] bg-[linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.18))] backdrop-blur-lg dark:border-[color:color-mix(in_srgb,var(--sidebar-border)_82%,white_18%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 350,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
+                  <ArrowLeftRight size={18} />
+                </span>
+
+                <motion.span
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className={cn(
+                    "relative z-10 truncate pr-3 text-sm tracking-tight",
+                    changeGroupItem.active
+                      ? "font-medium text-accent"
+                      : "text-neutral-700 dark:text-neutral-200/70",
+                  )}
+                >
+                  {changeGroupItem.label}
+                </motion.span>
+              </button>
+
+              <button
+                type="button"
+                onMouseEnter={() => setHoveredIndex(navItems.length + 1)}
+                onClick={settingsItem.onClick}
+                className={cn(
+                  "relative flex min-h-12 items-center overflow-hidden rounded-md border border-transparent px-3 text-left transition-[color,border-color,background-color,box-shadow] duration-250",
+                  settingsItem.active
+                    ? "text-accent"
+                    : "text-neutral-700 dark:text-neutral-200/70",
+                )}
+              >
+                <AnimatePresence>
+                  {settingsItem.active && (
+                    <motion.span
+                      className="absolute inset-0 z-0 rounded-md border border-[color:color-mix(in_srgb,var(--sidebar-border)_82%,white_18%)] bg-[linear-gradient(135deg,rgba(255,255,255,0.58),rgba(255,255,255,0.34))] shadow-[inset_0_1px_0_rgba(255,255,255,0.46),0_10px_24px_rgba(98,108,118,0.14)] backdrop-blur-xl dark:border-[color:color-mix(in_srgb,var(--sidebar-border)_90%,white_10%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.1),rgba(255,255,255,0.05))] dark:shadow-[inset_0_1px_0_rgba(255,255,255,0.06),0_10px_24px_rgba(8,18,26,0.22)]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{ duration: 0.18, ease: "easeOut" }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                <AnimatePresence>
+                  {hoveredIndex === navItems.length + 1 && !settingsItem.active && (
+                    <motion.span
+                      layoutId="sidebar-hover-bg"
+                      className="absolute inset-0 z-0 rounded-md border border-[color:color-mix(in_srgb,var(--sidebar-border)_72%,white_28%)] bg-[linear-gradient(135deg,rgba(255,255,255,0.3),rgba(255,255,255,0.18))] backdrop-blur-lg dark:border-[color:color-mix(in_srgb,var(--sidebar-border)_82%,white_18%)] dark:bg-[linear-gradient(135deg,rgba(255,255,255,0.06),rgba(255,255,255,0.03))]"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      exit={{ opacity: 0 }}
+                      transition={{
+                        type: "spring",
+                        stiffness: 350,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                </AnimatePresence>
+
+                <span className="relative z-10 flex h-10 w-10 shrink-0 items-center justify-center">
+                  <Settings size={18} />
+                </span>
+
+                <motion.span
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  transition={{ duration: 0.16 }}
+                  className={cn(
+                    "relative z-10 truncate pr-3 text-sm tracking-tight",
+                    settingsItem.active
+                      ? "font-medium text-accent"
+                      : "text-neutral-700 dark:text-neutral-200/70",
+                  )}
+                >
+                  {settingsItem.label}
+                </motion.span>
+              </button>
+            </div>
           </div>
         </motion.div>
       </motion.div>

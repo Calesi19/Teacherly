@@ -25,6 +25,7 @@ import {
 import { Sidebar } from "./components/Sidebar";
 import { GroupsPage } from "./pages/GroupsPage";
 import { GroupPage } from "./pages/GroupPage";
+import { EditGroupPage } from "./pages/EditGroupPage";
 import { StudentsPage } from "./pages/StudentsPage";
 import { StudentProfilePage } from "./pages/StudentProfilePage";
 import { ContactsPage } from "./pages/ContactsPage";
@@ -162,6 +163,7 @@ function useAppTheme() {
 type Route =
   | { page: "groups" }
   | { page: "group"; group: Group }
+  | { page: "group-edit"; group: Group }
   | { page: "students"; group: Group }
   | { page: "student-profile"; group: Group; student: Student }
   | { page: "student-info"; group: Group; student: Student }
@@ -200,6 +202,7 @@ function AppContent() {
 
   const goToGroups = () => setRoute({ page: "groups" });
   const goToGroup = (group: Group) => setRoute({ page: "group", group });
+  const goToGroupEdit = (group: Group) => setRoute({ page: "group-edit", group });
   const changeGroup = () => {
     localStorage.removeItem(LAST_GROUP_KEY);
     setCurrentGroup(null);
@@ -345,6 +348,7 @@ function AppContent() {
     onGoToAttendance: () => guardSidebarNav(() => currentGroup && goToAttendance(currentGroup)),
     onGoToAssignments: () => guardSidebarNav(() => currentGroup && goToAssignments(currentGroup)),
     onGoToReports: () => guardSidebarNav(() => currentGroup && goToReports(currentGroup)),
+    onChangeGroup: () => guardSidebarNav(changeGroup),
     onGoToSettings: () => guardSidebarNav(() => goToSettings(currentGroup)),
   };
 
@@ -527,11 +531,26 @@ function AppContent() {
               setCurrentGroup(c);
               goToStudents(c);
             }}
-            onGoToSettings={goToSettings}
           />
         );
       case "group":
-        return <GroupPage group={route.group} onGoToGroups={goToGroups} />;
+        return (
+          <GroupPage
+            group={route.group}
+            onGoToGroups={goToGroups}
+            onGoToEditGroup={() => goToGroupEdit(route.group)}
+            onGoToSchedule={() => goToSchedule(route.group)}
+          />
+        );
+      case "group-edit":
+        return (
+          <EditGroupPage
+            group={route.group}
+            onGoToGroups={goToGroups}
+            onGoToGroup={() => goToGroup(route.group)}
+            onGoToSchedule={() => goToSchedule(route.group)}
+          />
+        );
       case "students":
         return (
           <StudentsPage
@@ -664,7 +683,7 @@ function AppContent() {
           <SchedulePage
             group={route.group}
             onGoToGroups={goToGroups}
-            onGoToSettings={() => goToSettings(route.group)}
+            onGoToSettings={() => goToGroup(route.group)}
           />
         );
       case "attendance":
@@ -717,9 +736,6 @@ function AppContent() {
             onColorThemeChange={setColorTheme}
             onGoToTermsOfService={goToTermsOfService}
             onGoToPrivacyPolicy={goToPrivacyPolicy}
-            group={route.group}
-            onGoToSchedule={route.group ? () => goToSchedule(route.group!) : undefined}
-            onGoToGroups={changeGroup}
           />
         );
       case "terms-of-service":
@@ -729,7 +745,7 @@ function AppContent() {
     }
   }
 
-  const showSidebar = !(route.page === "settings" && route.group === null);
+  const showSidebar = true;
 
   return (
     <div className="app-container">

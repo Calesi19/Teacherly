@@ -14,10 +14,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { GroupSettingsSection } from "../components/GroupSettingsSection";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { LanguagePreference } from "../i18n/LanguageContext";
-import type { Group } from "../types/group";
 
 type ThemePreference = "light" | "dark" | "system";
 type ColorTheme =
@@ -38,9 +36,6 @@ interface SettingsPageProps {
   onColorThemeChange: (theme: ColorTheme) => void;
   onGoToTermsOfService: () => void;
   onGoToPrivacyPolicy: () => void;
-  group?: Group | null;
-  onGoToSchedule?: () => void;
-  onGoToGroups?: () => void;
 }
 
 function SettingsCard({
@@ -64,17 +59,12 @@ export function SettingsPage({
   onColorThemeChange,
   onGoToTermsOfService,
   onGoToPrivacyPolicy,
-  group,
-  onGoToSchedule,
-  onGoToGroups,
 }: SettingsPageProps) {
   const { t, languagePreference, setLanguage } = useTranslation();
-  const hasGroupTab = Boolean(group && onGoToSchedule && onGoToGroups);
-  const defaultTab = hasGroupTab ? "group" : "presentation";
 
   return (
     <div className="flex h-full flex-col overflow-y-auto px-6 pt-8 pb-6 pl-3">
-      <Tabs defaultValue={defaultTab} className="flex flex-1 flex-col">
+      <Tabs defaultValue="presentation" className="flex flex-1 flex-col">
         <div className="mb-2 flex flex-col gap-4 lg:flex-row lg:items-end lg:justify-between">
           <div>
             <h2 className="text-2xl font-bold">{t("settings.title")}</h2>
@@ -85,11 +75,6 @@ export function SettingsPage({
             aria-label="Settings sections"
             className="flex-wrap"
           >
-            {hasGroupTab && (
-              <TabsTrigger value="group">
-                {t("settings.sectionGroup")}
-              </TabsTrigger>
-            )}
             <TabsTrigger value="presentation">
               {t("settings.sectionPresentation")}
             </TabsTrigger>
@@ -101,18 +86,6 @@ export function SettingsPage({
             </TabsTrigger>
           </TabsList>
         </div>
-
-        {hasGroupTab && group && onGoToSchedule && onGoToGroups && (
-          <TabsContent value="group" className="pt-4">
-            <div>
-              <GroupSettingsSection
-                group={group}
-                onGoToSchedule={onGoToSchedule}
-                onGoToGroups={onGoToGroups}
-              />
-            </div>
-          </TabsContent>
-        )}
 
         <TabsContent value="presentation" className="pt-4">
           <div className="flex flex-col gap-3">
@@ -132,7 +105,13 @@ export function SettingsPage({
                 }
               >
                 <SelectTrigger className="w-36 shrink-0">
-                  <SelectValue />
+                  <SelectValue>
+                    {theme === "light"
+                      ? t("settings.light")
+                      : theme === "dark"
+                        ? t("settings.dark")
+                        : t("settings.system")}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="light">
@@ -173,7 +152,9 @@ export function SettingsPage({
                 }
               >
                 <SelectTrigger className="w-48 shrink-0">
-                  <SelectValue />
+                  <SelectValue>
+                    {t(`settings.colorTheme${colorTheme.charAt(0).toUpperCase()}${colorTheme.slice(1)}` as Parameters<typeof t>[0])}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="pastel">

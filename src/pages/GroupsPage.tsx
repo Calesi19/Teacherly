@@ -1,5 +1,3 @@
-import { Button } from "@/components/ui/button";
-import { Settings } from "lucide-react";
 import { GroupCard } from "../components/GroupCard";
 import { AddGroupModal } from "../components/AddGroupModal";
 import { useTranslation } from "../i18n/LanguageContext";
@@ -9,7 +7,6 @@ import type { NewGroupInput } from "../types/group";
 interface GroupsPageProps {
   onSelectGroup: (group: Group) => void;
   currentGroup: Group | null;
-  onGoToSettings: () => void;
   groups: Group[];
   loading: boolean;
   error: string | null;
@@ -19,7 +16,6 @@ interface GroupsPageProps {
 export function GroupsPage({
   onSelectGroup,
   currentGroup,
-  onGoToSettings,
   groups,
   loading,
   error,
@@ -67,16 +63,6 @@ export function GroupsPage({
           </div>
         )}
       </div>
-
-      <Button
-        variant="ghost"
-        size="icon"
-        onClick={onGoToSettings}
-        aria-label={t("sidebar.settings")}
-        className="fixed bottom-4 left-4"
-      >
-        <Settings size={18} />
-      </Button>
     </div>
   );
 }

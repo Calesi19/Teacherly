@@ -58,16 +58,27 @@ function formatDate(dateStr: string): string {
   });
 }
 
+function getGradedStatusClass(dateStr: string): string {
+  const assignmentDate = new Date(dateStr);
+  const today = new Date();
+
+  assignmentDate.setHours(0, 0, 0, 0);
+  today.setHours(0, 0, 0, 0);
+
+  const diffMs = today.getTime() - assignmentDate.getTime();
+  const diffDays = diffMs / (1000 * 60 * 60 * 24);
+
+  if (diffDays < 0) return "text-foreground/50";
+  if (diffDays <= 7) return "text-warning";
+  return "text-danger";
+}
+
 function getCourseChipClass(periodName: string): string {
   const seed = Array.from(periodName).reduce(
     (total, char) => total + char.charCodeAt(0),
     0,
   );
   return COURSE_CHIP_STYLES[seed % COURSE_CHIP_STYLES.length];
-}
-
-function getCourseInitial(periodName: string): string {
-  return periodName.trim().charAt(0).toUpperCase();
 }
 
 export function AssignmentsPage({
@@ -240,18 +251,17 @@ export function AssignmentsPage({
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         <Badge
-                          className={`gap-1.5 px-2.5 py-1 ${getCourseChipClass(assignment.period_name)}`}
+                          className={`px-2.5 py-1 ${getCourseChipClass(assignment.period_name)}`}
                         >
-                          <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-current/14 text-[10px] font-semibold">
-                            {getCourseInitial(assignment.period_name)}
-                          </span>
                           <span>{assignment.period_name}</span>
                         </Badge>
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
                         {assignment.max_score} {t("assignments.pts")}
                       </TableCell>
-                      <TableCell className="text-sm text-foreground/50">
+                      <TableCell
+                        className={`text-sm ${getGradedStatusClass(assignment.created_at)}`}
+                      >
                         {assignment.graded_count} / {assignment.student_count}
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">

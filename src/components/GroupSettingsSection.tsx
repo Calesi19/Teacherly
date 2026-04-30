@@ -39,12 +39,14 @@ interface GroupSettingsSectionProps {
   group: Group;
   onGoToSchedule: () => void;
   onGoToGroups: () => void;
+  onSaved?: () => void;
 }
 
 export function GroupSettingsSection({
   group,
   onGoToSchedule,
   onGoToGroups,
+  onSaved,
 }: GroupSettingsSectionProps) {
   const { t } = useTranslation();
   const { updateGroup, deleteGroup } = useGroups();
@@ -89,6 +91,7 @@ export function GroupSettingsSection({
         end_date: endDate,
       });
       setSaved(true);
+      onSaved?.();
     } catch (e) {
       setSaveError(String(e));
     } finally {

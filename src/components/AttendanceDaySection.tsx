@@ -11,8 +11,6 @@ import {
   Table,
   TableBody,
   TableCell,
-  TableHead,
-  TableHeader,
   TableRow,
 } from "@/components/ui/table";
 import { useTranslation } from "../i18n/LanguageContext";
@@ -282,24 +280,6 @@ export function AttendanceDaySection({
 
         <div className="min-h-0 flex-1 overflow-auto">
           <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead className="w-10 pr-0">
-                  <input
-                    type="checkbox"
-                    checked={allSelected}
-                    ref={(el) => {
-                      if (el) el.indeterminate = !allSelected && someSelected;
-                    }}
-                    onChange={toggleSelectAll}
-                    aria-label="Select all students"
-                    className="w-4 h-4 cursor-pointer"
-                  />
-                </TableHead>
-                <TableHead>{t("students.tableColumns.name")}</TableHead>
-                <TableHead>{t("studentProfile.attendance.columns.status")}</TableHead>
-              </TableRow>
-            </TableHeader>
             <TableBody>
               {rows.map((row) => (
                 <TableRow key={row.student_id}>
