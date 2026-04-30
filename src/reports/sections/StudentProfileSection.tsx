@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { Student } from "../../types/student";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
-import { formatReportGender } from "../formatters";
+import { formatReportDate, formatReportGender } from "../formatters";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -21,13 +21,6 @@ const S = StyleSheet.create({
   value: { fontSize: 9, color: "#1a202c" },
 });
 
-function fmt(d: string | null): string {
-  if (!d) return "—";
-  const [y, m, day] = d.split("-");
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${months[parseInt(m, 10) - 1]} ${parseInt(day, 10)}, ${y}`;
-}
-
 interface Props {
   student: Student;
   language: Language;
@@ -39,10 +32,10 @@ export function StudentProfileSection({ student, language }: Props) {
   const fields: { label: string; value: string }[] = [
     { label: L.fieldFullName, value: student.name },
     { label: L.fieldGender, value: formatReportGender(student.gender, language) },
-    { label: L.fieldDob, value: fmt(student.birthdate) },
+    { label: L.fieldDob, value: formatReportDate(student.birthdate, language) },
     { label: L.fieldStudentId, value: student.student_number ?? "—" },
-    { label: L.fieldEnrollmentDate, value: fmt(student.enrollment_date) },
-    { label: L.fieldEnrollmentEndDate, value: fmt(student.enrollment_end_date) },
+    { label: L.fieldEnrollmentDate, value: formatReportDate(student.enrollment_date, language) },
+    { label: L.fieldEnrollmentEndDate, value: formatReportDate(student.enrollment_end_date, language) },
   ];
 
   return (

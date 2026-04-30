@@ -2,7 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { Student } from "../../types/student";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
-import { formatReportGender } from "../formatters";
+import { formatReportDate, formatReportGender } from "../formatters";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -48,13 +48,6 @@ const S = StyleSheet.create({
   colEnrolled: { flex: 2 },
 });
 
-function fmt(d: string | null): string {
-  if (!d) return "—";
-  const [y, m, day] = d.split("-");
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${months[parseInt(m, 10) - 1]} ${parseInt(day, 10)}, ${y}`;
-}
-
 interface Props {
   students: Student[];
   language: Language;
@@ -82,9 +75,13 @@ export function StudentRosterSection({ students, language }: Props) {
           <Text style={[S.cell, S.colGender]}>
             {formatReportGender(s.gender, language)}
           </Text>
-          <Text style={[S.cell, S.colBirthdate]}>{fmt(s.birthdate)}</Text>
+          <Text style={[S.cell, S.colBirthdate]}>
+            {formatReportDate(s.birthdate, language)}
+          </Text>
           <Text style={[S.cell, S.colId]}>{s.student_number ?? "—"}</Text>
-          <Text style={[S.cell, S.colEnrolled]}>{fmt(s.enrollment_date)}</Text>
+          <Text style={[S.cell, S.colEnrolled]}>
+            {formatReportDate(s.enrollment_date, language)}
+          </Text>
         </View>
       ))}
       <Text style={S.footer}>{countLabel}</Text>

@@ -3,6 +3,7 @@ import type { Note, NoteTagKey } from "../../types/note";
 import { parseTags } from "../../types/note";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
+import { formatReportDateTime } from "../formatters";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -36,12 +37,6 @@ const S = StyleSheet.create({
   empty: { fontSize: 8.5, color: "#94a3b8" },
   footer: { paddingTop: 4, fontSize: 8, color: "#94a3b8" },
 });
-
-function fmtDate(iso: string): string {
-  const d = new Date(iso);
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${months[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
-}
 
 interface Props {
   notes: Note[];
@@ -84,7 +79,9 @@ export function NotesSection({ notes, tagFilter, language }: Props) {
           return (
             <View key={note.id} style={S.noteBlock}>
               <View style={S.noteMeta}>
-                <Text style={S.noteDate}>{fmtDate(note.created_at)}</Text>
+                <Text style={S.noteDate}>
+                  {formatReportDateTime(note.created_at, language)}
+                </Text>
                 {tags.map((t) => (
                   <Text key={t} style={S.tag}>{TAG_LABELS[t]}</Text>
                 ))}

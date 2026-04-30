@@ -211,7 +211,7 @@ export function ViewNoteDialog({
             </div>
             <DialogFooter>
               <Button type="button" variant="ghost" onClick={onClose}>
-                {t("common.cancel")}
+                {t("notes.viewModal.close")}
               </Button>
               <Button type="button" variant="secondary" onClick={onStartEditing}>
                 <Pencil size={14} />

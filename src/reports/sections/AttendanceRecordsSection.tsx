@@ -2,6 +2,7 @@ import { View, Text, StyleSheet } from "@react-pdf/renderer";
 import type { AttendanceRecordRow } from "../fetchStudentReportData";
 import { translations } from "../../i18n/translations";
 import type { Language } from "../../i18n/translations";
+import { formatReportDate } from "../formatters";
 
 const S = StyleSheet.create({
   section: { marginBottom: 28 },
@@ -45,12 +46,6 @@ const S = StyleSheet.create({
   empty: { fontSize: 8.5, color: "#94a3b8", paddingVertical: 8, paddingHorizontal: 6 },
 });
 
-function fmt(d: string): string {
-  const [y, m, day] = d.split("-");
-  const months = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-  return `${months[parseInt(m, 10) - 1]} ${parseInt(day, 10)}, ${y}`;
-}
-
 function statusStyle(status: string) {
   if (status === "present") return S.statusPresent;
   if (status === "absent") return S.statusAbsent;
@@ -77,7 +72,7 @@ export function AttendanceRecordsSection({ records, dateFrom, dateTo, language }
 
   const rangeLabel =
     dateFrom || dateTo
-      ? ` (${dateFrom ? fmt(dateFrom) : L.rangeStart} – ${dateTo ? fmt(dateTo) : L.rangeToday})`
+      ? ` (${dateFrom ? formatReportDate(dateFrom, language) : L.rangeStart} – ${dateTo ? formatReportDate(dateTo, language) : L.rangeToday})`
       : "";
 
   const countLabel = records.length === 1
@@ -100,7 +95,9 @@ export function AttendanceRecordsSection({ records, dateFrom, dateTo, language }
       ) : (
         records.map((r, i) => (
           <View key={i} style={S.row}>
-            <Text style={[S.cell, S.colDate]}>{fmt(r.date)}</Text>
+            <Text style={[S.cell, S.colDate]}>
+              {formatReportDate(r.date, language)}
+            </Text>
             <Text style={[S.cell, S.colPeriod]}>{r.periodName}</Text>
             <Text style={[S.cell, S.colStatus, statusStyle(r.status)]}>
               {STATUS_LABELS[r.status] ?? r.status}

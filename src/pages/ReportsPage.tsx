@@ -16,6 +16,7 @@ import { FileText, FolderOpen, CheckCircle, AlertCircle } from "lucide-react";
 import { pdf } from "@react-pdf/renderer";
 import { invoke } from "@tauri-apps/api/core";
 import { PdfDocument } from "../reports/PdfDocument";
+import { getReportLocale } from "../reports/formatters";
 import { StudentRosterSection } from "../reports/sections/StudentRosterSection";
 import { AttendanceSummarySection } from "../reports/sections/AttendanceSummarySection";
 import { GradeSummarySection } from "../reports/sections/GradeSummarySection";
@@ -95,6 +96,14 @@ function ReportsDateField({
       className="min-w-0 flex-1"
     />
   );
+}
+
+function getGeneratedReportDate(language: "en" | "es") {
+  return new Intl.DateTimeFormat(getReportLocale(language), {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+  }).format(new Date());
 }
 
 export function ReportsPage({ group }: ReportsPageProps) {
@@ -231,7 +240,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
               title={t("reports.pdf.groupReport")}
               groupName={group.name}
               schoolName={group.school_name}
-              generatedDate={new Date().toLocaleDateString()}
+              generatedDate={getGeneratedReportDate(language)}
               language={language}
             >
               {students ? (
@@ -322,7 +331,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
               title={`${student?.name ?? t("reports.pdf.studentFallback")} — ${t("reports.pdf.studentReport")}`}
               groupName={group.name}
               schoolName={group.school_name}
-              generatedDate={new Date().toLocaleDateString()}
+              generatedDate={getGeneratedReportDate(language)}
               language={language}
             >
               {sections.has("profile") && student ? (
@@ -502,7 +511,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
             title={t("reports.pdf.groupReport")}
             groupName={group.name}
             schoolName={group.school_name}
-            generatedDate={new Date().toLocaleDateString()}
+            generatedDate={getGeneratedReportDate(language)}
             language={language}
           >
             {students ? (
@@ -594,7 +603,7 @@ export function ReportsPage({ group }: ReportsPageProps) {
             title={`${student?.name ?? t("reports.pdf.studentFallback")} — ${t("reports.pdf.studentReport")}`}
             groupName={group.name}
             schoolName={group.school_name}
-            generatedDate={new Date().toLocaleDateString()}
+            generatedDate={getGeneratedReportDate(language)}
             language={language}
           >
             {sections.has("profile") && student ? (

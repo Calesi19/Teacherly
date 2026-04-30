@@ -450,6 +450,7 @@ const en = {
       title: "Note",
       editTitle: "Edit Note",
       edit: "Edit",
+      close: "Close",
     },
   },
   schedule: {
@@ -1488,6 +1489,7 @@ const es: typeof en = {
       title: "Nota",
       editTitle: "Editar nota",
       edit: "Editar",
+      close: "Cerrar",
     },
   },
   schedule: {
