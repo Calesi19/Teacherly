@@ -34,7 +34,7 @@ export function GroupCard({ group, isSelected, onClick }: GroupCardProps) {
   return (
     <div
       onClick={onClick}
-      className={`cursor-pointer rounded-2xl border-2 p-5 transition-all ${
+      className={`cursor-pointer rounded-2xl border p-5 transition-all ${
         isSelected
           ? "border-accent bg-accent/5 shadow-md shadow-accent/10"
           : "border-border bg-background hover:border-accent/40 hover:shadow-md hover:shadow-black/5"
