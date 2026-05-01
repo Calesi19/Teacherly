@@ -37,6 +37,7 @@
   --success-foreground: #1d4d39;
   --warning: #f5c88b;
   --warning-foreground: #694620;
+  --partial: #a855f7;
   --border: #d6e7ef;
   --input: #dceaf4;
   --ring: #93cbed;
@@ -171,6 +172,7 @@ body,
   --color-destructive: var(--destructive);
   --color-warning-foreground: var(--warning-foreground);
   --color-warning: var(--warning);
+  --color-partial: var(--partial);
   --color-success-foreground: var(--success-foreground);
   --color-success: var(--success);
   --color-accent-foreground: var(--accent-foreground);
@@ -220,6 +222,7 @@ body,
   --success-foreground: #113728;
   --warning: #e8c18f;
   --warning-foreground: #422c12;
+  --partial: #c084fc;
   --border: rgba(196, 228, 240, 0.12);
   --input: rgba(196, 228, 240, 0.16);
   --ring: #7db8de;

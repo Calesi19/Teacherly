@@ -79,7 +79,7 @@ export function AttendanceTab({
                   {
                     key: "partial",
                     value: attendanceSummary.partial,
-                    color: "text-chart-4",
+                    color: "text-partial",
                   },
                 ] as const
               ).map(({ key, value, color }) => {

@@ -92,6 +92,13 @@ export function StudentProfilePage({
     "totalDays" | "present" | "absent" | "late" | "partial" | null
   >(null);
 
+  const handleGoToAssignments = (periodName?: string) => {
+    setActiveTab("assignments");
+    if (periodName) {
+      setAssignmentPeriodFilter(periodName);
+    }
+  };
+
   const { student: freshStudent } = useStudentInfo(student.id);
   const s = freshStudent ?? student;
   const { contacts, loading: loadingContacts } = useContacts(student.id);
@@ -397,7 +404,7 @@ export function StudentProfilePage({
     present: "text-success",
     absent: "text-danger",
     late: "text-warning",
-    partial: "text-chart-4",
+    partial: "text-partial",
   };
 
   const therapyLabels = services
@@ -497,6 +504,7 @@ export function StudentProfilePage({
             onGoToServices={onGoToServices}
             onGoToAccommodations={onGoToAccommodations}
             onGoToObservations={onGoToObservations}
+            onGoToAssignments={handleGoToAssignments}
           />
 
           <AssignmentsTab

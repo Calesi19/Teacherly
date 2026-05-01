@@ -40,7 +40,7 @@ const ATTENDANCE_CHART_COLORS = {
   present: "var(--success)",
   absent: "var(--danger)",
   late: "var(--warning)",
-  partial: "var(--chart-4)",
+  partial: "var(--partial)",
 } as const;
 
 type AttendanceChartKey = keyof typeof ATTENDANCE_CHART_COLORS;
@@ -71,6 +71,7 @@ interface OverviewTabProps {
   onGoToServices: () => void;
   onGoToAccommodations: () => void;
   onGoToObservations: () => void;
+  onGoToAssignments?: (periodName?: string) => void;
 }
 
 export function OverviewTab({
@@ -99,6 +100,7 @@ export function OverviewTab({
   onGoToServices,
   onGoToAccommodations,
   onGoToObservations,
+  onGoToAssignments,
 }: OverviewTabProps) {
   const { t } = useTranslation();
   const attendanceChartData = useMemo(() => {
@@ -387,9 +389,11 @@ export function OverviewTab({
                   );
 
                   return (
-                    <div
+                    <button
                       key={classGrade.periodName}
-                      className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/60 px-3 py-3"
+                      type="button"
+                      onClick={() => onGoToAssignments?.(classGrade.periodName)}
+                      className="flex min-w-0 flex-col gap-3 rounded-lg border border-border/60 px-3 py-3 text-left transition-all hover:border-foreground/20 hover:bg-muted/30 focus-visible:ring-2 focus-visible:ring-ring"
                     >
                       <div className="min-w-0 text-center">
                         <div className="truncate text-sm font-semibold">
@@ -434,7 +438,7 @@ export function OverviewTab({
                           </text>
                         </svg>
                       </div>
-                    </div>
+                    </button>
                   );
                 })}
               </div>
