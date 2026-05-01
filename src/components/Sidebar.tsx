@@ -161,11 +161,10 @@ export function Sidebar({
                 <button
                   key={item.id}
                   type="button"
-                  disabled={item.disabled}
                   onMouseEnter={() => setHoveredIndex(index)}
                   onClick={item.onClick}
                   className={cn(
-                    "relative flex items-center overflow-hidden rounded-md border border-transparent text-left transition-[color,border-color,background-color,box-shadow] duration-250 disabled:cursor-not-allowed disabled:opacity-40",
+                    "relative flex items-center overflow-hidden rounded-md border border-transparent text-left transition-[color,border-color,background-color,box-shadow] duration-250",
                     item.active
                       ? "text-foreground"
                       : "text-neutral-700 dark:text-neutral-200/70",
@@ -186,8 +185,7 @@ export function Sidebar({
 
                   <AnimatePresence>
                     {hoveredIndex === index &&
-                      !item.active &&
-                      !item.disabled && (
+                      !item.active && (
                         <motion.span
                           layoutId="sidebar-hover-bg"
                           className="absolute inset-0 z-0 rounded-md border border-[color:var(--sidebar-border)] bg-[color:color-mix(in_srgb,var(--sidebar-foreground)_5%,transparent)]"

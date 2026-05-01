@@ -24,7 +24,7 @@ export function GroupsPage({
   const { t } = useTranslation();
 
   return (
-    <div className="relative flex h-full flex-col overflow-y-auto px-6 pt-8 pb-6 pl-3">
+    <div className="relative flex h-full flex-col overflow-y-auto px-6 pt-8 pb-6">
       <div className="mb-6 flex items-center justify-between">
         <h2 className="text-2xl font-bold">{t("groups.title")}</h2>
         <AddGroupModal onAdd={onAddGroup} />
@@ -38,15 +38,22 @@ export function GroupsPage({
         )}
 
         {error && (
-          <div role="alert" className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger">
+          <div
+            role="alert"
+            className="rounded-lg bg-danger/10 px-4 py-3 text-sm text-danger"
+          >
             {error}
           </div>
         )}
 
         {!loading && !error && groups.length === 0 && (
           <div className="flex flex-1 flex-col items-center justify-center py-20 text-center">
-            <p className="text-lg font-semibold text-muted">{t("groups.noGroupsYet")}</p>
-            <p className="mt-1 text-sm text-foreground/40">{t("groups.noGroupsHint")}</p>
+            <p className="text-lg font-semibold text-muted">
+              {t("groups.noGroupsYet")}
+            </p>
+            <p className="mt-1 text-sm text-foreground/40">
+              {t("groups.noGroupsHint")}
+            </p>
           </div>
         )}
 
