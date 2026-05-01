@@ -207,7 +207,7 @@ export function CommandPalette({
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[140] flex items-center justify-center bg-black/25 px-4 backdrop-blur-sm dark:bg-black/45 sm:px-6"
+      className="fixed inset-0 z-[140] flex items-start justify-center overflow-y-auto bg-black/25 px-4 pb-4 pt-[min(12vh,5rem)] backdrop-blur-sm dark:bg-black/45 sm:px-6"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
@@ -217,14 +217,14 @@ export function CommandPalette({
         role="dialog"
         aria-modal="true"
         aria-labelledby={headingId}
-        className="w-full max-w-2xl overflow-hidden rounded-xl border border-black/5 bg-neutral-100 text-foreground shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-white/8 dark:bg-neutral-900"
+        className="flex max-h-[calc(100dvh-min(12vh,5rem)-1rem)] w-full max-w-2xl flex-col overflow-hidden rounded-xl border border-black/5 bg-neutral-100 text-foreground shadow-[0_28px_80px_rgba(15,23,42,0.18)] dark:border-white/8 dark:bg-neutral-900"
         onKeyDown={handleKeyDown}
       >
         <h2 id={headingId} className="sr-only">
           {t("commandPalette.title")}
         </h2>
 
-        <div className="border-b border-black/5 px-4 py-4 dark:border-white/8">
+        <div className="shrink-0 border-b border-black/5 px-4 py-4 dark:border-white/8">
           <label htmlFor="command-palette-search" className="sr-only">
             {t("commandPalette.searchLabel")}
           </label>
@@ -251,7 +251,7 @@ export function CommandPalette({
           </div>
         </div>
 
-        <div className="max-h-[30rem] overflow-y-auto px-3 py-3">
+        <div className="min-h-0 flex-1 overflow-y-auto px-3 py-3">
           {!query.trim() ? (
             recentItems.length === 0 ? (
               <div className="flex min-h-44 flex-col items-center justify-center rounded-lg bg-neutral-200/80 px-6 text-center dark:bg-neutral-800/80">
