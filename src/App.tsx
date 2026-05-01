@@ -606,7 +606,6 @@ function AppContent() {
             group={route.group}
             onGoToGroups={goToGroups}
             onGoToGroup={() => goToGroup(route.group)}
-            onGoToSchedule={() => goToSchedule(route.group)}
           />
         );
       case "students":

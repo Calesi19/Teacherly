@@ -12,7 +12,7 @@ import {
 } from "@/components/ui/dialog";
 import { AppDatePicker } from "@/components/ui/app-date-picker";
 import { cn } from "@/lib/utils";
-import { Trash2, CalendarDays } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { useGroups } from "../hooks/useGroups";
 import { useTranslation } from "../i18n/LanguageContext";
 import type { Group } from "../types/group";
@@ -37,14 +37,12 @@ const GRADE_OPTIONS = [
 
 interface GroupSettingsSectionProps {
   group: Group;
-  onGoToSchedule: () => void;
   onGoToGroups: () => void;
   onSaved?: () => void;
 }
 
 export function GroupSettingsSection({
   group,
-  onGoToSchedule,
   onGoToGroups,
   onSaved,
 }: GroupSettingsSectionProps) {
@@ -182,21 +180,6 @@ export function GroupSettingsSection({
       />
 
       {saveError && <p className="text-danger text-sm">{saveError}</p>}
-
-      <hr className="border-border" />
-
-      <div className="flex items-center justify-between">
-        <div>
-          <p className="text-sm font-semibold">{t("sidebar.schedule")}</p>
-          <p className="text-sm text-foreground/60 mt-0.5">
-            {t("groups.editGroup.scheduleDescription")}
-          </p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={onGoToSchedule}>
-          <CalendarDays size={16} />
-          {t("groups.editGroup.scheduleManage")}
-        </Button>
-      </div>
 
       <hr className="border-border" />
 

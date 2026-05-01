@@ -7,14 +7,12 @@ interface EditGroupPageProps {
   group: Group;
   onGoToGroups: () => void;
   onGoToGroup: () => void;
-  onGoToSchedule: () => void;
 }
 
 export function EditGroupPage({
   group,
   onGoToGroups,
   onGoToGroup,
-  onGoToSchedule,
 }: EditGroupPageProps) {
   const { t } = useTranslation();
 
@@ -34,7 +32,6 @@ export function EditGroupPage({
 
       <GroupSettingsSection
         group={group}
-        onGoToSchedule={onGoToSchedule}
         onGoToGroups={onGoToGroups}
         onSaved={onGoToGroup}
       />

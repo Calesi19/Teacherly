@@ -10,7 +10,7 @@ interface WindowBarProps {
 export const WindowBar = ({ isMaximized }: WindowBarProps) => (
   <div 
     className={`absolute top-0 left-0 right-0 h-8 z-50 overflow-hidden transition-all duration-200 ${
-      isMaximized ? "rounded-none" : "rounded-tr-[24px]"
+      isMaximized ? "rounded-none" : "rounded-tr-[12px]"
     }`}
   >
     <div data-tauri-drag-region className="absolute inset-0" />
@@ -30,7 +30,7 @@ export const WindowBar = ({ isMaximized }: WindowBarProps) => (
       <button
         onClick={() => win.close()}
         className={`flex h-8 w-11 items-center justify-center text-foreground/60 transition-all duration-200 hover:bg-red-500 hover:text-white ${
-          isMaximized ? "rounded-none" : "rounded-tr-[24px]"
+          isMaximized ? "rounded-none" : "rounded-tr-[12px]"
         }`}
       >
         <X size={12} />
