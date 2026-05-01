@@ -56,7 +56,7 @@ export function useAttendance(groupId: number, date: string) {
       const dayOfWeek = new Date(date + "T12:00:00").getDay();
 
       const periods = await db.select<SchedulePeriod[]>(
-        "SELECT id, group_id, day_of_week, name, start_time, end_time, sort_order, created_at FROM schedule_periods WHERE group_id = ? AND day_of_week = ? AND is_deleted = 0 ORDER BY sort_order ASC, start_time ASC",
+        "SELECT id, group_id, day_of_week, name, start_time, end_time, sort_order, created_at FROM schedule_periods WHERE group_id = ? AND day_of_week = ? AND is_deleted = 0 ORDER BY sort_order ASC, name ASC",
         [groupId, dayOfWeek]
       );
       setPeriodsForDay(periods);

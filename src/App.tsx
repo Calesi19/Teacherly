@@ -36,7 +36,7 @@ import { AccommodationsPage } from "./pages/AccommodationsPage";
 import { ObservationsPage } from "./pages/ObservationsPage";
 import { VisitationsPage } from "./pages/VisitationsPage";
 import { NotesPage } from "./pages/NotesPage";
-import { SchedulePage } from "./pages/SchedulePage";
+import { CoursesPage } from "./pages/CoursesPage";
 import { AttendancePage } from "./pages/AttendancePage";
 import { AssignmentsPage } from "./pages/AssignmentsPage";
 import { AssignmentDetailPage } from "./pages/AssignmentDetailPage";
@@ -195,7 +195,7 @@ type Route =
   | { page: "student-observations"; group: Group; student: Student }
   | { page: "visitations"; group: Group; student: Student }
   | { page: "notes"; group: Group; student: Student }
-  | { page: "schedule"; group: Group }
+  | { page: "courses"; group: Group }
   | { page: "attendance"; group: Group }
   | { page: "assignments"; group: Group }
   | { page: "assignment-detail"; group: Group; assignment: Assignment }
@@ -279,7 +279,7 @@ function AppContent() {
     setRoute({ page: "student-accommodations", group, student });
   const goToStudentObservations = (group: Group, student: Student) =>
     setRoute({ page: "student-observations", group, student });
-  const goToSchedule = (group: Group) => setRoute({ page: "schedule", group });
+  const goToSchedule = (group: Group) => setRoute({ page: "courses", group });
   const goToAttendance = (group: Group) =>
     setRoute({ page: "attendance", group });
   const goToAssignments = (group: Group) =>
@@ -376,6 +376,8 @@ function AppContent() {
     switch (route.page) {
       case "attendance":
         return goToAttendance(group);
+      case "courses":
+        return goToSchedule(group);
       case "assignments":
       case "assignment-detail":
         return goToAssignments(group);
@@ -734,9 +736,9 @@ function AppContent() {
             }
           />
         );
-      case "schedule":
+      case "courses":
         return (
-          <SchedulePage
+          <CoursesPage
             group={route.group}
             onGoToGroups={goToGroups}
             onGoToSettings={() => goToGroup(route.group)}

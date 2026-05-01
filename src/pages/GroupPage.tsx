@@ -22,8 +22,6 @@ type CourseSummary = {
   name: string;
   count: number;
   days: DayOfWeek[];
-  firstStart: string;
-  lastEnd: string;
 };
 
 type GenderSummary = {
@@ -108,10 +106,6 @@ function formatRangeLabel(start: string, end: string, locale: string) {
   return `${formatDateLabel(start, locale)} - ${formatDateLabel(end, locale)}`;
 }
 
-function compareTimes(a: string, b: string) {
-  return a.localeCompare(b);
-}
-
 function normalizeGender(gender: string | null | undefined) {
   if (!gender) return null;
 
@@ -131,8 +125,6 @@ function buildCourseSummaries(periods: SchedulePeriod[]): CourseSummary[] {
         name: period.name,
         count: 1,
         days: [period.day_of_week as DayOfWeek],
-        firstStart: period.start_time,
-        lastEnd: period.end_time,
       });
       continue;
     }
@@ -140,12 +132,6 @@ function buildCourseSummaries(periods: SchedulePeriod[]): CourseSummary[] {
     existing.count += 1;
     if (!existing.days.includes(period.day_of_week as DayOfWeek)) {
       existing.days.push(period.day_of_week as DayOfWeek);
-    }
-    if (compareTimes(period.start_time, existing.firstStart) < 0) {
-      existing.firstStart = period.start_time;
-    }
-    if (compareTimes(period.end_time, existing.lastEnd) > 0) {
-      existing.lastEnd = period.end_time;
     }
   }
 
@@ -229,7 +215,8 @@ export function GroupPage({
   const upcomingBirthdays = buildUpcomingBirthdays(students);
   const genderSummary = useMemo(() => buildGenderSummary(students), [students]);
   const genderTotal = genderSummary.male + genderSummary.female;
-  const malePercent = genderTotal > 0 ? (genderSummary.male / genderTotal) * 100 : 0;
+  const malePercent =
+    genderTotal > 0 ? (genderSummary.male / genderTotal) * 100 : 0;
   const femalePercent =
     genderTotal > 0 ? (genderSummary.female / genderTotal) * 100 : 0;
   const [allergyList, setAllergyList] = useState<AllergyEntry[]>([]);
@@ -279,7 +266,7 @@ export function GroupPage({
   }, [group.id]);
 
   return (
-    <div className="flex h-full flex-col overflow-hidden px-6 pt-8 pb-6 pl-3">
+    <div className="flex h-full flex-col overflow-hidden px-6 pt-8 pb-6">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -386,14 +373,18 @@ export function GroupPage({
                           className="size-4 shrink-0"
                           style={{ color: GENDER_MALE_COLOR }}
                         />
-                        <span className="font-semibold">{genderSummary.male}</span>
+                        <span className="font-semibold">
+                          {genderSummary.male}
+                        </span>
                       </div>
                       <div className="flex items-center gap-1.5">
                         <VenusIcon
                           className="size-4 shrink-0"
                           style={{ color: GENDER_FEMALE_COLOR }}
                         />
-                        <span className="font-semibold">{genderSummary.female}</span>
+                        <span className="font-semibold">
+                          {genderSummary.female}
+                        </span>
                       </div>
                     </div>
                   </>
@@ -414,57 +405,54 @@ export function GroupPage({
 
         <div className="grid min-h-0 flex-1 gap-4 lg:grid-cols-2">
           <SectionCard className="flex h-full min-h-0 flex-col overflow-hidden">
-          <div className="mb-4 flex items-start justify-between gap-4">
-            <div>
-              <h3 className="text-lg font-semibold">
-                {t("groups.overview.coursesTitle")}
-              </h3>
-              <p className="text-sm text-foreground/60">
-                {t("groups.overview.coursesDescription")}
-              </p>
+            <div className="mb-4 flex items-start justify-between gap-4">
+              <div>
+                <h3 className="text-lg font-semibold">
+                  {t("groups.overview.coursesTitle")}
+                </h3>
+                <p className="text-sm text-foreground/60">
+                  {t("groups.overview.coursesDescription")}
+                </p>
+              </div>
+              <Button variant="ghost" size="sm" onClick={onGoToSchedule}>
+                {t("groups.editGroup.scheduleManage")}
+              </Button>
             </div>
-            <Button variant="ghost" size="sm" onClick={onGoToSchedule}>
-              {t("groups.editGroup.scheduleManage")}
-            </Button>
-          </div>
 
-          {loadingSchedule ? (
-            <div className="flex justify-center py-10">
-              <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
-            </div>
-          ) : scheduleError ? (
-            <p className="text-sm text-danger">{scheduleError}</p>
-          ) : courseSummaries.length === 0 ? (
-            <div className="rounded-xl border border-dashed border-border/60 px-4 py-8 text-center text-sm text-foreground/55">
-              {t("groups.overview.noCourses")}
-            </div>
-          ) : (
-            <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
-              {courseSummaries.map((course) => (
-                <div
-                  key={course.name}
-                  className="flex flex-col gap-2 rounded-xl border border-border/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
-                >
-                  <div>
-                    <p className="font-medium">{course.name}</p>
-                    <p className="text-sm text-foreground/55">
-                      {course.days
-                        .map((day) => t(`schedule.dayShort.${day}`))
-                        .join(" · ")}
-                    </p>
-                  </div>
-                  <div className="text-sm text-foreground/60 sm:text-right">
-                    <p>{`${course.firstStart} - ${course.lastEnd}`}</p>
-                    <p>
+            {loadingSchedule ? (
+              <div className="flex justify-center py-10">
+                <div className="h-6 w-6 animate-spin rounded-full border-2 border-accent border-t-transparent" />
+              </div>
+            ) : scheduleError ? (
+              <p className="text-sm text-danger">{scheduleError}</p>
+            ) : courseSummaries.length === 0 ? (
+              <div className="rounded-xl border border-dashed border-border/60 px-4 py-8 text-center text-sm text-foreground/55">
+                {t("groups.overview.noCourses")}
+              </div>
+            ) : (
+              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
+                {courseSummaries.map((course) => (
+                  <div
+                    key={course.name}
+                    className="flex flex-col gap-2 rounded-xl border border-border/50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between"
+                  >
+                    <div>
+                      <p className="font-medium">{course.name}</p>
+                      <p className="text-sm text-foreground/55">
+                        {course.days
+                          .map((day) => t(`schedule.dayShort.${day}`))
+                          .join(" · ")}
+                      </p>
+                    </div>
+                    <div className="text-sm text-foreground/60 sm:text-right">
                       {t("groups.overview.courseMeetings", {
                         count: course.count,
                       })}
-                    </p>
+                    </div>
                   </div>
-                </div>
-              ))}
-            </div>
-          )}
+                ))}
+              </div>
+            )}
           </SectionCard>
 
           <SectionCard className="flex h-full min-h-0 flex-col overflow-hidden">

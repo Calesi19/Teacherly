@@ -19,7 +19,7 @@ interface AddPeriodModalProps {
 const ORDERED_DAYS: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
 const WEEKDAYS = new Set<DayOfWeek>([1, 2, 3, 4, 5]);
 
-const emptyForm = { name: "", start_time: "08:00", end_time: "09:00" };
+const emptyForm = { name: "" };
 
 export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
   const [open, setOpen] = useState(false);
@@ -51,7 +51,6 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.name.trim()) return;
-    if (!form.start_time || !form.end_time) return;
     if (selectedDays.size === 0) {
       setAddError(t("schedule.addPeriodModal.selectAtLeastOneDay"));
       return;
@@ -59,11 +58,7 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
     setSubmitting(true);
     setAddError(null);
     try {
-      await Promise.all(
-        Array.from(selectedDays).map((day) =>
-          onAdd({ day_of_week: day, name: form.name.trim(), start_time: form.start_time, end_time: form.end_time })
-        )
-      );
+      await onAdd({ name: form.name.trim(), days: Array.from(selectedDays) });
       setForm(emptyForm);
       setSelectedDays(new Set(WEEKDAYS));
       setOpen(false);
@@ -100,31 +95,6 @@ export function AddPeriodModal({ onAdd }: AddPeriodModalProps) {
                   placeholder={t("schedule.addPeriodModal.periodNamePlaceholder")}
                   required
                 />
-              </div>
-
-              <div className="flex gap-4">
-                <div className="flex flex-col gap-1.5 flex-1">
-                  <Label htmlFor="period-start">{t("schedule.addPeriodModal.startTimeLabel")}</Label>
-                  <input
-                    id="period-start"
-                    type="time"
-                    value={form.start_time}
-                    onChange={(e) => setForm({ ...form, start_time: e.target.value })}
-                    required
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  />
-                </div>
-                <div className="flex flex-col gap-1.5 flex-1">
-                  <Label htmlFor="period-end">{t("schedule.addPeriodModal.endTimeLabel")}</Label>
-                  <input
-                    id="period-end"
-                    type="time"
-                    value={form.end_time}
-                    onChange={(e) => setForm({ ...form, end_time: e.target.value })}
-                    required
-                    className="flex h-9 w-full rounded-md border border-input bg-background px-3 py-1 text-sm shadow-xs transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-                  />
-                </div>
               </div>
 
               <div className="flex flex-col gap-2">

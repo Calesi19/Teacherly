@@ -10,10 +10,14 @@ export interface SchedulePeriod {
 }
 
 export interface NewSchedulePeriodInput {
-  day_of_week: number;
   name: string;
-  start_time: string;
-  end_time: string;
+  days: DayOfWeek[];
+}
+
+export interface CourseSummary {
+  name: string;
+  days: DayOfWeek[];
+  periodIds: number[];
 }
 
 export type DayOfWeek = 0 | 1 | 2 | 3 | 4 | 5 | 6;

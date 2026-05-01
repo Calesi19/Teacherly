@@ -1,8 +1,15 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import Database from "@tauri-apps/plugin-sql";
-import type { SchedulePeriod, NewSchedulePeriodInput } from "../types/schedule";
+import type {
+  CourseSummary,
+  DayOfWeek,
+  NewSchedulePeriodInput,
+  SchedulePeriod,
+} from "../types/schedule";
 
 const DB_URL = "sqlite:teacherly.db";
+const DEFAULT_COURSE_TIME = "00:00";
+const DAY_ORDER: DayOfWeek[] = [1, 2, 3, 4, 5, 6, 0];
 
 export function useSchedule(groupId: number) {
   const [periods, setPeriods] = useState<SchedulePeriod[]>([]);
@@ -14,7 +21,7 @@ export function useSchedule(groupId: number) {
       setLoading(true);
       const db = await Database.load(DB_URL);
       const rows = await db.select<SchedulePeriod[]>(
-        "SELECT id, group_id, day_of_week, name, start_time, end_time, sort_order, created_at FROM schedule_periods WHERE group_id = ? AND is_deleted = 0 ORDER BY day_of_week ASC, sort_order ASC, start_time ASC",
+        "SELECT id, group_id, day_of_week, name, start_time, end_time, sort_order, created_at FROM schedule_periods WHERE group_id = ? AND is_deleted = 0 ORDER BY name ASC, day_of_week ASC, sort_order ASC",
         [groupId]
       );
       setPeriods(rows);
@@ -28,12 +35,27 @@ export function useSchedule(groupId: number) {
 
   const addPeriod = useCallback(
     async (input: NewSchedulePeriodInput) => {
+      if (input.days.length === 0) throw new Error("Select at least one day.");
       const db = await Database.load(DB_URL);
-      const existing = periods.filter((p) => p.day_of_week === input.day_of_week);
-      const sortOrder = existing.length > 0 ? Math.max(...existing.map((p) => p.sort_order)) + 1 : 0;
-      await db.execute(
-        "INSERT INTO schedule_periods (group_id, day_of_week, name, start_time, end_time, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
-        [groupId, input.day_of_week, input.name, input.start_time, input.end_time, sortOrder]
+      await Promise.all(
+        input.days.map((day) => {
+          const existing = periods.filter((p) => p.day_of_week === day);
+          const sortOrder =
+            existing.length > 0
+              ? Math.max(...existing.map((p) => p.sort_order)) + 1
+              : 0;
+          return db.execute(
+            "INSERT INTO schedule_periods (group_id, day_of_week, name, start_time, end_time, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
+            [
+              groupId,
+              day,
+              input.name,
+              DEFAULT_COURSE_TIME,
+              DEFAULT_COURSE_TIME,
+              sortOrder,
+            ],
+          );
+        }),
       );
       await fetchPeriods();
     },
@@ -41,24 +63,77 @@ export function useSchedule(groupId: number) {
   );
 
   const updatePeriod = useCallback(
-    async (id: number, input: { name: string; start_time: string; end_time: string }) => {
+    async (name: string, input: NewSchedulePeriodInput) => {
+      if (input.days.length === 0) throw new Error("Select at least one day.");
       const db = await Database.load(DB_URL);
+      const current = periods.filter((p) => p.name === name);
+      const selectedDays = new Set(input.days);
+
       await db.execute(
-        "UPDATE schedule_periods SET name=?, start_time=?, end_time=? WHERE id=?",
-        [input.name, input.start_time, input.end_time, id]
+        "UPDATE schedule_periods SET is_deleted = 1 WHERE group_id = ? AND name = ? AND is_deleted = 0 AND day_of_week NOT IN (" +
+          input.days.map(() => "?").join(",") +
+          ")",
+        [groupId, name, ...input.days]
       );
+
+      await Promise.all(
+        current
+          .filter((period) => selectedDays.has(period.day_of_week as DayOfWeek))
+          .map((period) =>
+            db.execute("UPDATE schedule_periods SET name = ? WHERE id = ?", [
+              input.name,
+              period.id,
+            ]),
+          ),
+      );
+
+      const existingDays = new Set(
+        current.map((period) => period.day_of_week as DayOfWeek),
+      );
+      await Promise.all(
+        input.days
+          .filter((day) => !existingDays.has(day))
+          .map((day) => {
+            const existing = periods.filter((p) => p.day_of_week === day);
+            const sortOrder =
+              existing.length > 0
+                ? Math.max(...existing.map((p) => p.sort_order)) + 1
+                : 0;
+            return db.execute(
+              "INSERT INTO schedule_periods (group_id, day_of_week, name, start_time, end_time, sort_order) VALUES (?, ?, ?, ?, ?, ?)",
+              [
+                groupId,
+                day,
+                input.name,
+                DEFAULT_COURSE_TIME,
+                DEFAULT_COURSE_TIME,
+                sortOrder,
+              ],
+            );
+          }),
+      );
+
+      if (name !== input.name) {
+        await db.execute(
+          "UPDATE assignments SET period_name = ? WHERE group_id = ? AND period_name = ? AND is_deleted = 0",
+          [input.name, groupId, name],
+        );
+      }
       await fetchPeriods();
     },
-    [fetchPeriods]
+    [groupId, periods, fetchPeriods]
   );
 
   const deletePeriod = useCallback(
-    async (id: number) => {
+    async (name: string) => {
       const db = await Database.load(DB_URL);
-      await db.execute("UPDATE schedule_periods SET is_deleted = 1 WHERE id = ?", [id]);
+      await db.execute(
+        "UPDATE schedule_periods SET is_deleted = 1 WHERE group_id = ? AND name = ?",
+        [groupId, name],
+      );
       await fetchPeriods();
     },
-    [fetchPeriods]
+    [groupId, fetchPeriods]
   );
 
   const periodsByDay = useMemo(() => {
@@ -71,9 +146,42 @@ export function useSchedule(groupId: number) {
     return map;
   }, [periods]);
 
+  const courses = useMemo(() => {
+    const map = new Map<string, CourseSummary>();
+    for (const period of periods) {
+      const day = period.day_of_week as DayOfWeek;
+      const course = map.get(period.name) ?? {
+        name: period.name,
+        days: [],
+        periodIds: [],
+      };
+      if (!course.days.includes(day)) course.days.push(day);
+      course.periodIds.push(period.id);
+      map.set(period.name, course);
+    }
+
+    return Array.from(map.values())
+      .map((course) => ({
+        ...course,
+        days: [...course.days].sort(
+          (a, b) => DAY_ORDER.indexOf(a) - DAY_ORDER.indexOf(b),
+        ),
+      }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [periods]);
+
   useEffect(() => {
     fetchPeriods();
   }, [fetchPeriods]);
 
-  return { periods, loading, error, addPeriod, updatePeriod, deletePeriod, periodsByDay };
+  return {
+    periods,
+    courses,
+    loading,
+    error,
+    addPeriod,
+    updatePeriod,
+    deletePeriod,
+    periodsByDay,
+  };
 }
