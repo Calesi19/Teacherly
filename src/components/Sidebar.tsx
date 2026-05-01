@@ -61,49 +61,48 @@ export function Sidebar({
   };
 
   const navItems = useMemo(
-    () => [
-      {
-        id: "group",
-        label: t("sidebar.group"),
-        icon: UserGroupIcon,
-        active: currentPage === "group",
-        onClick: nav(onGoToGroup),
-        disabled: !currentGroup,
-      },
-      {
-        id: "students",
-        label: t("sidebar.students"),
-        icon: Users,
-        active: STUDENTS_PAGES.has(currentPage),
-        onClick: nav(onGoToStudents),
-        disabled: !currentGroup,
-      },
-      {
-        id: "attendance",
-        label: t("sidebar.attendance"),
-        icon: ClipboardCheck,
-        active: currentPage === "attendance",
-        onClick: nav(onGoToAttendance),
-        disabled: !currentGroup,
-      },
-      {
-        id: "assignments",
-        label: t("sidebar.assignments"),
-        icon: BookOpen,
-        active:
-          currentPage === "assignments" || currentPage === "assignment-detail",
-        onClick: nav(onGoToAssignments),
-        disabled: !currentGroup,
-      },
-      {
-        id: "reports",
-        label: t("sidebar.reports"),
-        icon: FileText,
-        active: currentPage === "reports",
-        onClick: nav(onGoToReports),
-        disabled: !currentGroup,
-      },
-    ],
+    () => {
+      if (!currentGroup || currentPage === "groups") return [];
+
+      return [
+        {
+          id: "group",
+          label: t("sidebar.group"),
+          icon: UserGroupIcon,
+          active: currentPage === "group",
+          onClick: nav(onGoToGroup),
+        },
+        {
+          id: "students",
+          label: t("sidebar.students"),
+          icon: Users,
+          active: STUDENTS_PAGES.has(currentPage),
+          onClick: nav(onGoToStudents),
+        },
+        {
+          id: "attendance",
+          label: t("sidebar.attendance"),
+          icon: ClipboardCheck,
+          active: currentPage === "attendance",
+          onClick: nav(onGoToAttendance),
+        },
+        {
+          id: "assignments",
+          label: t("sidebar.assignments"),
+          icon: BookOpen,
+          active:
+            currentPage === "assignments" || currentPage === "assignment-detail",
+          onClick: nav(onGoToAssignments),
+        },
+        {
+          id: "reports",
+          label: t("sidebar.reports"),
+          icon: FileText,
+          active: currentPage === "reports",
+          onClick: nav(onGoToReports),
+        },
+      ];
+    },
     [
       currentGroup,
       currentPage,
@@ -111,8 +110,6 @@ export function Sidebar({
       onGoToAttendance,
       onGoToGroup,
       onGoToReports,
-      onChangeGroup,
-      onGoToSettings,
       onGoToStudents,
       t,
     ],
