@@ -507,9 +507,6 @@ export function GroupPage({
               <h3 className="text-lg font-semibold">
                 {t("dashboard.allergies")}
               </h3>
-              <span className="text-sm text-foreground/55">
-                {allergyList.length}
-              </span>
             </div>
 
             {loadingAllergies ? (

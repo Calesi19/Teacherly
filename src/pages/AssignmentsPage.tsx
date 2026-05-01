@@ -225,12 +225,12 @@ export function AssignmentsPage({
             <div className="shrink-0 border-b border-border/45 bg-[color:var(--table-header)]">
               <table className="w-full table-fixed text-sm">
                 <colgroup>
-                  <col />
-                  <col className="w-32" />
-                  <col className="w-32" />
-                  <col className="w-32" />
-                  <col className="w-32" />
-                  <col className="w-40" />
+                  <col className="w-[40%]" />
+                  <col className="w-28" />
+                  <col className="w-28" />
+                  <col className="w-24" />
+                  <col className="w-24" />
+                  <col className="w-24" />
                   <col className="w-12" />
                 </colgroup>
                 <thead>
@@ -261,12 +261,12 @@ export function AssignmentsPage({
             <div className="min-h-0 flex-1 overflow-auto">
               <table className="w-full table-fixed text-sm">
                 <colgroup>
-                  <col />
-                  <col className="w-32" />
-                  <col className="w-32" />
-                  <col className="w-32" />
-                  <col className="w-32" />
-                  <col className="w-40" />
+                  <col className="w-[40%]" />
+                  <col className="w-28" />
+                  <col className="w-28" />
+                  <col className="w-24" />
+                  <col className="w-24" />
+                  <col className="w-24" />
                   <col className="w-12" />
                 </colgroup>
                 <TableBody>
@@ -298,7 +298,7 @@ export function AssignmentsPage({
                       >
                         {assignment.graded_count} / {assignment.student_count}
                       </TableCell>
-                      <TableCell className="text-sm text-foreground/50">
+                      <TableCell className="whitespace-nowrap text-sm text-foreground/50">
                         {formatDate(assignment.assigned_date)}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
