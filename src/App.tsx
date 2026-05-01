@@ -221,6 +221,40 @@ function AppContent() {
   const [assignmentDetailDirty, setAssignmentDetailDirty] = useState(false);
   const [pendingSidebarNav, setPendingSidebarNav] = useState<(() => void) | null>(null);
   const { groups, loading: groupsLoading, error: groupsError, addGroup } = useGroups();
+  const [isMaximized, setIsMaximized] = useState(false);
+
+  useEffect(() => {
+    let unlistenResize: (() => void) | undefined;
+    let unlistenMaximized: (() => void) | undefined;
+    let unlistenUnmaximized: (() => void) | undefined;
+    
+    async function setupWindowListeners() {
+      const { getCurrentWindow } = await import("@tauri-apps/api/window");
+      const win = getCurrentWindow();
+      
+      // Initial state
+      setIsMaximized(await win.isMaximized());
+
+      unlistenResize = await win.onResized(async () => {
+        setIsMaximized(await win.isMaximized());
+      });
+
+      unlistenMaximized = await win.listen("tauri://maximized", () => {
+        setIsMaximized(true);
+      });
+
+      unlistenUnmaximized = await win.listen("tauri://unmaximized", () => {
+        setIsMaximized(false);
+      });
+    }
+
+    setupWindowListeners();
+    return () => {
+      if (unlistenResize) unlistenResize();
+      if (unlistenMaximized) unlistenMaximized();
+      if (unlistenUnmaximized) unlistenUnmaximized();
+    };
+  }, []);
 
   const goToGroups = () => setRoute({ page: "groups" });
   const goToGroup = (group: Group) => setRoute({ page: "group", group });
@@ -772,8 +806,8 @@ function AppContent() {
   const showSidebar = true;
 
   return (
-    <div className="app-container">
-      <WindowBar />
+    <div className="app-container" data-maximized={isMaximized}>
+      <WindowBar isMaximized={isMaximized} />
 
       <div className="flex h-screen overflow-hidden">
         {showSidebar && (

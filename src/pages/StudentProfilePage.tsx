@@ -397,7 +397,7 @@ export function StudentProfilePage({
     present: "text-success",
     absent: "text-danger",
     late: "text-warning",
-    partial: "text-secondary-foreground",
+    partial: "text-chart-4",
   };
 
   const therapyLabels = services

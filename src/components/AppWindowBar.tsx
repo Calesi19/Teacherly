@@ -3,8 +3,16 @@ import { Minus, Square, X } from "lucide-react";
 
 const win = getCurrentWindow();
 
-export const WindowBar = () => (
-  <div className="absolute top-0 left-0 right-0 h-8 z-50 overflow-hidden rounded-tr-[24px]">
+interface WindowBarProps {
+  isMaximized?: boolean;
+}
+
+export const WindowBar = ({ isMaximized }: WindowBarProps) => (
+  <div 
+    className={`absolute top-0 left-0 right-0 h-8 z-50 overflow-hidden transition-all duration-200 ${
+      isMaximized ? "rounded-none" : "rounded-tr-[24px]"
+    }`}
+  >
     <div data-tauri-drag-region className="absolute inset-0" />
     <div className="absolute right-0 top-0 flex items-center h-8">
       <button
@@ -21,7 +29,9 @@ export const WindowBar = () => (
       </button>
       <button
         onClick={() => win.close()}
-        className="flex h-8 w-11 items-center justify-center rounded-tr-[24px] text-foreground/60 transition-colors hover:bg-red-500 hover:text-white"
+        className={`flex h-8 w-11 items-center justify-center text-foreground/60 transition-all duration-200 hover:bg-red-500 hover:text-white ${
+          isMaximized ? "rounded-none" : "rounded-tr-[24px]"
+        }`}
       >
         <X size={12} />
       </button>

@@ -40,7 +40,7 @@ const ATTENDANCE_CHART_COLORS = {
   present: "var(--success)",
   absent: "var(--danger)",
   late: "var(--warning)",
-  partial: "var(--accent)",
+  partial: "var(--chart-4)",
 } as const;
 
 type AttendanceChartKey = keyof typeof ATTENDANCE_CHART_COLORS;
@@ -200,7 +200,9 @@ export function OverviewTab({
             />
             <InfoField
               label={t("studentProfile.overview.birthdate")}
-              value={student.birthdate ? formatShortDate(student.birthdate) : null}
+              value={
+                student.birthdate ? formatShortDate(student.birthdate) : null
+              }
             />
             <InfoField
               label={t("studentProfile.overview.age")}
@@ -214,7 +216,11 @@ export function OverviewTab({
             />
             <InfoField
               label={t("studentProfile.overview.enrollmentDate")}
-              value={student.enrollment_date ? formatShortDate(student.enrollment_date) : null}
+              value={
+                student.enrollment_date
+                  ? formatShortDate(student.enrollment_date)
+                  : null
+              }
             />
             <InfoField
               label={t("studentProfile.overview.enrollmentEndDate")}
@@ -240,10 +246,6 @@ export function OverviewTab({
               <h3 className="text-sm font-semibold uppercase tracking-wide text-muted-foreground">
                 {t("studentProfile.overview.attendanceSummary")}
               </h3>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {t("studentProfile.attendance.summary.totalDays")}:{" "}
-                {attendanceSummary.totalDays}
-              </p>
             </div>
           </div>
 
@@ -266,21 +268,20 @@ export function OverviewTab({
                     strokeWidth="10"
                   />
                   {renderedAttendanceSegments.map((item) => {
-                    const originalOffset =
-                      attendanceChartData
-                        .slice(
-                          0,
-                          attendanceChartData.findIndex(
-                            (segment) => segment.key === item.key,
-                          ),
-                        )
-                        .reduce(
-                          (offset, segment) =>
-                            offset +
-                            (segment.value / attendanceSummary.totalDays) *
-                              circumference,
-                          0,
-                        );
+                    const originalOffset = attendanceChartData
+                      .slice(
+                        0,
+                        attendanceChartData.findIndex(
+                          (segment) => segment.key === item.key,
+                        ),
+                      )
+                      .reduce(
+                        (offset, segment) =>
+                          offset +
+                          (segment.value / attendanceSummary.totalDays) *
+                            circumference,
+                        0,
+                      );
                     const fraction = item.value / attendanceSummary.totalDays;
                     const dashLength = fraction * circumference;
                     const segment = (
@@ -291,7 +292,9 @@ export function OverviewTab({
                         r="44"
                         fill="none"
                         stroke={item.color}
-                        strokeWidth={item.key === hoveredAttendanceKey ? 16 : 10}
+                        strokeWidth={
+                          item.key === hoveredAttendanceKey ? 16 : 10
+                        }
                         strokeDasharray={`${dashLength} ${circumference - dashLength}`}
                         strokeDashoffset={-originalOffset}
                         strokeLinecap="round"
@@ -313,7 +316,9 @@ export function OverviewTab({
                   </span>
                   <span className="text-xs font-medium text-muted-foreground">
                     {hoveredAttendance
-                      ? t(`studentProfile.attendance.summary.${hoveredAttendance.key}`)
+                      ? t(
+                          `studentProfile.attendance.summary.${hoveredAttendance.key}`,
+                        )
                       : t("studentProfile.attendance.summary.totalDays")}
                   </span>
                 </div>
@@ -375,7 +380,10 @@ export function OverviewTab({
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {gradesByClass.map((classGrade) => {
                   const percentage = Number(
-                    formatScorePercentage(classGrade.score, classGrade.maxScore),
+                    formatScorePercentage(
+                      classGrade.score,
+                      classGrade.maxScore,
+                    ),
                   );
 
                   return (
@@ -388,7 +396,8 @@ export function OverviewTab({
                           {classGrade.periodName}
                         </div>
                         <div className="text-xs opacity-75">
-                          {formatScore(classGrade.score)} / {formatScore(classGrade.maxScore)}
+                          {formatScore(classGrade.score)} /{" "}
+                          {formatScore(classGrade.maxScore)}
                         </div>
                       </div>
                       <div className="relative mx-auto aspect-[2/1] w-full max-w-[180px]">
@@ -455,7 +464,9 @@ export function OverviewTab({
                     className="flex flex-col gap-0.5 py-2.5 first:pt-0 last:pb-0"
                   >
                     <div className="flex items-center gap-1.5">
-                      <span className="text-sm font-medium">{contact.name}</span>
+                      <span className="text-sm font-medium">
+                        {contact.name}
+                      </span>
                       {contact.is_primary_guardian && (
                         <IconTooltip
                           label={t("studentProfile.overview.primaryGuardian")}
@@ -474,7 +485,9 @@ export function OverviewTab({
                       )}
                     </div>
                     {contact.relationship ? (
-                      <span className="text-xs text-muted-foreground">{contact.relationship}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {contact.relationship}
+                      </span>
                     ) : null}
                     {contact.phone ? (
                       <span className="inline-flex items-center text-xs text-foreground/60">
@@ -516,7 +529,9 @@ export function OverviewTab({
                   >
                     <div className="flex items-center gap-1.5">
                       {address.label ? (
-                        <span className="text-sm font-medium">{address.label}</span>
+                        <span className="text-sm font-medium">
+                          {address.label}
+                        </span>
                       ) : null}
                       {address.is_student_home && (
                         <IconTooltip
@@ -527,7 +542,9 @@ export function OverviewTab({
                         </IconTooltip>
                       )}
                     </div>
-                    <span className="text-xs text-foreground/60">{address.street}</span>
+                    <span className="text-xs text-foreground/60">
+                      {address.street}
+                    </span>
                     {address.city || address.state || address.zip_code ? (
                       <span className="text-xs text-foreground/60">
                         {[address.city, address.state, address.zip_code]
@@ -536,7 +553,9 @@ export function OverviewTab({
                       </span>
                     ) : null}
                     {address.country ? (
-                      <span className="text-xs text-muted-foreground">{address.country}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {address.country}
+                      </span>
                     ) : null}
                   </div>
                 ))}
