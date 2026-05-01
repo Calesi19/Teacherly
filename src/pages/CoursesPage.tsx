@@ -23,7 +23,7 @@ export function CoursesPage({
   const { t } = useTranslation();
 
   return (
-    <div className="flex h-full flex-col px-6 pt-8 pb-6 pl-3">
+    <div className="flex h-full flex-col px-6 pt-8 pb-6">
       <Breadcrumb
         items={[
           { label: t("groups.breadcrumb"), onClick: onGoToGroups },

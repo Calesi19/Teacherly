@@ -100,7 +100,11 @@ export function AssignmentDetailPage({
     setLate,
     setNote,
     stats,
-  } = useAssignmentDetail(currentAssignment.id, group.id, currentAssignment.max_score);
+  } = useAssignmentDetail(
+    currentAssignment.id,
+    group.id,
+    currentAssignment.max_score,
+  );
   const { t } = useTranslation();
   const { periods } = useSchedule(group.id);
 
@@ -155,7 +159,10 @@ export function AssignmentDetailPage({
         result.push(period.name);
       }
     }
-    if (currentAssignment.period_name && !seen.has(currentAssignment.period_name)) {
+    if (
+      currentAssignment.period_name &&
+      !seen.has(currentAssignment.period_name)
+    ) {
       result.push(currentAssignment.period_name);
     }
     return result;
@@ -338,7 +345,7 @@ export function AssignmentDetailPage({
   };
 
   return (
-    <div className="flex h-full flex-col px-6 pt-8 pb-3 pl-3">
+    <div className="flex h-full flex-col px-6 pt-8 pb-6 ">
       <Breadcrumb
         items={[
           {
