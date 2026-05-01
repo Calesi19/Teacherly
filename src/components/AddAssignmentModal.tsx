@@ -10,6 +10,7 @@ import {
   DialogTitle,
   DialogFooter,
 } from "@/components/ui/dialog";
+import { AppDatePicker } from "@/components/ui/app-date-picker";
 import {
   Select,
   SelectContent,
@@ -29,12 +30,29 @@ interface AddAssignmentModalProps {
 
 const TAG_OPTIONS: AssignmentTag[] = ["Exam", "Quiz", "Homework", "Extra Credit", "Project", "Other"];
 
-const emptyForm = { title: "", description: "", max_score: "", period_name: "", tag: "" };
+function todayLocalDateString() {
+  const date = new Date();
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+  return `${year}-${month}-${day}`;
+}
+
+function makeEmptyForm() {
+  return {
+    title: "",
+    description: "",
+    max_score: "",
+    period_name: "",
+    assigned_date: todayLocalDateString(),
+    tag: "",
+  };
+}
 
 export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) {
   const [open, setOpen] = useState(false);
   const { t } = useTranslation();
-  const [form, setForm] = useState(emptyForm);
+  const [form, setForm] = useState(makeEmptyForm);
   const [submitting, setSubmitting] = useState(false);
   const [addError, setAddError] = useState<string | null>(null);
   const { periods } = useSchedule(groupId);
@@ -52,7 +70,7 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
   }, [periods]);
 
   const closeModal = () => {
-    setForm(emptyForm);
+    setForm(makeEmptyForm());
     setAddError(null);
     setOpen(false);
   };
@@ -69,9 +87,10 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
         description: form.description.trim(),
         max_score: parsedMax,
         period_name: form.period_name,
+        assigned_date: form.assigned_date,
         tag: form.tag as AssignmentTag,
       });
-      setForm(emptyForm);
+      setForm(makeEmptyForm());
       setOpen(false);
     } catch (err) {
       setAddError(String(err));
@@ -140,6 +159,13 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
                 />
               </div>
 
+              <AppDatePicker
+                label={t("assignments.addModal.dateLabel")}
+                value={form.assigned_date}
+                onChange={(value) => setForm({ ...form, assigned_date: value })}
+                placeholder={t("assignments.addModal.datePlaceholder")}
+              />
+
               <div className="flex flex-col gap-1.5">
                 <Label>{t("assignments.addModal.periodLabel")}</Label>
                 {uniquePeriodNames.length === 0 ? (
@@ -200,14 +226,15 @@ export function AddAssignmentModal({ groupId, onAdd }: AddAssignmentModalProps) 
               </Button>
               <Button
                 type="submit"
-                disabled={
-                  submitting ||
-                  !form.title.trim() ||
-                  !form.max_score ||
-                  !form.period_name ||
-                  !form.tag ||
-                  uniquePeriodNames.length === 0
-                }
+                  disabled={
+                    submitting ||
+                    !form.title.trim() ||
+                    !form.max_score ||
+                    !form.period_name ||
+                    !form.assigned_date ||
+                    !form.tag ||
+                    uniquePeriodNames.length === 0
+                  }
               >
                 {submitting ? (
                   <span className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent" />

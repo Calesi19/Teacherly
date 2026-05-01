@@ -294,12 +294,12 @@ export function AssignmentsPage({
                         {t("assignments.pts")}
                       </TableCell>
                       <TableCell
-                        className={`text-sm ${getGradedStatusClass(assignment.graded_count, assignment.student_count, assignment.created_at)}`}
+                        className={`text-sm ${getGradedStatusClass(assignment.graded_count, assignment.student_count, assignment.assigned_date)}`}
                       >
                         {assignment.graded_count} / {assignment.student_count}
                       </TableCell>
                       <TableCell className="text-sm text-foreground/50">
-                        {formatDate(assignment.created_at)}
+                        {formatDate(assignment.assigned_date)}
                       </TableCell>
                       <TableCell onClick={(e) => e.stopPropagation()}>
                         <Button

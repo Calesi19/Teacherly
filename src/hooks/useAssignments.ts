@@ -31,6 +31,7 @@ export function useAssignments(
         `SELECT a.id,
                 a.group_id,
                 a.period_name,
+                a.assigned_date,
                 a.title,
                 a.description,
                 a.max_score,
@@ -56,7 +57,7 @@ export function useAssignments(
            GROUP BY group_id
          ) s ON s.group_id = a.group_id
          WHERE a.group_id = ? AND a.is_deleted = 0
-         ORDER BY a.created_at DESC`,
+         ORDER BY a.assigned_date DESC, a.created_at DESC`,
         [groupId]
       );
       setAssignments(rows);
@@ -73,8 +74,8 @@ export function useAssignments(
       if (groupId == null) throw new Error("Cannot add an assignment without a group");
       const db = await Database.load(DB_URL);
       await db.execute(
-        "INSERT INTO assignments (group_id, period_name, title, description, max_score, tag) VALUES (?, ?, ?, ?, ?, ?)",
-        [groupId, input.period_name, input.title.trim(), input.description.trim() || null, input.max_score, input.tag]
+        "INSERT INTO assignments (group_id, period_name, assigned_date, title, description, max_score, tag) VALUES (?, ?, ?, ?, ?, ?, ?)",
+        [groupId, input.period_name, input.assigned_date, input.title.trim(), input.description.trim() || null, input.max_score, input.tag]
       );
       await fetchAssignments();
     },

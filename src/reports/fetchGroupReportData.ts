@@ -122,7 +122,7 @@ export async function fetchGradeSummary(
   let sql = `SELECT id, title, period_name, max_score FROM assignments WHERE group_id = ? AND is_deleted = 0`;
   const params: unknown[] = [groupId];
   if (periodFilter) { sql += " AND period_name = ?"; params.push(periodFilter); }
-  sql += " ORDER BY created_at ASC";
+  sql += " ORDER BY assigned_date ASC";
 
   interface AssignRow { id: number; title: string; period_name: string; max_score: number; }
   const assignments = await db.select<AssignRow[]>(sql, params);

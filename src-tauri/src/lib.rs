@@ -433,6 +433,15 @@ pub fn run() {
                   ALTER TABLE assignment_scores ADD COLUMN note TEXT;",
             kind: MigrationKind::Up,
         },
+        Migration {
+            version: 30,
+            description: "add_assigned_date_to_assignments",
+            sql: "ALTER TABLE assignments ADD COLUMN assigned_date TEXT;
+                  UPDATE assignments
+                     SET assigned_date = COALESCE(substr(created_at, 1, 10), date('now'))
+                   WHERE assigned_date IS NULL;",
+            kind: MigrationKind::Up,
+        },
     ];
 
     tauri::Builder::default()

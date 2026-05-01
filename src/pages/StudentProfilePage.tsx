@@ -76,7 +76,9 @@ export function StudentProfilePage({
   const [editNoteSubmitting, setEditNoteSubmitting] = useState(false);
   const [editNoteError, setEditNoteError] = useState<string | null>(null);
 
-  const [selectedVisitorKey, setSelectedVisitorKey] = useState<string | null>(null);
+  const [selectedVisitorKey, setSelectedVisitorKey] = useState<string | null>(
+    null,
+  );
   const [newVisitorName, setNewVisitorName] = useState("");
   const [visitNotes, setVisitNotes] = useState("");
   const [visitedAt, setVisitedAt] = useState(todayDateString());
@@ -103,15 +105,24 @@ export function StudentProfilePage({
   const s = freshStudent ?? student;
   const { contacts, loading: loadingContacts } = useContacts(student.id);
   const { addresses, loading: loadingAddresses } = useAddresses(student.id);
-  const { data: services, loading: loadingServices } = useStudentServices(student.id);
+  const { data: services, loading: loadingServices } = useStudentServices(
+    student.id,
+  );
   const { data: accommodations, loading: loadingAccommodations } =
     useStudentAccommodations(student.id);
   const { data: observations, loading: loadingObservations } =
     useStudentObservations(student.id);
-  const { notes, loading: loadingNotes, addNote, updateNote } = useNotes(student.id);
-  const { visitations, loading: loadingVisitations, addVisitation } = useVisitations(
-    student.id,
-  );
+  const {
+    notes,
+    loading: loadingNotes,
+    addNote,
+    updateNote,
+  } = useNotes(student.id);
+  const {
+    visitations,
+    loading: loadingVisitations,
+    addVisitation,
+  } = useVisitations(student.id);
   const { previews: assignments, loading: loadingAssignments } =
     useStudentAssignmentPreviews(student.id, group.id);
   const {
@@ -153,13 +164,17 @@ export function StudentProfilePage({
   });
 
   const filteredVisitations = visitations.filter((visitation) =>
-    visitation.contact_name.toLowerCase().includes(visitationSearch.toLowerCase()),
+    visitation.contact_name
+      .toLowerCase()
+      .includes(visitationSearch.toLowerCase()),
   );
 
   const isNewVisitor = selectedVisitorKey === "new";
   const matchedContact =
     selectedVisitorKey && selectedVisitorKey !== "new"
-      ? contacts.find((contact) => String(contact.id) === selectedVisitorKey) ?? null
+      ? (contacts.find(
+          (contact) => String(contact.id) === selectedVisitorKey,
+        ) ?? null)
       : null;
 
   const canSubmitVisitation =
@@ -185,7 +200,9 @@ export function StudentProfilePage({
     try {
       await addVisitation({
         contact_id: matchedContact ? matchedContact.id : null,
-        visitor_name: isNewVisitor ? newVisitorName.trim() : matchedContact?.name ?? "",
+        visitor_name: isNewVisitor
+          ? newVisitorName.trim()
+          : (matchedContact?.name ?? ""),
         notes: visitNotes,
         visited_at: visitedAt,
       });
@@ -316,7 +333,9 @@ export function StudentProfilePage({
             observations.obs_distracted_stimuli
               ? t("studentProfile.observations.distractedStimuli")
               : "",
-            observations.obs_forgetful ? t("studentProfile.observations.forgetful") : "",
+            observations.obs_forgetful
+              ? t("studentProfile.observations.forgetful")
+              : "",
             observations.obs_excess_hand_foot
               ? t("studentProfile.observations.excessHandFoot")
               : "",
@@ -352,7 +371,9 @@ export function StudentProfilePage({
             observations.obs_easily_angered
               ? t("studentProfile.observations.easilyAngered")
               : "",
-            observations.obs_argues ? t("studentProfile.observations.argues") : "",
+            observations.obs_argues
+              ? t("studentProfile.observations.argues")
+              : "",
             observations.obs_defies_adults
               ? t("studentProfile.observations.defiesAdults")
               : "",
@@ -362,7 +383,9 @@ export function StudentProfilePage({
             observations.obs_aggressive
               ? t("studentProfile.observations.aggressive")
               : "",
-            observations.obs_spiteful ? t("studentProfile.observations.spiteful") : "",
+            observations.obs_spiteful
+              ? t("studentProfile.observations.spiteful")
+              : "",
             observations.obs_blames_others
               ? t("studentProfile.observations.blamesOthers")
               : "",
@@ -410,10 +433,16 @@ export function StudentProfilePage({
   const therapyLabels = services
     ? [
         services.therapy_speech ? t("servicesPage.speechTherapy") : "",
-        services.therapy_occupational ? t("servicesPage.occupationalTherapy") : "",
-        services.therapy_psychological ? t("servicesPage.psychologicalTherapy") : "",
+        services.therapy_occupational
+          ? t("servicesPage.occupationalTherapy")
+          : "",
+        services.therapy_psychological
+          ? t("servicesPage.psychologicalTherapy")
+          : "",
         services.therapy_physical ? t("servicesPage.physicalTherapy") : "",
-        services.therapy_educational ? t("servicesPage.educationalTherapy") : "",
+        services.therapy_educational
+          ? t("servicesPage.educationalTherapy")
+          : "",
       ].filter(Boolean)
     : [];
 
@@ -439,7 +468,7 @@ export function StudentProfilePage({
 
   return (
     <TooltipProvider>
-      <div className="flex h-full flex-col px-6 pt-8 pb-6 pl-3">
+      <div className="flex h-full flex-col px-6 pt-8 pb-6">
         <Breadcrumb
           items={[
             { label: t("groups.breadcrumb"), onClick: onGoToGroups },
@@ -463,8 +492,14 @@ export function StudentProfilePage({
               <h2 className="text-2xl font-bold">{student.name}</h2>
             </div>
 
-            <TabsList variant="line" aria-label="Student sections" className="flex-wrap">
-              <TabsTrigger value="overview">{t("studentProfile.tabs.overview")}</TabsTrigger>
+            <TabsList
+              variant="line"
+              aria-label="Student sections"
+              className="flex-wrap"
+            >
+              <TabsTrigger value="overview">
+                {t("studentProfile.tabs.overview")}
+              </TabsTrigger>
               <TabsTrigger value="assignments">
                 {t("studentProfile.tabs.assignments")}
               </TabsTrigger>
@@ -474,7 +509,9 @@ export function StudentProfilePage({
               <TabsTrigger value="visitations">
                 {t("studentProfile.tabs.visitations")}
               </TabsTrigger>
-              <TabsTrigger value="notes">{t("studentProfile.tabs.notes")}</TabsTrigger>
+              <TabsTrigger value="notes">
+                {t("studentProfile.tabs.notes")}
+              </TabsTrigger>
             </TabsList>
           </div>
 

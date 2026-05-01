@@ -179,7 +179,7 @@ export async function fetchStudentGrades(
   `;
   const params: unknown[] = [studentId];
   if (periodFilter) { sql += " AND a.period_name = ?"; params.push(periodFilter); }
-  sql += " ORDER BY a.period_name ASC, a.created_at ASC";
+  sql += " ORDER BY a.period_name ASC, a.assigned_date ASC";
 
   interface RawRow {
     assignment_title: string;

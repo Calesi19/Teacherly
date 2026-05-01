@@ -430,7 +430,7 @@ export function GroupPage({
                 {t("groups.overview.noCourses")}
               </div>
             ) : (
-              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
+              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
                 {courseSummaries.map((course) => (
                   <div
                     key={course.name}
@@ -476,7 +476,7 @@ export function GroupPage({
                 {t("dashboard.noBirthdays")}
               </div>
             ) : (
-              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
+              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
                 {upcomingBirthdays.map(
                   ({ student, nextBirthday, turningAge }) => (
                     <div
@@ -523,7 +523,7 @@ export function GroupPage({
                 {t("groups.overview.noAllergies")}
               </div>
             ) : (
-              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-hidden">
+              <div className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto pr-1">
                 {allergyList.map((entry) => (
                   <div
                     key={entry.name}

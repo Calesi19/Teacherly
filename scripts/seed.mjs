@@ -254,19 +254,21 @@ for (let day = 1; day <= 5; day++) {
 // ── Assignments ───────────────────────────────────────────────────────────────
 
 const insertAssignment = seed(
-  `INSERT INTO assignments (group_id, period_name, title, description, max_score, tag)
-   VALUES (?, ?, ?, ?, ?, ?)`
+  `INSERT INTO assignments (group_id, period_name, assigned_date, title, description, max_score, tag)
+   VALUES (?, ?, ?, ?, ?, ?, ?)`
 );
 
+const assignmentDate = '2026-04-25';
+
 const g1Assignments = [
-  insertAssignment.run(g1, 'Math',    'Chapter 3 Worksheet',     'Pages 45–46',              20,  'Homework'),
-  insertAssignment.run(g1, 'Math',    'Addition & Subtraction Quiz', null,                   100, 'Quiz'),
-  insertAssignment.run(g1, 'Reading', 'Book Report – Charlotte\'s Web', 'Min 1 page',        100, 'Project'),
-  insertAssignment.run(g1, 'Science', 'Plant Life Cycle Diagram', 'Label all stages',        30,  'Homework'),
-  insertAssignment.run(g1, 'Math',    'Unit 1 Exam',              null,                      100, 'Exam'),
-  insertAssignment.run(g1, 'Writing', 'Narrative Draft',          'Use the checklist',        25,  'Homework'),
-  insertAssignment.run(g1, 'Social Studies', 'Map Labeling',     'Label all regions',        20,  'Homework'),
-  insertAssignment.run(g1, 'Art',     'Color Wheel Practice',     null,                       15,  'Project'),
+  insertAssignment.run(g1, 'Math',    assignmentDate, 'Chapter 3 Worksheet',     'Pages 45–46',              20,  'Homework'),
+  insertAssignment.run(g1, 'Math',    assignmentDate, 'Addition & Subtraction Quiz', null,                   100, 'Quiz'),
+  insertAssignment.run(g1, 'Reading', assignmentDate, 'Book Report – Charlotte\'s Web', 'Min 1 page',        100, 'Project'),
+  insertAssignment.run(g1, 'Science', assignmentDate, 'Plant Life Cycle Diagram', 'Label all stages',        30,  'Homework'),
+  insertAssignment.run(g1, 'Math',    assignmentDate, 'Unit 1 Exam',              null,                      100, 'Exam'),
+  insertAssignment.run(g1, 'Writing', assignmentDate, 'Narrative Draft',          'Use the checklist',        25,  'Homework'),
+  insertAssignment.run(g1, 'Social Studies', assignmentDate, 'Map Labeling',     'Label all regions',        20,  'Homework'),
+  insertAssignment.run(g1, 'Art',     assignmentDate, 'Color Wheel Practice',     null,                       15,  'Project'),
 ].map(r => r.lastInsertRowid);
 
 const g1AssignmentMeta = [
@@ -281,14 +283,14 @@ const g1AssignmentMeta = [
 ];
 
 const g2Assignments = [
-  insertAssignment.run(g2, 'Math',    'Fractions Worksheet',      'Pages 12–13',             20,  'Homework'),
-  insertAssignment.run(g2, 'Math',    'Fractions Quiz',           null,                      100, 'Quiz'),
-  insertAssignment.run(g2, 'Reading', 'Comprehension – Chapter 4', 'Answer all 10 questions', 50, 'Homework'),
-  insertAssignment.run(g2, 'Writing', 'Personal Narrative Essay', 'Min 3 paragraphs',        100, 'Project'),
-  insertAssignment.run(g2, 'Math',    'Mid-Term Exam',            null,                      100, 'Exam'),
-  insertAssignment.run(g2, 'Science', 'Matter Sorting Lab',       'Sort each item correctly',  25,  'Homework'),
-  insertAssignment.run(g2, 'Social Studies', 'State Symbols Quiz', null,                      40,  'Quiz'),
-  insertAssignment.run(g2, 'Art',     'Self-Portrait Sketch',     'Add color if time allows',  20,  'Project'),
+  insertAssignment.run(g2, 'Math',    assignmentDate, 'Fractions Worksheet',      'Pages 12–13',             20,  'Homework'),
+  insertAssignment.run(g2, 'Math',    assignmentDate, 'Fractions Quiz',           null,                      100, 'Quiz'),
+  insertAssignment.run(g2, 'Reading', assignmentDate, 'Comprehension – Chapter 4', 'Answer all 10 questions', 50, 'Homework'),
+  insertAssignment.run(g2, 'Writing', assignmentDate, 'Personal Narrative Essay', 'Min 3 paragraphs',        100, 'Project'),
+  insertAssignment.run(g2, 'Math',    assignmentDate, 'Mid-Term Exam',            null,                      100, 'Exam'),
+  insertAssignment.run(g2, 'Science', assignmentDate, 'Matter Sorting Lab',       'Sort each item correctly',  25,  'Homework'),
+  insertAssignment.run(g2, 'Social Studies', assignmentDate, 'State Symbols Quiz', null,                      40,  'Quiz'),
+  insertAssignment.run(g2, 'Art',     assignmentDate, 'Self-Portrait Sketch',     'Add color if time allows',  20,  'Project'),
 ].map(r => r.lastInsertRowid);
 
 const g2AssignmentMeta = [

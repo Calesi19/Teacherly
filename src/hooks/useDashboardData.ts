@@ -23,7 +23,7 @@ export interface AttendanceSummaryRow {
 export interface UngradedRow {
   assignment_id: number;
   title: string;
-  created_at: string;
+  assigned_date: string;
   student_id: number;
   student_name: string;
 }
@@ -82,17 +82,17 @@ export function useDashboardData(groupId: number | null): DashboardData {
           [groupId]
         ),
         db.select<UngradedRow[]>(
-          `SELECT a.id AS assignment_id, a.title, a.created_at,
+          `SELECT a.id AS assignment_id, a.title, a.assigned_date,
                   st.id AS student_id, st.name AS student_name
            FROM assignments a
            JOIN students st ON st.group_id = a.group_id AND st.is_deleted = 0
            LEFT JOIN assignment_scores s
              ON s.assignment_id = a.id AND s.student_id = st.id AND s.is_deleted = 0
            WHERE a.group_id = ? AND a.is_deleted = 0
-             AND julianday('now') - julianday(a.created_at) > 7
+             AND julianday('now') - julianday(a.assigned_date) > 7
              AND s.score IS NULL
              AND COALESCE(s.exempt, 0) = 0
-           ORDER BY a.created_at ASC`,
+           ORDER BY a.assigned_date ASC`,
           [groupId]
         ),
         db.select<{ count: number }[]>(

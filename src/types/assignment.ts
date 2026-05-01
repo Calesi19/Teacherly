@@ -4,6 +4,7 @@ export interface Assignment {
   id: number;
   group_id: number;
   period_name: string;
+  assigned_date: string;
   title: string;
   description: string | null;
   max_score: number;
@@ -18,6 +19,7 @@ export interface NewAssignmentInput {
   description: string;
   max_score: number;
   period_name: string;
+  assigned_date: string;
   tag: AssignmentTag;
 }
 
@@ -44,6 +46,7 @@ export interface StudentAssignmentPreview {
   assignment_id: number;
   title: string;
   period_name: string;
+  assigned_date: string;
   max_score: number;
   score: number | null;
   created_at: string;

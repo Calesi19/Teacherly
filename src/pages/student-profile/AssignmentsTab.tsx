@@ -156,7 +156,7 @@ export function AssignmentsTab({
                         )}
                       </TableCell>
                       <TableCell className="whitespace-nowrap text-sm text-foreground/50">
-                        {formatShortDate(assignment.created_at)}
+                        {formatShortDate(assignment.assigned_date)}
                       </TableCell>
                     </TableRow>
                   ))}

@@ -31,6 +31,7 @@ import {
   TableHead,
   TableRow,
 } from "@/components/ui/table";
+import { AppDatePicker } from "@/components/ui/app-date-picker";
 import { formatScore, formatScorePercentage } from "@/lib/formatScore";
 import { cn } from "@/lib/utils";
 import { Breadcrumb } from "../components/Breadcrumb";
@@ -127,6 +128,7 @@ export function AssignmentDetailPage({
     description: assignment.description ?? "",
     max_score: String(assignment.max_score),
     period_name: assignment.period_name,
+    assigned_date: assignment.assigned_date,
     tag: assignment.tag,
   });
   const [savingDetails, setSavingDetails] = useState(false);
@@ -139,6 +141,7 @@ export function AssignmentDetailPage({
       description: assignment.description ?? "",
       max_score: String(assignment.max_score),
       period_name: assignment.period_name,
+      assigned_date: assignment.assigned_date,
       tag: assignment.tag,
     });
   }, [assignment]);
@@ -188,6 +191,7 @@ export function AssignmentDetailPage({
       description: currentAssignment.description ?? "",
       max_score: String(currentAssignment.max_score),
       period_name: currentAssignment.period_name,
+      assigned_date: currentAssignment.assigned_date,
       tag: currentAssignment.tag,
     });
     setEditError(null);
@@ -218,13 +222,14 @@ export function AssignmentDetailPage({
       const db = await Database.load(DB_URL);
       await db.execute(
         `UPDATE assignments
-         SET title = ?, description = ?, max_score = ?, period_name = ?, tag = ?
+         SET title = ?, description = ?, max_score = ?, period_name = ?, assigned_date = ?, tag = ?
          WHERE id = ? AND is_deleted = 0`,
         [
           editForm.title.trim(),
           editForm.description.trim() || null,
           parsedMaxScore,
           editForm.period_name,
+          editForm.assigned_date,
           editForm.tag,
           currentAssignment.id,
         ],
@@ -236,6 +241,7 @@ export function AssignmentDetailPage({
         description: editForm.description.trim() || null,
         max_score: parsedMaxScore,
         period_name: editForm.period_name,
+        assigned_date: editForm.assigned_date,
         tag: editForm.tag as AssignmentTag,
       }));
       setEditOpen(false);
@@ -691,6 +697,15 @@ export function AssignmentDetailPage({
                 />
               </div>
 
+              <AppDatePicker
+                label={t("assignments.addModal.dateLabel")}
+                value={editForm.assigned_date}
+                onChange={(value) =>
+                  setEditForm({ ...editForm, assigned_date: value })
+                }
+                placeholder={t("assignments.addModal.datePlaceholder")}
+              />
+
               <div className="flex flex-col gap-1.5">
                 <Label>{t("assignments.addModal.periodLabel")}</Label>
                 {uniquePeriodNames.length === 0 ? (
@@ -764,6 +779,7 @@ export function AssignmentDetailPage({
                   savingDetails ||
                   !editForm.title.trim() ||
                   !editForm.max_score ||
+                  !editForm.assigned_date ||
                   !editForm.period_name ||
                   !editForm.tag ||
                   uniquePeriodNames.length === 0
