@@ -41,6 +41,11 @@ const en = {
     submitting: "Please wait…",
     passwordHint: "At least {min} characters.",
     errorInvalidCredentials: "That email and password combination is not valid.",
+    // Shown on the sign-up form only. The server answers every sign-up
+    // identically, so the client cannot say *why* this failed — and this
+    // wording must not imply it knows. It replaces the sign-in copy above,
+    // which read as nonsense to someone creating a brand-new account.
+    errorSignUpFailed: "We could not complete that sign-up. If you already have an account, sign in instead.",
     errorEmailFormat: "Enter a valid email address.",
     errorEmailRequired: "Email is required.",
     errorEmailTooLong: "That email address is too long.",
@@ -50,6 +55,10 @@ const en = {
     errorDisplayNameRequired: "Please enter your name.",
     errorDisplayNameTooLong: "That name is too long.",
     errorLocaleUnsupported: "That language is not supported.",
+    // The auth rate limiter's 429. Worth its own string rather than falling
+    // through to errorUnexpected: a teacher who mistyped a few times needs to
+    // know that waiting fixes it and that retrying immediately will not.
+    errorRateLimited: "Too many attempts. Please wait a few minutes and try again.",
     errorUnexpected: "Something went wrong. Please try again.",
   },
   home: {

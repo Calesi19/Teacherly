@@ -3,6 +3,13 @@ import { Hono } from "hono";
 import { cors } from "hono/cors";
 
 import type { CookieOptions } from "./http/cookies";
+import { toErrorResponse } from "./http/errors";
+import {
+  AUTH_IP_RATE_LIMIT,
+  FixedWindowRateLimiter,
+  ipRateLimit,
+  type ClientIpResolver,
+} from "./http/rate-limit";
 import { sessionMiddleware, type AppEnv } from "./http/session-middleware";
 import { authRoutes, meRoute } from "./routes/auth-routes";
 
@@ -15,6 +22,12 @@ export interface AppDeps {
    * client is served from the same origin and this stays undefined.
    */
   devClientOrigin?: string | undefined;
+  /**
+   * How to attribute a request to a client for rate limiting. `main.ts`
+   * supplies the real socket address; tests and any non-node host fall back to
+   * a single shared bucket, which is safe because it only ever over-counts.
+   */
+  clientIp?: ClientIpResolver | undefined;
 }
 
 export function createApp(deps: AppDeps): Hono<AppEnv> {
@@ -40,10 +53,22 @@ export function createApp(deps: AppDeps): Hono<AppEnv> {
   // teacher id from anywhere else.
   app.use("/api/*", sessionMiddleware(deps.auth));
 
+  // Per-IP limiting on the auth routes only, ahead of any argon2 work. The
+  // per-email counter lives inside `authRoutes`, where the body is parsed.
+  const ipLimiter = new FixedWindowRateLimiter(AUTH_IP_RATE_LIMIT);
+  app.use("/api/auth/*", ipRateLimit(ipLimiter, deps.clientIp ?? (() => "unknown")));
+
   app.route("/api/auth", authRoutes({ auth: deps.auth, cookie: deps.cookie }));
   app.route("/api/me", meRoute());
 
   app.notFound((c) => c.json({ error: { code: "not_found" } }, 404));
+
+  // The backstop. Without it, anything thrown outside a route's own try/catch
+  // — middleware, a downed database during session resolution — escaped as
+  // Hono's plain-text "Internal Server Error", which is neither this chunk's
+  // `{"error":{"code":"internal_error"}}` shape nor covered by the log
+  // redaction in `toErrorResponse`.
+  app.onError((error, c) => toErrorResponse(c, error));
 
   return app;
 }

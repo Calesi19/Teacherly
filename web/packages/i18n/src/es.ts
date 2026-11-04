@@ -38,6 +38,8 @@ const es: Translations = {
     submitting: "Por favor espera…",
     passwordHint: "Al menos {min} caracteres.",
     errorInvalidCredentials: "Esa combinación de correo y contraseña no es válida.",
+    errorSignUpFailed:
+      "No pudimos completar ese registro. Si ya tienes una cuenta, inicia sesión.",
     errorEmailFormat: "Introduce un correo electrónico válido.",
     errorEmailRequired: "El correo electrónico es obligatorio.",
     errorEmailTooLong: "Ese correo electrónico es demasiado largo.",
@@ -47,6 +49,7 @@ const es: Translations = {
     errorDisplayNameRequired: "Por favor introduce tu nombre.",
     errorDisplayNameTooLong: "Ese nombre es demasiado largo.",
     errorLocaleUnsupported: "Ese idioma no es compatible.",
+    errorRateLimited: "Demasiados intentos. Espera unos minutos e inténtalo de nuevo.",
     errorUnexpected: "Algo salió mal. Inténtalo de nuevo.",
   },
   home: {

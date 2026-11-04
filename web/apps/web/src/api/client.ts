@@ -71,8 +71,18 @@ export interface LoginRequest {
   password: string;
 }
 
+/**
+ * Signup's response carries no teacher, on purpose. The server answers
+ * `201 {"ok":true}` whether or not the address was already registered, so the
+ * status code is no longer an account-existence oracle; the client finds out
+ * who it is — and whether it is signed in at all — from `GET /api/me`.
+ */
+export interface SignupResponse {
+  ok: true;
+}
+
 export const api = {
-  signup(input: SignupRequest): Promise<{ teacher: TeacherDto }> {
+  signup(input: SignupRequest): Promise<SignupResponse> {
     return request("/api/auth/signup", { method: "POST", body: JSON.stringify(input) });
   },
 

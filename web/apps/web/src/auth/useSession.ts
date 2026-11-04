@@ -37,10 +37,13 @@ export function useSignup() {
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: (input: SignupRequest) => api.signup(input),
-    onSuccess: (data) => {
-      // Seed the cache so the app renders signed-in without a round trip, then
-      // let the normal refetch confirm it against the server.
-      queryClient.setQueryData(SESSION_QUERY_KEY, data);
+    onSuccess: async () => {
+      // Signup's response deliberately carries no teacher — it is identical
+      // whether or not the address was already taken, so there is nothing here
+      // to seed the cache with. Ask the server who we are instead. If the
+      // address was already registered the cookie was never set, `/api/me`
+      // answers 401, and the app stays on the signed-out screens.
+      await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
     },
   });
 }

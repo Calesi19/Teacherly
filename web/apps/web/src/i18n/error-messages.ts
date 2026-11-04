@@ -13,6 +13,10 @@ export function describeApiError(error: unknown, t: Translations): string {
 
   if (error.code === "invalid_credentials") return t.auth.errorInvalidCredentials;
 
+  // The auth rate limiter. Only reachable on the sign-in form in practice,
+  // since sign-up's 429 is one of the failures that does surface as isError.
+  if (error.code === "rate_limited") return t.auth.errorRateLimited;
+
   if (error.code === "validation_failed") {
     const first = error.issues[0];
     if (first !== undefined) return describeIssue(first, t);

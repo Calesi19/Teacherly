@@ -60,9 +60,22 @@ export function SignUpPage(): ReactNode {
           {interpolate(t.auth.passwordHint, { min: MIN_PASSWORD_LENGTH })}
         </p>
 
+        {/*
+          Two different failures, one of which does not look like a failure to
+          react-query. A rejected request (validation, 415, 429) lands in
+          `isError`. An address that is already registered does not: the server
+          deliberately answers `201 {"ok":true}` either way, so the mutation
+          succeeds and only the follow-up `GET /api/me` reveals that no session
+          was issued — which, because `App` would have swapped this page out
+          for the signed-in tree, is exactly "still rendering while isSuccess".
+        */}
         {signup.isError ? (
           <p className="error" role="alert">
             {describeApiError(signup.error, t)}
+          </p>
+        ) : signup.isSuccess ? (
+          <p className="error" role="alert">
+            {t.auth.errorSignUpFailed}
           </p>
         ) : null}
 

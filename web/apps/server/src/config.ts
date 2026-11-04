@@ -3,7 +3,10 @@ import { loadEnv, requireDatabaseUrl } from "@teacherly/db";
 export interface ServerConfig {
   port: number;
   databaseUrl: string;
-  /** `Secure` is omitted only for local development over plain http. */
+  /**
+   * On unless `COOKIE_SECURE=false` is set explicitly, which is only honoured
+   * outside production. Omitting the variable can never downgrade the cookie.
+   */
   cookieSecure: boolean;
   /** Origin allowed to send credentialed requests in development. */
   devClientOrigin: string;
@@ -19,18 +22,49 @@ function parsePort(raw: string | undefined, fallback: number): number {
   return port;
 }
 
+/** Just the environment entries this module reads. */
+export type ConfigEnv = Readonly<Record<string, string | undefined>>;
+
+/**
+ * Whether the session cookie gets its `Secure` flag.
+ *
+ * Fail closed, for real this time. The previous expression was
+ * `isProduction || COOKIE_SECURE === "true"`: it defaulted to `false` and
+ * needed an explicit positive to turn `Secure` on, so an unset `NODE_ENV`
+ * together with the `COOKIE_SECURE=false` that `.env.example` shipped served
+ * the 14-day session cookie with no `Secure` flag — the opposite of what the
+ * comment above it claimed. Now the *insecure* case is the one that has to be
+ * asked for by name, and asking for it in production is a startup failure
+ * rather than a silent downgrade.
+ *
+ * A pure function of the environment so it is testable without a `.env` file
+ * on disk deciding the answer.
+ */
+export function resolveCookieSecure(env: ConfigEnv): boolean {
+  const insecureOptIn = env["COOKIE_SECURE"] === "false";
+  if (insecureOptIn && env["NODE_ENV"] === "production") {
+    throw new Error("COOKIE_SECURE=false is not permitted when NODE_ENV=production.");
+  }
+  return !insecureOptIn;
+}
+
+/**
+ * Mirrors `apps/web/vite.config.ts`: one variable, `DEV_CLIENT_PORT`, drives
+ * the dev client's port everywhere so a busy 5173 is a one-line change rather
+ * than three hardcoded copies.
+ */
+export function resolveDevClientOrigin(env: ConfigEnv): string {
+  return env["DEV_CLIENT_ORIGIN"] ?? `http://localhost:${env["DEV_CLIENT_PORT"] ?? "5173"}`;
+}
+
 export function loadConfig(): ServerConfig {
   loadEnv();
-
-  const isProduction = process.env["NODE_ENV"] === "production";
 
   return {
     port: parsePort(process.env["PORT"], 3000),
     databaseUrl: requireDatabaseUrl(),
-    // Fail closed: anything that is not explicitly local development gets a
-    // Secure cookie, so forgetting to set a variable cannot downgrade it.
-    cookieSecure: isProduction || process.env["COOKIE_SECURE"] === "true",
-    devClientOrigin: process.env["DEV_CLIENT_ORIGIN"] ?? "http://localhost:5173",
-    isProduction,
+    cookieSecure: resolveCookieSecure(process.env),
+    devClientOrigin: resolveDevClientOrigin(process.env),
+    isProduction: process.env["NODE_ENV"] === "production",
   };
 }
