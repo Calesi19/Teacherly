@@ -1,3 +1,4 @@
+import type { TeacherId } from "@teacherly/core";
 import { sql } from "drizzle-orm";
 import { check, index, pgEnum, pgTable, text, timestamp, uniqueIndex, uuid } from "drizzle-orm/pg-core";
 
@@ -7,7 +8,10 @@ export const localeEnum = pgEnum("locale", ["en", "es"]);
 export const teachers = pgTable(
   "teachers",
   {
-    id: uuid("id").primaryKey().defaultRandom(),
+    // `$type` rather than a cast in the row mapper: reading this column is the
+    // moment a teacher id becomes a `TeacherId`, so the brand is declared at
+    // the source and `toTeacher` needs no assertion at all.
+    id: uuid("id").primaryKey().defaultRandom().$type<TeacherId>(),
     /** Stored already normalized (trimmed + lowercased) — see the check constraint. */
     email: text("email").notNull(),
     passwordHash: text("password_hash").notNull(),
@@ -31,7 +35,8 @@ export const sessions = pgTable(
     id: uuid("id").primaryKey().defaultRandom(),
     teacherId: uuid("teacher_id")
       .notNull()
-      .references(() => teachers.id, { onDelete: "cascade" }),
+      .references(() => teachers.id, { onDelete: "cascade" })
+      .$type<TeacherId>(),
     /**
      * SHA-256 of the opaque token carried by the cookie. The token itself is
      * never persisted, so a database read does not yield live sessions.

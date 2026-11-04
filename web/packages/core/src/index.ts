@@ -1,5 +1,6 @@
 export { DEFAULT_LOCALE, LOCALES, isLocale, type Locale } from "./domain/locale";
 export {
+  asTeacherId,
   type NewTeacher,
   type Teacher,
   type TeacherCredentials,

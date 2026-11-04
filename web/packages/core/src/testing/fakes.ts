@@ -1,5 +1,5 @@
 import { isSessionActive, type NewSession, type Session } from "../domain/session";
-import type { NewTeacher, Teacher, TeacherCredentials, TeacherId } from "../domain/teacher";
+import { asTeacherId, type NewTeacher, type Teacher, type TeacherCredentials, type TeacherId } from "../domain/teacher";
 import type { Clock } from "../ports/clock";
 import type { PasswordHasher } from "../ports/password-hasher";
 import type {
@@ -92,7 +92,9 @@ export class InMemoryTeacherRepository implements TeacherRepository {
 
     const now = new Date();
     const teacher: Teacher = {
-      id: `teacher-${this.nextId++}`,
+      // Stands in for reading the id back out of the `teachers` table, which
+      // is the real mint point. Test doubles are the only other caller.
+      id: asTeacherId(`teacher-${this.nextId++}`),
       email,
       displayName: input.displayName,
       locale: input.locale,

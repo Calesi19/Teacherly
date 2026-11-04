@@ -1,4 +1,4 @@
-import type { Locale } from "@teacherly/core";
+import type { Locale, TeacherId } from "@teacherly/core";
 
 /**
  * Stub. The report chunk replaces the body of `renderReport` with a
@@ -8,7 +8,11 @@ import type { Locale } from "@teacherly/core";
 
 /** Everything a report needs that is not yet modelled. Grows in the report chunk. */
 export interface ReportRequest {
-  teacherId: string;
+  /**
+   * Branded, so the report chunk cannot be handed an id that came from a
+   * request parameter rather than from the caller's resolved session.
+   */
+  teacherId: TeacherId;
   locale: Locale;
   /** Human-readable title for the generated document. */
   title: string;
