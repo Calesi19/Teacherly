@@ -2,9 +2,12 @@ import { defineConfig } from "vitest/config";
 
 export default defineConfig({
   test: {
-    // The domain package is the only thing with unit tests in this chunk, by
-    // design: it is the only place with logic that does not need a database.
-    include: ["packages/*/src/**/*.test.ts"],
+    // Both halves of the workspace. This previously read `packages/*` only,
+    // which meant a test file placed under `apps/` was silently never run —
+    // the failure mode where a suite is green because it collected nothing.
+    // `createApp` is testable with a fake AuthService and no database, so
+    // `apps/server` has real route-level tests now.
+    include: ["{packages,apps}/*/src/**/*.test.ts"],
     environment: "node",
   },
 });
