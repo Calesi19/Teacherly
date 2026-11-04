@@ -10,6 +10,7 @@ import { Hono, type Context } from "hono";
 
 import { clearSessionCookie, setSessionCookie, type CookieOptions } from "../http/cookies";
 import { toErrorResponse } from "../http/errors";
+import { pickString, readJson } from "../http/json";
 import {
   AUTH_EMAIL_RATE_LIMIT,
   FixedWindowRateLimiter,
@@ -37,57 +38,6 @@ function toTeacherResponse(teacher: Teacher): TeacherResponse {
     displayName: teacher.displayName,
     locale: teacher.locale,
   };
-}
-
-/**
- * Read an untrusted JSON body without letting a malformed one throw a 500, and
- * refuse the request outright when it is not one a browser on this origin
- * could have made. Returns a `Response` in that case; callers must return it.
- *
- * Both guards live here, in the shared reader, so every route added later
- * inherits them rather than having to remember them.
- *
- * The attack this closes: `c.req.json()` is `JSON.parse(await text())` with no
- * `Content-Type` check, so a cross-site `<form enctype="text/plain">` POST
- * reached `/api/auth/login` with no CORS preflight and got back a `200` and a
- * `Set-Cookie`. `SameSite` governs when a cookie is *sent*, not whether it may
- * be *set*, so a teacher who merely loaded an attacker's page had the
- * attacker's session installed for `/api` — and every grade and note they then
- * wrote would have landed in the attacker's workspace.
- */
-async function readJson(c: Context<AppEnv>): Promise<Record<string, unknown> | Response> {
-  // 1. A JSON content type cannot be produced by a simple cross-site form
-  //    post, so requiring it reinstates the CORS preflight as a gate.
-  const contentType = c.req.header("content-type")?.trim().toLowerCase() ?? "";
-  if (!contentType.startsWith("application/json")) {
-    return c.json({ error: { code: "unsupported_media_type" } }, 415);
-  }
-
-  // 2. Belt and braces for browsers that send it: `Sec-Fetch-Site` is set by
-  //    the browser and cannot be forged by page script. Absent on non-browser
-  //    clients (curl, the Playwright API context), so those still work.
-  const site = c.req.header("sec-fetch-site");
-  if (site !== undefined && site !== "same-origin" && site !== "none") {
-    return c.json({ error: { code: "cross_site_request_blocked" } }, 403);
-  }
-
-  try {
-    const body = await c.req.json();
-    return typeof body === "object" && body !== null ? (body as Record<string, unknown>) : {};
-  } catch {
-    return {};
-  }
-}
-
-/**
- * Unknown fields are dropped rather than forwarded. The domain service does the
- * real validation; this only stops arbitrary JSON reaching it. Values stay
- * `unknown`-ish on purpose — `validateSignup` is the one place that decides
- * what a valid email or password is.
- */
-function pickString(body: Record<string, unknown>, key: string): string {
-  const value = body[key];
-  return typeof value === "string" ? value : "";
 }
 
 export function authRoutes(deps: AuthRouteDeps): Hono<AppEnv> {

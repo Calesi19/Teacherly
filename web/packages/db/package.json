@@ -10,7 +10,8 @@
   "scripts": {
     "typecheck": "tsc --noEmit",
     "generate": "drizzle-kit generate",
-    "migrate": "tsx src/migrate.ts"
+    "migrate": "tsx src/migrate.ts",
+    "verify:constraints": "tsx scripts/verify-constraints.mjs"
   },
   "dependencies": {
     "@teacherly/core": "workspace:*",

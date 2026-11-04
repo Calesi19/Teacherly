@@ -1,6 +1,10 @@
-import { AuthService, systemClock } from "@teacherly/core";
+import { AuthService, GradebookService, SchoolService, systemClock } from "@teacherly/core";
 import {
+  DrizzleAssessmentRepository,
+  DrizzleClassRepository,
+  DrizzleGradeRepository,
   DrizzleSessionRepository,
+  DrizzleStudentRepository,
   DrizzleTeacherRepository,
   createDatabase,
   type DatabaseHandle,
@@ -11,6 +15,8 @@ import { Sha256SessionTokenService } from "./adapters/sha256-session-token-servi
 
 export interface Container {
   auth: AuthService;
+  school: SchoolService;
+  gradebook: GradebookService;
   database: DatabaseHandle;
   close(): Promise<void>;
 }
@@ -35,8 +41,25 @@ export async function createContainer(databaseUrl: string): Promise<Container> {
     decoyPasswordHash: await createDecoyPasswordHash(passwordHasher),
   });
 
+  // The four teacher-owned repositories, built once and shared by both
+  // services. `SchoolService` writes through them and `GradebookService` reads
+  // through them; neither can reach the database any other way, and every
+  // method on all four demands a `TeacherId` it cannot invent.
+  const repositories = {
+    classes: new DrizzleClassRepository(database.db),
+    students: new DrizzleStudentRepository(database.db),
+    assessments: new DrizzleAssessmentRepository(database.db),
+    grades: new DrizzleGradeRepository(database.db),
+  };
+
   return {
     auth,
+    school: new SchoolService(repositories),
+    // Takes the same repositories rather than taking `SchoolService`: the
+    // gradebook's lookups go through its own internal `SchoolService` so that
+    // "not found and not yours are the same 404" is decided once, and sharing
+    // the repository instances keeps a single connection pool behind both.
+    gradebook: new GradebookService(repositories),
     database,
     close: () => database.close(),
   };

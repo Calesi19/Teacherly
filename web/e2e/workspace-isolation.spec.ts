@@ -1,12 +1,22 @@
 import { expect, test } from "@playwright/test";
 
-import { fetchMe, newTeacher, newTeacherContext, signUp } from "./fixtures";
+import {
+  callRoute,
+  fetchMe,
+  newTeacher,
+  newTeacherContext,
+  ownedDataRoutes,
+  seedWorkspace,
+  signUp,
+} from "./fixtures";
 
 /**
- * The seed of the isolation suite. In this chunk there is only identity to
- * isolate, so that is what this asserts — but the fixture (two concurrent,
- * fully independent browser contexts, each with its own session cookie) is the
- * part that later chunks reuse for classes, grades and notes.
+ * The isolation suite: two concurrent, fully independent browser contexts, each
+ * with its own session cookie.
+ *
+ * The first test covers identity, which was all there was to isolate in chunk
+ * 1. The second covers this chunk's teacher-owned data — classes, students,
+ * assessments and grades — across every route that touches it.
  */
 test("two teachers each see only their own identity", async ({ browser, baseURL }) => {
   expect(baseURL).toBeDefined();
@@ -73,6 +83,115 @@ test("two teachers each see only their own identity", async ({ browser, baseURL 
     } finally {
       await replay.close();
     }
+  } finally {
+    await a.context.close();
+    await b.context.close();
+  }
+});
+
+/**
+ * Teacher A cannot read, update or delete any of teacher B's classes, students,
+ * assessments or grades.
+ *
+ * Every route is driven with A's real session cookie against B's real ids, and
+ * two things are asserted for each:
+ *
+ *   1. A is refused with a 404 — not a 403, which on a real id would confirm
+ *      the id exists and belongs to somebody.
+ *   2. A's answer is byte-identical to the answer for an id that belongs to
+ *      nobody. If the two differed in any way, the difference would let a
+ *      caller walk the id space and discover other teachers' records.
+ *
+ * Then B's whole workspace is read back through B's own session and compared
+ * against a snapshot taken before the attack, because "the writes 404'd" is a
+ * weaker claim than "nothing was written".
+ */
+test("teacher A cannot touch teacher B's classes, students, assessments or grades", async ({
+  browser,
+  baseURL,
+}) => {
+  expect(baseURL).toBeDefined();
+
+  const alice = newTeacher("alice");
+  const bob = newTeacher("bob");
+
+  const a = await newTeacherContext(browser, baseURL as string);
+  const b = await newTeacherContext(browser, baseURL as string);
+
+  try {
+    await signUp(a.page, alice);
+    await signUp(b.page, bob);
+
+    // Both teachers get a workspace. A's exists so that the test is not
+    // "a teacher with no data cannot see anything".
+    await seedWorkspace(a.context);
+    const bobsWorkspace = await seedWorkspace(b.context);
+
+    /** B's workspace, as B sees it. */
+    async function bobsView(): Promise<string> {
+      const parts: string[] = [];
+      for (const path of [
+        "/api/classes",
+        `/api/classes/${bobsWorkspace.classId}`,
+        `/api/classes/${bobsWorkspace.classId}/students`,
+        `/api/classes/${bobsWorkspace.classId}/assessments`,
+        `/api/classes/${bobsWorkspace.classId}/gradebook`,
+        `/api/assessments/${bobsWorkspace.assessmentId}/grades`,
+        `/api/assessments/${bobsWorkspace.assessmentId}/results`,
+      ]) {
+        const response = await b.context.request.get(path);
+        parts.push(`${path} ${response.status()} ${await response.text()}`);
+      }
+      return parts.join("\n");
+    }
+
+    const before = await bobsView();
+    // B's data really is there, so a later "unchanged" is not two empty reads.
+    expect(before).toContain("Ada Lovelace");
+    expect(before).toContain("Unit 1 Exam");
+
+    // Ids that were never issued, for the control request.
+    const nobodys = {
+      classId: "00000000-0000-4000-8000-000000000001",
+      studentId: "00000000-0000-4000-8000-000000000002",
+      assessmentId: "00000000-0000-4000-8000-000000000003",
+    };
+
+    const attacked = ownedDataRoutes(bobsWorkspace);
+    const controls = ownedDataRoutes(nobodys);
+    expect(attacked).toHaveLength(controls.length);
+
+    for (const [index, route] of attacked.entries()) {
+      const control = controls[index];
+      expect(control).toBeDefined();
+
+      const asAlice = await callRoute(a.context, route);
+      const asNobody = await callRoute(a.context, control as NonNullable<typeof control>);
+
+      expect(
+        asAlice.status,
+        `${route.method.toUpperCase()} ${route.path} should be 404 for another teacher`,
+      ).toBe(404);
+
+      // The anti-enumeration property: a real-but-foreign id and a fabricated
+      // one are indistinguishable.
+      expect(
+        asAlice.status,
+        `${route.method.toUpperCase()} ${route.path} leaks existence via status`,
+      ).toBe(asNobody.status);
+      expect(
+        asAlice.body,
+        `${route.method.toUpperCase()} ${route.path} leaks existence via body`,
+      ).toBe(asNobody.body);
+    }
+
+    // Nothing A did changed anything of B's.
+    expect(await bobsView()).toBe(before);
+
+    // And A's own listing never contained B's class at any point.
+    const alicesClasses = await a.context.request.get("/api/classes");
+    const body = (await alicesClasses.json()) as { classes: { id: string }[] };
+    expect(body.classes.map((value) => value.id)).not.toContain(bobsWorkspace.classId);
   } finally {
     await a.context.close();
     await b.context.close();

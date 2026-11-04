@@ -8,6 +8,13 @@
       "when": 1793786181220,
       "tag": "0000_curly_firebird",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1793822057891,
+      "tag": "0001_silent_lady_vermin",
+      "breakpoints": true
     }
   ]
 }
