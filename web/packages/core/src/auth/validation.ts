@@ -75,17 +75,31 @@ function checkPassword(raw: unknown, issues: ValidationIssue[], enforceStrength:
     issues.push({ field: "password", code: "required" });
     return "";
   }
-  if (raw.length > MAX_PASSWORD_LENGTH) {
+
+  // Unicode-normalize before the password is measured or hashed, on signup and
+  // on login alike.
+  //
+  // The same characters can be encoded two ways — "é" as one code point (NFC)
+  // or as "e" plus a combining accent (NFD) — and argon2 hashes bytes, so the
+  // two do not verify against each other. Several macOS/iOS keyboards and IMEs
+  // emit NFD, so a teacher could sign up on one device and be permanently
+  // locked out on another, with no password reset in this chunk to recover.
+  //
+  // This has to happen now rather than later: normalizing after real passwords
+  // exist would invalidate every hash created before it.
+  const password = raw.normalize("NFC");
+
+  if (password.length > MAX_PASSWORD_LENGTH) {
     issues.push({ field: "password", code: "too_long" });
-    return raw;
+    return password;
   }
   // On login we only bound the length. Rejecting a short password at login with
   // a *validation* error would leak that no account can have that password,
   // and more importantly gives a different response shape than a wrong guess.
-  if (enforceStrength && raw.length < MIN_PASSWORD_LENGTH) {
+  if (enforceStrength && password.length < MIN_PASSWORD_LENGTH) {
     issues.push({ field: "password", code: "too_short" });
   }
-  return raw;
+  return password;
 }
 
 export function validateSignup(input: SignupInput): ValidSignupInput {
