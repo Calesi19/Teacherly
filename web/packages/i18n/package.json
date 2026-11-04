@@ -1,0 +1,16 @@
+{
+  "name": "@teacherly/i18n",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Typed EN/ES translation module. No i18n library — a missing key is a type error.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@teacherly/core": "workspace:*"
+  }
+}

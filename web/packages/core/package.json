@@ -1,0 +1,16 @@
+{
+  "name": "@teacherly/core",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Teacherly domain logic. No HTTP, no SQL, no third-party runtime dependencies.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./testing": "./src/testing/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {},
+  "devDependencies": {}
+}

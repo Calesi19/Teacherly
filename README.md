@@ -54,3 +54,11 @@ The SQLite database file is stored in the app's local data directory (managed by
 [VS Code](https://code.visualstudio.com/) with the following extensions:
 - [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode)
 - [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+
+## Web App
+
+A web version of Teacherly lives in [`web/`](./web) — a separate pnpm workspace
+with its own README. It is a parallel build, not a replacement: nothing in
+`web/` affects this desktop app, and the desktop app is not modified by it.
+
+See [`web/README.md`](./web/README.md) to run it (`cd web && pnpm install && pnpm dev`).

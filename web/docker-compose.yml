@@ -1,0 +1,25 @@
+# Local development database. Postgres 16, pinned — matching the version the
+# Drizzle migrations are generated and tested against.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: teacherly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: teacherly
+      # Local-only credential. Nothing here is a secret; production gets its
+      # connection string from the environment, not from this file.
+      POSTGRES_PASSWORD: teacherly
+      POSTGRES_DB: teacherly
+    ports:
+      - "5432:5432"
+    volumes:
+      - teacherly-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U teacherly -d teacherly"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+
+volumes:
+  teacherly-pgdata:

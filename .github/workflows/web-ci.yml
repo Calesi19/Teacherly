@@ -1,0 +1,87 @@
+name: web-ci
+
+# Scoped to web/ on purpose: this workflow knows nothing about the Tauri
+# desktop app at the repository root and must not start running its builds.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    paths:
+      - "web/**"
+      - ".github/workflows/web-ci.yml"
+
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: teacherly
+          POSTGRES_PASSWORD: teacherly
+          POSTGRES_DB: teacherly
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U teacherly -d teacherly"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    env:
+      DATABASE_URL: postgres://teacherly:teacherly@127.0.0.1:5432/teacherly
+      PORT: "3000"
+      DEV_CLIENT_ORIGIN: http://localhost:5173
+      COOKIE_SECURE: "false"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      # First, because it is the cheapest and the one whose failure is most
+      # architecturally interesting.
+      - name: Core-purity guardrail
+        run: pnpm check:core-purity
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Client build
+        run: pnpm --filter @teacherly/web build
+
+      - name: Apply migrations
+        run: pnpm db:migrate
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 7
