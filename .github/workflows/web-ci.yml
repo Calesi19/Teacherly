@@ -39,7 +39,14 @@ jobs:
     env:
       DATABASE_URL: postgres://teacherly:teacherly@127.0.0.1:5432/teacherly
       PORT: "3000"
-      DEV_CLIENT_ORIGIN: http://localhost:5173
+      # The one variable that moves the dev client everywhere (vite, Playwright
+      # and the server's DEV_CLIENT_ORIGIN default), rather than restating the
+      # origin here and having two places to keep in step.
+      DEV_CLIENT_PORT: "5173"
+      # Required: the e2e suite drives the app over plain http on localhost, and
+      # a Secure cookie would not be stored. Honoured only because NODE_ENV is
+      # not "production" here — the server refuses this combination outright in
+      # production rather than silently dropping Secure.
       COOKIE_SECURE: "false"
 
     steps:

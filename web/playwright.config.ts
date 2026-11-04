@@ -1,7 +1,12 @@
 import { defineConfig, devices } from "@playwright/test";
 
-const CLIENT_URL = "http://localhost:5173";
-const API_URL = "http://127.0.0.1:3000";
+// Same two variables the client and the server read, so moving the dev client
+// off a busy 5173 is a single `DEV_CLIENT_PORT=5174` rather than three edits.
+const CLIENT_PORT = process.env["DEV_CLIENT_PORT"] ?? "5173";
+const API_PORT = process.env["PORT"] ?? "3000";
+
+const CLIENT_URL = `http://localhost:${CLIENT_PORT}`;
+const API_URL = `http://127.0.0.1:${API_PORT}`;
 
 export default defineConfig({
   testDir: "./e2e",
