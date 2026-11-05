@@ -40,8 +40,18 @@ function harness(): Harness {
   return { auth, teachers, sessions, hasher, clock };
 }
 
-function signup(auth: AuthService, email: string, password = PASSWORD) {
+function register(auth: AuthService, email: string, password = PASSWORD) {
   return auth.signup({ email, password, displayName: "Ms. Rivera" });
+}
+
+/**
+ * Register, then log in. Two calls, because `signup` deliberately returns
+ * nothing to start a session with — see the note on it. Every test below that
+ * needs a live session goes through the same door a client does.
+ */
+async function signupAndLogin(auth: AuthService, email: string, password = PASSWORD) {
+  await register(auth, email, password);
+  return auth.login({ email, password });
 }
 
 describe("AuthService.signup", () => {
@@ -50,37 +60,38 @@ describe("AuthService.signup", () => {
     h = harness();
   });
 
-  it("creates a teacher and issues a session", async () => {
-    const result = await signup(h.auth, "rivera@school.test");
+  it("creates a teacher who can then log in", async () => {
+    const result = await signupAndLogin(h.auth, "rivera@school.test");
 
     expect(result.teacher.email).toBe("rivera@school.test");
     expect(result.teacher.displayName).toBe("Ms. Rivera");
     expect(result.teacher.locale).toBe("en");
+    // The first token in the process, because signing up issued none.
     expect(result.token).toBe("token-1");
     expect(result.expiresAt).toEqual(computeSessionExpiry(START));
   });
 
   it("rejects a duplicate email with the generic credential error", async () => {
-    await signup(h.auth, "rivera@school.test");
+    await register(h.auth, "rivera@school.test");
 
-    await expect(signup(h.auth, "rivera@school.test")).rejects.toBeInstanceOf(
+    await expect(register(h.auth, "rivera@school.test")).rejects.toBeInstanceOf(
       InvalidCredentialsError,
     );
   });
 
   it("treats email as case-insensitive when detecting a duplicate", async () => {
-    await signup(h.auth, "Rivera@School.test");
+    await register(h.auth, "Rivera@School.test");
 
-    await expect(signup(h.auth, "rivera@school.TEST")).rejects.toBeInstanceOf(
+    await expect(register(h.auth, "rivera@school.TEST")).rejects.toBeInstanceOf(
       InvalidCredentialsError,
     );
   });
 
   it("hashes the password even when the email is already taken", async () => {
-    await signup(h.auth, "rivera@school.test");
+    await register(h.auth, "rivera@school.test");
     const hashCallsBefore = h.hasher.hashCalls;
 
-    await expect(signup(h.auth, "rivera@school.test")).rejects.toBeInstanceOf(
+    await expect(register(h.auth, "rivera@school.test")).rejects.toBeInstanceOf(
       InvalidCredentialsError,
     );
 
@@ -89,7 +100,7 @@ describe("AuthService.signup", () => {
   });
 
   it("stores what the hasher returned, never the raw password", async () => {
-    await signup(h.auth, "rivera@school.test");
+    await register(h.auth, "rivera@school.test");
     const credentials = await h.teachers.findCredentialsByEmail("rivera@school.test");
 
     expect(credentials).not.toBeNull();
@@ -104,33 +115,47 @@ describe("AuthService.signup", () => {
   });
 
   it("stores only the hash of the session token", async () => {
-    const result = await signup(h.auth, "rivera@school.test");
+    const result = await signupAndLogin(h.auth, "rivera@school.test");
     const rows = h.sessions.snapshot();
 
     expect(rows).toHaveLength(1);
     expect(JSON.stringify(rows)).not.toContain(result.token);
   });
 
+  it("starts no session, and returns nothing to start one with", async () => {
+    const result = await register(h.auth, "rivera@school.test");
+
+    // The finding this closes: signup used to answer with an `IssuedSession`
+    // and the route set the cookie from it, so a prober could tell a free
+    // address from a taken one by whether a session came back — the last
+    // signal left after the status and body were made uniform. Asserting the
+    // empty `sessions` table as well as the `undefined`, because a route that
+    // merely discarded the return value would still have written the row.
+    expect(result).toBeUndefined();
+    expect(h.sessions.snapshot()).toHaveLength(0);
+  });
+
   it("rejects a password below the minimum length", async () => {
     const tooShort = "a".repeat(MIN_PASSWORD_LENGTH - 1);
 
-    await expect(signup(h.auth, "rivera@school.test", tooShort)).rejects.toBeInstanceOf(
+    await expect(register(h.auth, "rivera@school.test", tooShort)).rejects.toBeInstanceOf(
       ValidationError,
     );
   });
 
   it("rejects a malformed email", async () => {
-    await expect(signup(h.auth, "not-an-email")).rejects.toBeInstanceOf(ValidationError);
+    await expect(register(h.auth, "not-an-email")).rejects.toBeInstanceOf(ValidationError);
   });
 
   it("accepts a supported locale and rejects an unsupported one", async () => {
-    const result = await h.auth.signup({
+    await h.auth.signup({
       email: "es@school.test",
       password: PASSWORD,
       displayName: "Sra. Rivera",
       locale: "es",
     });
-    expect(result.teacher.locale).toBe("es");
+    const stored = await h.teachers.findCredentialsByEmail("es@school.test");
+    expect(stored?.teacher.locale).toBe("es");
 
     await expect(
       h.auth.signup({
@@ -151,15 +176,15 @@ describe("AuthService.login", () => {
   });
 
   it("issues a new session for correct credentials", async () => {
-    await signup(h.auth, "rivera@school.test");
+    await register(h.auth, "rivera@school.test");
     const result = await h.auth.login({ email: "rivera@school.test", password: PASSWORD });
 
     expect(result.teacher.email).toBe("rivera@school.test");
-    expect(result.token).toBe("token-2");
+    expect(result.token).toBe("token-1");
   });
 
   it("rejects a wrong password", async () => {
-    await signup(h.auth, "rivera@school.test");
+    await register(h.auth, "rivera@school.test");
 
     await expect(
       h.auth.login({ email: "rivera@school.test", password: "wrong-password-x" }),
@@ -167,7 +192,7 @@ describe("AuthService.login", () => {
   });
 
   it("rejects an unknown email with the same error as a wrong password", async () => {
-    await signup(h.auth, "rivera@school.test");
+    await register(h.auth, "rivera@school.test");
 
     const unknown = await h.auth
       .login({ email: "nobody@school.test", password: PASSWORD })
@@ -193,7 +218,7 @@ describe("AuthService.login", () => {
   });
 
   it("matches the stored email case-insensitively", async () => {
-    await signup(h.auth, "Rivera@School.test");
+    await register(h.auth, "Rivera@School.test");
     const result = await h.auth.login({ email: "  RIVERA@school.TEST ", password: PASSWORD });
 
     expect(result.teacher.email).toBe("rivera@school.test");
@@ -207,14 +232,14 @@ describe("AuthService.resolveSession", () => {
   });
 
   it("resolves the teacher behind a live token", async () => {
-    const issued = await signup(h.auth, "rivera@school.test");
+    const issued = await signupAndLogin(h.auth, "rivera@school.test");
     const resolved = await h.auth.resolveSession(issued.token);
 
     expect(resolved?.teacher.id).toBe(issued.teacher.id);
   });
 
   it("rejects an expired session token", async () => {
-    const issued = await signup(h.auth, "rivera@school.test");
+    const issued = await signupAndLogin(h.auth, "rivera@school.test");
 
     h.clock.advance(SESSION_ABSOLUTE_TTL_MS + 1);
 
@@ -222,7 +247,7 @@ describe("AuthService.resolveSession", () => {
   });
 
   it("still accepts the token one millisecond before absolute expiry", async () => {
-    const issued = await signup(h.auth, "rivera@school.test");
+    const issued = await signupAndLogin(h.auth, "rivera@school.test");
 
     h.clock.advance(SESSION_ABSOLUTE_TTL_MS - 1);
 
@@ -230,7 +255,7 @@ describe("AuthService.resolveSession", () => {
   });
 
   it("does not extend expiry when a session is used", async () => {
-    const issued = await signup(h.auth, "rivera@school.test");
+    const issued = await signupAndLogin(h.auth, "rivera@school.test");
 
     h.clock.advance(60_000);
     await h.auth.resolveSession(issued.token);
@@ -242,7 +267,7 @@ describe("AuthService.resolveSession", () => {
   });
 
   it("rejects an unknown token", async () => {
-    await signup(h.auth, "rivera@school.test");
+    await register(h.auth, "rivera@school.test");
 
     expect(await h.auth.resolveSession("token-does-not-exist")).toBeNull();
   });
@@ -252,16 +277,8 @@ describe("AuthService.resolveSession", () => {
   });
 
   it("keeps two teachers' sessions separate", async () => {
-    const one = await h.auth.signup({
-      email: "one@school.test",
-      password: PASSWORD,
-      displayName: "Teacher One",
-    });
-    const two = await h.auth.signup({
-      email: "two@school.test",
-      password: PASSWORD,
-      displayName: "Teacher Two",
-    });
+    const one = await signupAndLogin(h.auth, "one@school.test");
+    const two = await signupAndLogin(h.auth, "two@school.test");
 
     const resolvedOne = await h.auth.resolveSession(one.token);
     const resolvedTwo = await h.auth.resolveSession(two.token);
@@ -279,7 +296,7 @@ describe("AuthService.logout", () => {
   });
 
   it("revokes the session server-side", async () => {
-    const issued = await signup(h.auth, "rivera@school.test");
+    const issued = await signupAndLogin(h.auth, "rivera@school.test");
 
     await h.auth.logout(issued.token, issued.teacher.id);
 
@@ -288,14 +305,14 @@ describe("AuthService.logout", () => {
   });
 
   it("is idempotent", async () => {
-    const issued = await signup(h.auth, "rivera@school.test");
+    const issued = await signupAndLogin(h.auth, "rivera@school.test");
 
     await h.auth.logout(issued.token, issued.teacher.id);
     await expect(h.auth.logout(issued.token, issued.teacher.id)).resolves.toBeUndefined();
   });
 
   it("leaves the teacher able to log in again", async () => {
-    const issued = await signup(h.auth, "rivera@school.test");
+    const issued = await signupAndLogin(h.auth, "rivera@school.test");
     await h.auth.logout(issued.token, issued.teacher.id);
 
     const again = await h.auth.login({ email: "rivera@school.test", password: PASSWORD });
@@ -305,16 +322,8 @@ describe("AuthService.logout", () => {
   });
 
   it("refuses to revoke a session belonging to another teacher", async () => {
-    const one = await h.auth.signup({
-      email: "one@school.test",
-      password: PASSWORD,
-      displayName: "Teacher One",
-    });
-    const two = await h.auth.signup({
-      email: "two@school.test",
-      password: PASSWORD,
-      displayName: "Teacher Two",
-    });
+    const one = await signupAndLogin(h.auth, "one@school.test");
+    const two = await signupAndLogin(h.auth, "two@school.test");
 
     await expect(h.auth.logout(one.token, two.teacher.id)).rejects.toBeInstanceOf(
       SessionOwnershipError,
@@ -323,7 +332,7 @@ describe("AuthService.logout", () => {
   });
 
   it("does not revoke the teacher's other sessions", async () => {
-    const first = await signup(h.auth, "rivera@school.test");
+    const first = await signupAndLogin(h.auth, "rivera@school.test");
     const second = await h.auth.login({ email: "rivera@school.test", password: PASSWORD });
 
     await h.auth.logout(first.token, first.teacher.id);

@@ -35,23 +35,58 @@ function check(ok, label, detail = "") {
   if (!ok) failures += 1;
 }
 
-/** A session cookie for a fresh teacher. */
+const PASSWORD = "verify-correct-horse-battery";
+
+/**
+ * The invite code the server under test was started with. Sign-up is
+ * invite-only and fails closed, so without this every sign-up below answers
+ * 503 and the script would report a confusing cascade of failures instead of
+ * the one thing that is actually wrong.
+ */
+const INVITE_CODE = process.env["SIGNUP_INVITE_CODE"]?.trim() ?? "";
+if (INVITE_CODE === "") {
+  console.error(
+    "SIGNUP_INVITE_CODE is not set, so the server under test has sign-up disabled.\n" +
+      "Set it in web/.env or in the environment before running this script.",
+  );
+  process.exit(1);
+}
+
+/**
+ * A session cookie for a fresh teacher.
+ *
+ * Two requests: sign-up issues no session — its response is identical for a
+ * real sign-up, a taken address and a wrong invite code — so login is what
+ * produces the cookie.
+ */
 async function signUp(label) {
   const email = `${label}-${Date.now()}-${Math.random().toString(36).slice(2, 8)}@verify.test`;
-  const response = await fetch(`${BASE}/api/auth/signup`, {
+  const signup = await fetch(`${BASE}/api/auth/signup`, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       email,
-      password: "verify-correct-horse-battery",
+      password: PASSWORD,
       displayName: label,
+      inviteCode: INVITE_CODE,
     }),
   });
-  if (response.status !== 201) {
-    throw new Error(`signup failed: ${response.status} ${await response.text()}`);
+  if (signup.status !== 201) {
+    throw new Error(`signup failed: ${signup.status} ${await signup.text()}`);
   }
-  const cookie = response.headers.get("set-cookie")?.split(";")[0];
-  if (cookie === undefined) throw new Error("signup issued no cookie");
+
+  const login = await fetch(`${BASE}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email, password: PASSWORD }),
+  });
+  // A 401 means the sign-up did not register anyone, which with a uniform 201
+  // above means a rejected invite code.
+  if (login.status !== 200) {
+    throw new Error(`login after signup failed: ${login.status} ${await login.text()}`);
+  }
+  const cookie = login.headers.get("set-cookie")?.split(";")[0];
+  if (cookie === undefined) throw new Error("login issued no cookie");
   return { email, cookie };
 }
 

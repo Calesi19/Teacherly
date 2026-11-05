@@ -30,6 +30,8 @@ const es: Translations = {
     email: "Correo electrónico",
     password: "Contraseña",
     displayName: "Tu nombre",
+    inviteCode: "Código de invitación",
+    inviteCodeHint: "Pide el código a tu centro. El registro es solo por invitación.",
     signUp: "Registrarse",
     signIn: "Iniciar sesión",
     signOut: "Cerrar sesión",
@@ -39,7 +41,9 @@ const es: Translations = {
     passwordHint: "Al menos {min} caracteres.",
     errorInvalidCredentials: "Esa combinación de correo y contraseña no es válida.",
     errorSignUpFailed:
-      "No pudimos completar ese registro. Si ya tienes una cuenta, inicia sesión.",
+      "No pudimos completar ese registro. Revisa tu código de invitación, o inicia sesión si ya tienes una cuenta.",
+    errorSignupDisabled:
+      "El registro está cerrado en este servidor. Pide una cuenta a tu centro.",
     errorEmailFormat: "Introduce un correo electrónico válido.",
     errorEmailRequired: "El correo electrónico es obligatorio.",
     errorEmailTooLong: "Ese correo electrónico es demasiado largo.",

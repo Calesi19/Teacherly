@@ -42,7 +42,23 @@ export interface AuthenticatedTeacher {
 export class AuthService {
   constructor(private readonly deps: AuthServiceDeps) {}
 
-  async signup(input: SignupInput): Promise<IssuedSession> {
+  /**
+   * Register a teacher. **Does not start a session**, and returns nothing the
+   * caller could start one with.
+   *
+   * It used to return an `IssuedSession`, and `POST /api/auth/signup` set the
+   * cookie from it. That cookie was the last thing separating a real signup
+   * from a signup for an address that was already taken: status and body had
+   * been made uniform, but a prober could still read the answer off whether a
+   * session came back. Not issuing it is how that is closed, and doing it here
+   * rather than by having the route discard the session matters for two
+   * reasons — a discarded `IssuedSession` would still have written a 14-day
+   * `sessions` row that nobody holds, and a later route that "helpfully" used
+   * the return value would silently reopen the oracle.
+   *
+   * The teacher logs in afterwards, with the credentials they just chose.
+   */
+  async signup(input: SignupInput): Promise<void> {
     const valid = validateSignup(input);
 
     // Always hash, even when we already know the address is taken, so that
@@ -61,8 +77,6 @@ export class AuthService {
     // `null` means the unique index rejected the insert — two signups for the
     // same address raced. Same error as above: still no enumeration signal.
     if (teacher === null) throw new InvalidCredentialsError();
-
-    return this.issueSession(teacher);
   }
 
   async login(input: LoginInput): Promise<IssuedSession> {

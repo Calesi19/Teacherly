@@ -33,6 +33,12 @@ export interface AppDeps {
    * a single shared bucket, which is safe because it only ever over-counts.
    */
   clientIp?: ClientIpResolver | undefined;
+  /**
+   * The shared signup invite code, from `SIGNUP_INVITE_CODE`. Optional in the
+   * type and fail-closed in effect: an app built without it refuses every
+   * signup rather than accepting every signup.
+   */
+  signupInviteCode?: string | undefined;
 }
 
 export function createApp(deps: AppDeps): Hono<AppEnv> {
@@ -67,7 +73,14 @@ export function createApp(deps: AppDeps): Hono<AppEnv> {
   const ipLimiter = new FixedWindowRateLimiter(AUTH_IP_RATE_LIMIT);
   app.use("/api/auth/*", ipRateLimit(ipLimiter, deps.clientIp ?? (() => "unknown")));
 
-  app.route("/api/auth", authRoutes({ auth: deps.auth, cookie: deps.cookie }));
+  app.route(
+    "/api/auth",
+    authRoutes({
+      auth: deps.auth,
+      cookie: deps.cookie,
+      signupInviteCode: deps.signupInviteCode,
+    }),
+  );
   app.route("/api/me", meRoute());
   // Mounted at `/api` rather than under a `/school` prefix because the nouns
   // are the API's top-level nouns: /api/classes, /api/students, /api/assessments.

@@ -17,6 +17,9 @@ export function describeApiError(error: unknown, t: Translations): string {
   // since sign-up's 429 is one of the failures that does surface as isError.
   if (error.code === "rate_limited") return t.auth.errorRateLimited;
 
+  // The server has no SIGNUP_INVITE_CODE, so it registers nobody.
+  if (error.code === "signup_disabled") return t.auth.errorSignupDisabled;
+
   if (error.code === "validation_failed") {
     const first = error.issues[0];
     if (first !== undefined) return describeIssue(first, t);

@@ -34,7 +34,11 @@ That is the whole setup. `pnpm dev` will:
 4. start the API on <http://localhost:3000> and the client on
    <http://localhost:5173>.
 
-Open <http://localhost:5173>, sign up, and you are in.
+Then open <http://localhost:5173> — but **sign-up needs one more step**, because
+it is invite-only and fails closed. Uncomment `SIGNUP_INVITE_CODE` in `web/.env`
+and restart `pnpm dev`; the form asks for that code. Without it the server
+answers every sign-up with `503 signup_disabled`, which is deliberate — see
+[Authentication](#authentication).
 
 > **No Docker?** `pnpm dev` falls back to a PostgreSQL 16 build fetched from npm
 > by `pnpm install` (`embedded-postgres`), running it from `web/.pgdata` on the
@@ -48,7 +52,7 @@ Open <http://localhost:5173>, sign up, and you are in.
 | Command | What it does |
 | --- | --- |
 | `pnpm typecheck` | `tsc --noEmit` at the root and in all seven packages |
-| `pnpm test` | Vitest — the `packages/core` domain suite and the `apps/server` route suite |
+| `pnpm test` | Vitest — the `packages/core` domain suite, the `apps/server` route suite, and unit tests over the limiter, semaphore, log redaction and invite code |
 | `pnpm test:e2e` | Playwright — starts the stack itself and drives a real browser |
 | `pnpm check:core-purity` | The core-purity guardrail (see below) |
 | `pnpm check` | Guardrail + typecheck + unit tests, the pre-push set |
@@ -130,12 +134,13 @@ any HTTP client — or `node:crypto`. Randomness and hashing go through the
 `SessionTokenService` and `PasswordHasher` ports, so the domain is runnable
 anywhere and testable without a database.
 
-`pnpm check:core-purity` enforces this in three independent ways: it rejects a
+`pnpm check:core-purity` enforces this in four independent ways: it rejects a
 forbidden name in `packages/core/package.json` even if nothing imports it yet,
 it scans every source file for a forbidden import even if it was never
-declared, and it fails the build if anything under `apps/*/src` mints a
-`TeacherId` (see constraint 2). It is a plain script rather than an ESLint rule
-so that it cannot be silenced with an inline comment.
+declared, it fails the build if anything outside `packages/db` and the core
+test fakes mints a `TeacherId`, and it fails the build on a direct
+`c.req.json()` (both: see constraint 2). It is a plain script rather than an
+ESLint rule so that it cannot be silenced with an inline comment.
 
 **2. All data access sits behind repository interfaces, and workspace isolation
 is enforced in one place.** The ports are declared in
@@ -159,10 +164,31 @@ as well as a session-resolved id did, and a route that passed one straight to
 places: `packages/db/src/schema.ts`, which types the `id` and `teacher_id`
 columns with Drizzle's `$type` so reading a row *is* the mint, and the
 in-memory fakes in `packages/core/src/testing`. Nothing under `apps/` mints
-one at all. Because a brand alone can always be defeated with
-`as unknown as TeacherId`, `pnpm check:core-purity` also fails the build on any
-such cast under `apps/*/src`. A handler therefore cannot invent a teacher id;
-it can only receive one a repository already produced.
+one at all.
+
+A brand alone can always be defeated, so `pnpm check:core-purity` closes the
+two ways round it that a developer could reach without writing anything a
+reviewer would notice:
+
+- **Casts.** `as TeacherId`, `as unknown as TeacherId`, `asTeacherId(...)` and
+  the angle-bracket `<TeacherId>x` assertion are all rejected, across every
+  `packages/*/src` and `apps/*/src` file outside `packages/db`, the fakes and
+  `asTeacherId` itself. The angle-bracket form and the scan's old `apps/`-only
+  scope were both holes, found by review: a cast in `packages/pdf` was
+  unchecked.
+- **`any`.** `c.req.json()` is typed `any`, and `any` satisfies a branded type
+  with *no cast at all* — `const victim: TeacherId = body.teacherId` compiled,
+  with nothing textual to grep for. Every body therefore goes through
+  `readJson` in `apps/server/src/http/json.ts`, which returns
+  `Record<string, unknown>` and makes that line a type error; a direct
+  `c.req.json()` anywhere else fails the guardrail.
+
+**One boundary stays unbranded on purpose:**
+`TeacherRepository.findCredentialsByEmail(email: string)` takes a plain
+string, because login is handed an address by an anonymous caller and its job
+is to find out whether it belongs to anybody. There is no id to brand yet —
+the branded id is what comes back. The invariant is "a handler cannot name a
+workspace", not "no untrusted string reaches a repository".
 
 ## Authentication
 
@@ -179,21 +205,55 @@ it can only receive one a repository already produced.
   teacher whose keyboard emits NFD (several macOS/iOS keyboards and IMEs do)
   could sign up on one device and be permanently locked out on another, with no
   password reset in this chunk to recover.
-- **Rate limiting on `/api/auth/*`:** a fixed-window counter, 30 requests per
-  minute per client IP and 10 per 15 minutes per email address, returning
-  `429 {"error":{"code":"rate_limited"}}` with `Retry-After`. The per-IP
-  counter bounds argon2id's memory cost (64 MiB and ~330ms per attempt, with no
-  concurrency cap, is a denial-of-service lever as much as a guessing one); the
-  per-email counter bounds guessing against one account spread across many
-  source addresses. The IP is the socket's remote address — `X-Forwarded-For`
-  is deliberately ignored, since nothing in front of this server is trusted to
-  set it and honouring it would let a caller reset their own counter.
+- **Rate limiting on `/api/auth/*`:** a fixed-window counter returning
+  `429 {"error":{"code":"rate_limited"}}` with `Retry-After`. Three independent
+  counters:
+
+  | Counter | Limit | What it is for |
+  | --- | --- | --- |
+  | per client IP | 30 / minute | bounds how fast one source can try anything |
+  | per email, login | 10 / 15 min | bounds guessing at one account from many sources |
+  | per email, signup | 10 / 15 min | separate bucket — see below |
+
+  The IP is the socket's remote address — `X-Forwarded-For` is deliberately
+  ignored, since nothing in front of this server is trusted to set it and
+  honouring it would let a caller reset their own counter.
+
+  Signup and login count separately, and that is a fix rather than tidiness.
+  They shared one per-address bucket, and because signup answers uniformly, an
+  attacker could post signups for a registered teacher's address until the
+  bucket was spent — after which the teacher's own correct password got a
+  `429` with `Retry-After` near 15 minutes. About 0.7 requests a minute
+  sustains that indefinitely, and this chunk has no password reset, so there
+  was no recovery path. A request an attacker can make must not consume an
+  allowance the victim needs.
+
+  **The limiter fails closed.** When its table of tracked keys is full of live
+  windows it refuses keys it is not already tracking, rather than — as it did
+  — clearing the whole table, which deleted the counters of keys that were
+  over their limit and let a blocked key straight through on its next request.
+  The cost is that under a flood of 20,000 distinct keys a genuinely new
+  caller waits out a window; the alternative was a control with a load level
+  at which it stops enforcing, chosen by the attacker.
 
   > **In-process only.** The counters live in a `Map` in one Node process, so
   > they reset on restart and are not shared between instances: a deployment
   > running N instances effectively gets N times the limit, and a deployment
   > behind a proxy sees the proxy's address for every request. Replacing this
   > with a shared store is a prerequisite for running more than one instance.
+- **A concurrency limit on argon2id: at most 4 hashes or verifies in flight at
+  once**, process-wide, in `Argon2PasswordHasher`. Requests past that wait.
+
+  This is listed separately from rate limiting because it is a separate
+  control, and an earlier version of this file said the per-IP counter
+  delivered it. It does not and cannot: a fixed-window counter has no
+  concurrency semantics, so "30 requests per minute" is satisfied by 30
+  requests in the same millisecond — about 1.9 GiB of argon2 working memory
+  from one address, with the limiter working exactly as designed. Rate
+  limiting bounds the arrival rate, which is what frustrates guessing; the
+  semaphore bounds how many run at once, which is what bounds memory. Four is
+  `p=4`'s worth of parallelism and ~256 MiB peak; beyond it, more concurrency
+  buys no throughput because each hash already uses four threads.
 - **Sessions:** server-side, in the `sessions` table. The cookie carries a
   256-bit random token; the table stores only its SHA-256, so reading the
   database does not yield live sessions. Plain SHA-256 is correct here — the
@@ -224,19 +284,46 @@ it can only receive one a repository already produced.
   both return the identical `401 {"error":{"code":"invalid_credentials"}}`, and
   login verifies against a per-process decoy argon2id hash when the email is
   unknown, so neither branch is measurably faster than the other.
-- **Signup answers identically whether or not the address is taken:**
-  `201 {"ok":true}`, same status, same body, same content type. It used to
-  return `201` for a free address and `401` for a registered one, which made
-  the status code a single-request account-existence oracle for an
-  unauthenticated caller. The client learns who it is from `GET /api/me`
-  afterwards, which is why signup's body no longer carries the teacher.
+- **Signup is invite-only.** It requires a shared `SIGNUP_INVITE_CODE`,
+  compared in constant time (both sides are SHA-256'd first, so the comparison
+  is fixed-length and a wrong code of the wrong length costs the same as one of
+  the right length).
 
-  > **Partly open, on purpose.** Two signals remain: only a genuine signup
-  > sets the session cookie, and probing an address still *registers* it,
-  > which is a durable denial of registration against a real teacher. Closing
-  > either needs proof of address control — email verification or invite
-  > codes — which is a pending product decision, not an oversight. See the
-  > note on the route in `apps/server/src/routes/auth-routes.ts`.
+  **With no code configured, signup is disabled** and answers
+  `503 {"error":{"code":"signup_disabled"}}`. `.env.example` ships the line
+  commented out, so an unconfigured checkout registers nobody rather than
+  registering anybody. `pnpm test:e2e` needs it set — the suite signs teachers
+  up through the form.
+- **Signup has exactly one success-shaped answer:** `201 {"ok":true}`, with
+  **no `Set-Cookie`**, returned for a real registration, for an address that
+  was already taken, and for a wrong or missing invite code — identical status,
+  identical body, identical set of header names.
+
+  Three findings land here. It used to answer `201` for a free address and
+  `401` for a taken one, which made the status code a single-request
+  account-existence oracle. Making the response uniform left the cookie behind
+  as the signal, since only a real signup got one — so signup now issues no
+  session at all; `AuthService.signup` returns nothing a caller could start one
+  with, which also means it no longer writes a 14-day `sessions` row nobody
+  holds. And probing an address still *registered* it, a durable denial of
+  registration against a real teacher, which is what the invite code closes:
+  the write is no longer something anybody can perform.
+
+  The client posts signup and then posts login with the same credentials. That
+  is why signing up is two requests, and why the sign-up form shows one message
+  for every uniform outcome — it genuinely cannot tell them apart.
+
+  > **What is still measurable, and is not claimed closed.** A rejected invite
+  > code answers faster than an accepted one, because an accepted one goes on
+  > to hash a password; that separates "my code is wrong" from "my code is
+  > right" and says nothing about any address. Taken-versus-free stays
+  > unmeasurable because `AuthService.signup` hashes before it looks the
+  > address up. And someone *holding* the code can still learn whether an
+  > address was free by following up with `POST /api/auth/login` — the invite
+  > code bounds who can squat, not whether a code-holder can. Email
+  > verification is the general fix, needs an email provider this PoC does not
+  > have, and together with password reset is the prerequisite for reopening
+  > signup to the public.
 - **Email is normalized once** (trim + lowercase) inside
   `normalizeEmail`, applied in the repository rather than at call sites. The
   `teachers` table has a unique index on `email` *and* a
@@ -247,29 +334,42 @@ it can only receive one a repository already produced.
 
 | Route | Notes |
 | --- | --- |
-| `POST /api/auth/signup` | `{email, password, displayName, locale?}` → `201 {"ok":true}`, identical whether or not the address was taken; sets the cookie only on a real signup |
-| `POST /api/auth/login` | `{email, password}` → 200, sets cookie |
+| `POST /api/auth/signup` | `{email, password, displayName, inviteCode, locale?}` → `201 {"ok":true}` and **no cookie**, identical for a real signup, a taken address and a wrong code. `503 signup_disabled` when no `SIGNUP_INVITE_CODE` is set |
+| `POST /api/auth/login` | `{email, password}` → 200, sets cookie. The only route that issues a session |
 | `POST /api/auth/logout` | Requires a session. Revokes it, clears the cookie → 204 |
 | `GET /api/me` | Requires a session → `{teacher}` |
 | `GET /api/health` | Liveness only, no database touch |
 
 ## Tests
 
-- **`pnpm test`** — 45 Vitest cases, no database and no argon2.
-  26 over the `packages/core` auth service against in-memory fake
+- **`pnpm test`** — 76 Vitest cases, no database and no argon2.
+
+  27 over the `packages/core` auth service against in-memory fake
   repositories: duplicate-email rejection, wrong-password rejection,
   expired-token rejection, logout revocation (including refusing to revoke
-  another teacher's session), and session-expiry arithmetic. 19 more over
-  `apps/server`, driving the real `createApp` with `app.request(...)`:
-  signup's taken-vs-free responses being byte-identical, the `415`/`403`
-  cross-site rejections, the cookie's `Secure` flag and `resolveCookieSecure`
-  refusing an insecure cookie in production, the `onError` JSON contract, the
-  rate limiter, and the redaction of query parameters from error logs.
+  another teacher's session), session-expiry arithmetic, and that signing up
+  starts no session and leaves the `sessions` table empty.
+
+  49 more over `apps/server`. 25 drive the real `createApp` with
+  `app.request(...)`: signup's taken / wrong-code / missing-code / disabled
+  responses, compared on status, body *and* header-name set; the `415`/`403`
+  cross-site rejections; the cookie's `Secure` flag and `resolveCookieSecure`
+  refusing an insecure cookie in production; the `onError` JSON contract; and
+  the separate signup and login buckets, which fail if a signup flood can
+  spend a teacher's login allowance. The other 24 are unit tests over the
+  pieces: the log redaction (built from a **real** `DrizzleQueryError`
+  imported from the driver, so the suite fails if drizzle stops putting the
+  query and parameters in the message), the limiter's fail-closed eviction,
+  the semaphore's concurrency bound, and the invite-code comparison.
 
   `vitest.config.ts` collects `{packages,apps}/*/src/**/*.test.ts`. It used to
   collect `packages/*` only, so a test file under `apps/` was silently never
   run — which is why several of the findings above went unnoticed.
-- **`pnpm test:e2e`** — four Playwright tests against the real stack. The
+- **`pnpm test:e2e`** — four Playwright tests against the real stack. **Needs
+  `SIGNUP_INVITE_CODE` set** (the suite signs teachers up through the form and
+  fails with a message saying so if it is unset) as well as Playwright's
+  browser and its OS libraries, which on Linux needs root once — see
+  [Playwright's browser](#playwrights-browser-and-its-os-libraries). The
   happy path (sign up → signed in → sign out → sign in again → `/api/me`); the
   identical-error check for wrong-password versus unknown-email; the Spanish UI
   round trip; and the two-account test, which signs up two teachers in two
@@ -306,8 +406,16 @@ Out of scope for this chunk, and **not** oversights:
   tokens (`SameSite=Lax`, the enforced JSON content type and the
   `Sec-Fetch-Site` check are the whole defence today). Rate limiting *is*
   present now, but in-process only — see Authentication above.
-- **Operations:** deployment, hosting, email sending, structured logging,
-  metrics, backups, a session-cleanup job for expired rows.
+
+  Email verification and password reset are the two that matter most, and they
+  are linked: both need an email provider, and together they are the
+  prerequisite for ever reopening sign-up to the public. The shared invite code
+  is what stands in for them, and it is a weaker thing — one secret for
+  everybody, revocable only by changing it for everybody.
+- **Operations:** deployment, hosting (there is no `Dockerfile` and no
+  `fly.toml` in this branch on purpose — hosting is out of scope for the PoC
+  and will be its own task), email sending, structured logging, metrics,
+  backups, a session-cleanup job for expired rows.
 - **Frontend:** a design system. `styles.css` is deliberately minimal.
 - **Tooling:** ESLint and Prettier. TypeScript `strict` (plus
   `noUncheckedIndexedAccess` and `exactOptionalPropertyTypes`) is the only

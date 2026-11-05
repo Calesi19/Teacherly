@@ -20,7 +20,17 @@ const app = createApp({
   // proxy this becomes the proxy's address and the per-email counter carries
   // the load until a trusted-proxy setting exists.
   clientIp: (c) => getConnInfo(c).remote.address ?? "unknown",
+  // Absent disables signup. `loadConfig` has already turned an unset or blank
+  // SIGNUP_INVITE_CODE into `undefined`, so there is one fail-closed decision
+  // and it is not made here.
+  signupInviteCode: config.signupInviteCode,
 });
+
+if (config.signupInviteCode === undefined) {
+  // Worth a line at startup: signup returning 503 is otherwise a confusing
+  // thing to debug from the client side.
+  console.log("[server] SIGNUP_INVITE_CODE is not set — signup is disabled");
+}
 
 const server = serve({ fetch: app.fetch, port: config.port }, (info) => {
   console.log(`[server] listening on http://localhost:${info.port}`);

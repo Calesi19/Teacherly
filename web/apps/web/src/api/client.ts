@@ -64,6 +64,8 @@ export interface SignupRequest {
   password: string;
   displayName: string;
   locale: Locale;
+  /** Sign-up is invite-only; the server answers uniformly if this is wrong. */
+  inviteCode: string;
 }
 
 export interface LoginRequest {
@@ -72,10 +74,13 @@ export interface LoginRequest {
 }
 
 /**
- * Signup's response carries no teacher, on purpose. The server answers
- * `201 {"ok":true}` whether or not the address was already registered, so the
- * status code is no longer an account-existence oracle; the client finds out
- * who it is — and whether it is signed in at all — from `GET /api/me`.
+ * Signup's response carries no teacher and sets no cookie, on purpose. The
+ * server answers `201 {"ok":true}` whether the address was free, already
+ * registered, or the invite code was wrong — identical status, body and
+ * headers — so none of it is an account-existence oracle.
+ *
+ * Which means a `201` here does not mean "you are signed up", and the client
+ * must not treat it as one. `useSignup` finds out by logging in.
  */
 export interface SignupResponse {
   ok: true;

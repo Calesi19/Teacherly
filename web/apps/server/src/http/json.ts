@@ -11,7 +11,9 @@ import type { AppEnv } from "./session-middleware";
  * own comment claimed that "every route added later inherits them" — which was
  * only true for routes added to that one file. This chunk adds nineteen routes
  * in four other files, so the helper had to actually be shared before that
- * claim became false.
+ * claim became false. There is one copy, here, and `pnpm check:core-purity`
+ * fails the build on a route that reaches for `c.req.json()` directly instead
+ * of coming through it.
  *
  * The attack it closes: `c.req.json()` is `JSON.parse(await text())` with no
  * `Content-Type` check, so a cross-site `<form enctype="text/plain">` POST
@@ -19,6 +21,13 @@ import type { AppEnv } from "./session-middleware";
  * victim's cookie. On the auth routes that meant an attacker could install
  * their own session; on these routes it would mean writing grades into a
  * teacher's workspace from any page they happened to visit.
+ *
+ * The *return type* is the other half of its job, and the reason the guardrail
+ * insists on it. `c.req.json()` is typed `any`, and `any` satisfies a branded
+ * type: with it, `const victim: TeacherId = body.teacherId` compiles, with no
+ * cast for a reviewer to notice and nothing textual to grep for. A
+ * `Record<string, unknown>` makes every field `unknown`, so naming a workspace
+ * from the request body is a type error again.
  */
 export async function readJson(
   c: Context<AppEnv>,

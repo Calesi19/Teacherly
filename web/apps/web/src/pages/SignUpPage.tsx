@@ -3,6 +3,7 @@ import { interpolate } from "@teacherly/i18n";
 import { useState, type FormEvent, type ReactNode } from "react";
 import { Link } from "react-router-dom";
 
+import { ApiError } from "../api/client";
 import { useSignup } from "../auth/useSession";
 import { describeApiError } from "../i18n/error-messages";
 import { useLocale } from "../i18n/locale-context";
@@ -14,11 +15,32 @@ export function SignUpPage(): ReactNode {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [displayName, setDisplayName] = useState("");
+  const [inviteCode, setInviteCode] = useState("");
 
   function onSubmit(event: FormEvent<HTMLFormElement>): void {
     event.preventDefault();
     // The locale the visitor is reading the form in becomes their stored one.
-    signup.mutate({ email, password, displayName, locale });
+    signup.mutate({ email, password, displayName, locale, inviteCode });
+  }
+
+  /**
+   * One message for every uniform outcome.
+   *
+   * `useSignup` posts signup and then logs in, so the failure that arrives
+   * here for an address that was already taken *and* for a wrong invite code
+   * is the login's `401 invalid_credentials` — the three cases are
+   * indistinguishable to the client because they are indistinguishable on the
+   * wire, which is the property that closed the oracle. Its sign-in wording
+   * ("that email and password combination is not valid") would be actively
+   * misleading to someone who just chose that password, so the sign-up form
+   * substitutes its own. Everything else — validation, 429, signup disabled —
+   * says what it is.
+   */
+  function errorText(error: unknown): string {
+    if (error instanceof ApiError && error.code === "invalid_credentials") {
+      return t.auth.errorSignUpFailed;
+    }
+    return describeApiError(error, t);
   }
 
   return (
@@ -60,22 +82,26 @@ export function SignUpPage(): ReactNode {
           {interpolate(t.auth.passwordHint, { min: MIN_PASSWORD_LENGTH })}
         </p>
 
+        <label htmlFor="inviteCode">{t.auth.inviteCode}</label>
+        <input
+          id="inviteCode"
+          name="inviteCode"
+          autoComplete="off"
+          value={inviteCode}
+          onChange={(e) => setInviteCode(e.target.value)}
+        />
+        <p className="hint">{t.auth.inviteCodeHint}</p>
+
         {/*
-          Two different failures, one of which does not look like a failure to
-          react-query. A rejected request (validation, 415, 429) lands in
-          `isError`. An address that is already registered does not: the server
-          deliberately answers `201 {"ok":true}` either way, so the mutation
-          succeeds and only the follow-up `GET /api/me` reveals that no session
-          was issued — which, because `App` would have swapped this page out
-          for the signed-in tree, is exactly "still rendering while isSuccess".
+          One branch now, where there used to be two. Sign-up's `201` is a
+          uniform answer rather than a result, so the mutation no longer
+          "succeeds" with no session for the page to notice: `useSignup`
+          follows it with a login, and that login is what fails. A real
+          sign-up ends with `App` swapping this page out.
         */}
         {signup.isError ? (
           <p className="error" role="alert">
-            {describeApiError(signup.error, t)}
-          </p>
-        ) : signup.isSuccess ? (
-          <p className="error" role="alert">
-            {t.auth.errorSignUpFailed}
+            {errorText(signup.error)}
           </p>
         ) : null}
 

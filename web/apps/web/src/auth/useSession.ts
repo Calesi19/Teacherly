@@ -33,17 +33,30 @@ export function useSession(): SessionResult {
   return session;
 }
 
+/**
+ * Sign up, then sign in with the same credentials.
+ *
+ * Two requests, because signup deliberately issues no session: its response is
+ * identical for a real registration, an address that was already taken and a
+ * wrong invite code, and a `Set-Cookie` on only the first of those was exactly
+ * the signal that made it an oracle. The server cannot both answer uniformly
+ * and hand back a session, so the client does the second step.
+ *
+ * The login is what decides the outcome the teacher sees. If the signup did
+ * not actually happen — taken address, wrong code — the login fails with
+ * `invalid_credentials`, and the sign-up form shows its one uniform message.
+ * The mutation therefore fails in that case rather than "succeeding" with no
+ * session, which is what the page used to have to infer.
+ */
 export function useSignup() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (input: SignupRequest) => api.signup(input),
-    onSuccess: async () => {
-      // Signup's response deliberately carries no teacher — it is identical
-      // whether or not the address was already taken, so there is nothing here
-      // to seed the cache with. Ask the server who we are instead. If the
-      // address was already registered the cookie was never set, `/api/me`
-      // answers 401, and the app stays on the signed-out screens.
-      await queryClient.invalidateQueries({ queryKey: SESSION_QUERY_KEY });
+    mutationFn: async (input: SignupRequest) => {
+      await api.signup(input);
+      return api.login({ email: input.email, password: input.password });
+    },
+    onSuccess: (data) => {
+      queryClient.setQueryData(SESSION_QUERY_KEY, data);
     },
   });
 }

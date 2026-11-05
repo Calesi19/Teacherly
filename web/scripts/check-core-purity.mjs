@@ -8,14 +8,17 @@ import { WEB_ROOT } from "./postgres.mjs";
  * transport and no SQL — plus the `TeacherId` minting rule and the rule that
  * grading happens in exactly one module.
  *
- * Four independent checks, because each alone has a hole:
+ * Five independent checks, because each alone has a hole:
  *   1. The manifest check catches a declared dependency even if no file imports
  *      it yet.
  *   2. The import scan catches an import that reaches a package through a
  *      parent's node_modules without ever being declared.
- *   3. The TeacherId scan catches a route that mints its own teacher id, which
+ *   3. The TeacherId scan catches code that mints its own teacher id, which
  *      the type system cannot prevent on its own because a cast always can.
- *   4. The grading scan catches a second percentage, letter or rounding
+ *   4. The raw-body scan catches `c.req.json()`, which is typed `any` — and
+ *      `any` satisfies a branded type with no cast at all, so check 3 has
+ *      nothing to find. This is the hole check 3 cannot see.
+ *   5. The grading scan catches a second percentage, letter or rounding
  *      decision anywhere in the workspace. A module boundary cannot stop that
  *      one: `Math.round(x * 100) / 100` needs no import.
  *
@@ -88,6 +91,15 @@ function sourceFiles(dir) {
   return found;
 }
 
+/**
+ * `//` and block comments removed, so the prose in this repo — which quotes
+ * `as TeacherId` and `c.req.json()` when explaining why they are banned — does
+ * not trip the textual scans below.
+ */
+function stripComments(source) {
+  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
 /** `drizzle-orm/pg-core` must trip the `drizzle-orm` rule too. */
 function rootOf(specifier) {
   if (specifier.startsWith("node:")) return specifier;
@@ -114,62 +126,123 @@ for (const file of sourceFiles(join(CORE_DIR, "src"))) {
   }
 }
 
-/* 3. TeacherId minting ---------------------------------------------------- */
+/* 3. TeacherId minting, and 4. raw request bodies ------------------------- */
 
 /**
  * A `TeacherId` may only be created where one is read out of the `teachers`
  * table. `packages/db` does that declaratively, with Drizzle's `$type` on the
  * `id` and `teacher_id` columns, so it needs no cast; the in-memory fakes in
- * `packages/core/src/testing` are the only other mint site.
+ * `packages/core/src/testing` are the only other mint site, and
+ * `asTeacherId` itself is where the one sanctioned cast lives.
  *
- * Nothing under `apps/` is allowed to mint one. A route that could would be
- * naming a workspace from request data instead of from the resolved session,
- * which is exactly the isolation property this chunk exists to establish. The
- * brand alone cannot stop it — `as TeacherId` is always available — so the
- * casts are banned textually here, where no inline comment can disable them.
+ * Nowhere else is allowed to mint one. Code that could would be naming a
+ * workspace from data it was handed instead of from the resolved session, which
+ * is exactly the isolation property this chunk exists to establish. The brand
+ * alone cannot stop it — `as TeacherId` is always available — so the casts are
+ * banned textually here, where no inline comment can disable them.
+ *
+ * Two things were wrong with the first version of this, both found by CAL-9:
+ *
+ *   - it listed three spellings and missed the fourth. `<TeacherId>raw` is the
+ *     same assertion in TypeScript's older syntax, and it passed;
+ *   - it walked `apps/` only, while the rule it states covers everything
+ *     outside `packages/db` and the fakes, so a cast in `packages/pdf` was
+ *     unchecked. It now walks `packages/*​/src` too.
  */
 const TEACHER_ID_MINTS = [
   { pattern: /\basTeacherId\s*\(/, what: "calls asTeacherId(...)" },
   { pattern: /\bas\s+unknown\s+as\s+TeacherId\b/, what: "casts with `as unknown as TeacherId`" },
   { pattern: /\bas\s+TeacherId\b/, what: "casts with `as TeacherId`" },
+  {
+    // `<TeacherId>expr`. The leading character class is what keeps generics
+    // out of it: `Promise<TeacherId>` and `$type<TeacherId>()` have an
+    // identifier immediately before the `<`, an assertion never does. A
+    // trailing operand is required for the same reason.
+    pattern: /(?:^|[^\w$)\]>])<\s*TeacherId\s*>\s*[\w$(["'`]/m,
+    what: "casts with an angle-bracket `<TeacherId>` assertion",
+  },
 ];
 
 /**
- * The one place in `apps/` where minting would be legitimate: session
- * resolution. It does not currently need to — `Teacher.id` arrives branded
- * from the repository — but allowing it here keeps the rule's intent readable
- * rather than looking like a blanket ban with no sanctioned path.
+ * Where minting is legitimate, by path prefix.
+ *
+ * `packages/db` is the real mint site; the fakes stand in for it in tests;
+ * `domain/teacher.ts` is `asTeacherId` itself. `session-middleware.ts` does
+ * not currently need to mint — `Teacher.id` arrives branded from the
+ * repository — but it is the one place under `apps/` where doing so would be
+ * legitimate, and allowing it keeps the rule's intent readable rather than
+ * looking like a blanket ban with no sanctioned path.
  */
-const APPS_MINT_ALLOWED = join("apps", "server", "src", "http", "session-middleware.ts");
+const MINT_ALLOWED_PREFIXES = [
+  join("packages", "db"),
+  join("packages", "core", "src", "testing"),
+  join("packages", "core", "src", "domain", "teacher.ts"),
+  join("apps", "server", "src", "http", "session-middleware.ts"),
+];
 
-const APPS_DIR = join(WEB_ROOT, "apps");
+/**
+ * `c.req.json()` is typed `any`, and `any` satisfies every type — including a
+ * branded one — with no cast for the scan above to find and nothing for a
+ * reviewer to notice:
+ *
+ *     const body = await c.req.json();          // any
+ *     const victim: TeacherId = body.teacherId; // compiles. no cast.
+ *
+ * So the brand's guarantee only holds as far as request bodies are typed.
+ * Everything goes through `readJson`, which returns `Record<string, unknown>`
+ * and makes that second line a type error again — and which is also where the
+ * JSON content-type and `Sec-Fetch-Site` checks live, so a route that reads
+ * the body itself loses those too.
+ */
+const RAW_BODY_READER = join("apps", "server", "src", "http", "json.ts");
+const RAW_BODY_PATTERN = /\bc\s*\.\s*req\s*\.\s*(?:json|parseBody)\s*\(/;
 
-for (const app of existsSync(APPS_DIR) ? readdirSync(APPS_DIR) : []) {
-  const srcDir = join(APPS_DIR, app, "src");
-  if (!existsSync(srcDir)) continue;
+/** Every source tree the two rules above cover: both halves of the workspace. */
+function scannedSourceDirs() {
+  const dirs = [];
+  for (const area of ["packages", "apps"]) {
+    const areaDir = join(WEB_ROOT, area);
+    for (const name of existsSync(areaDir) ? readdirSync(areaDir) : []) {
+      const srcDir = join(areaDir, name, "src");
+      if (existsSync(srcDir)) dirs.push(srcDir);
+    }
+  }
+  return dirs;
+}
 
+for (const srcDir of scannedSourceDirs()) {
   for (const file of sourceFiles(srcDir)) {
     const where = relative(WEB_ROOT, file);
-    if (where === APPS_MINT_ALLOWED) continue;
+    // Comments in this repo quote both banned spellings while explaining them.
+    const source = stripComments(readFileSync(file, "utf8"));
 
-    // Routes are called out separately: that is where an attacker-supplied id
-    // would actually arrive, so the message should say so.
-    const inRoutes = where.includes(`${sep}src${sep}routes${sep}`);
-    const source = readFileSync(file, "utf8");
+    if (!MINT_ALLOWED_PREFIXES.some((prefix) => where.startsWith(prefix))) {
+      // Routes are called out separately: that is where an attacker-supplied id
+      // would actually arrive, so the message should say so.
+      const inRoutes = where.includes(`${sep}src${sep}routes${sep}`);
 
-    for (const { pattern, what } of TEACHER_ID_MINTS) {
-      if (!pattern.test(source)) continue;
+      for (const { pattern, what } of TEACHER_ID_MINTS) {
+        if (!pattern.test(source)) continue;
+        problems.push(
+          inRoutes
+            ? `${where}: route ${what} — a handler must never mint a TeacherId; ` +
+                `read it from c.get("teacherId"), which sessionMiddleware resolved`
+            : `${where}: ${what} — only packages/db and the core test fakes may mint a TeacherId`,
+        );
+      }
+    }
+
+    if (where !== RAW_BODY_READER && RAW_BODY_PATTERN.test(source)) {
       problems.push(
-        inRoutes
-          ? `${where}: route ${what} — a handler must never mint a TeacherId; ` +
-              `read it from c.get("teacherId"), which sessionMiddleware resolved`
-          : `${where}: ${what} — only packages/db and the core test fakes may mint a TeacherId`,
+        `${where}: reads the request body directly — call readJson from ` +
+          `apps/server/src/http/json.ts, which types it Record<string, unknown> ` +
+          `and applies the content-type and Sec-Fetch-Site checks`,
       );
     }
   }
 }
 
-/* 4. one grading module -------------------------------------------------- */
+/* 5. one grading module -------------------------------------------------- */
 
 /**
  * A percentage, a letter and a rounding decision are made in
@@ -220,11 +293,6 @@ const ROUNDING_ALLOWED = new Map([
     "Retry-After is a whole number of seconds, not a grade",
   ],
 ]);
-
-/** `//` and `/* *​/` removed, so documentation can discuss the old formulas. */
-function stripComments(source) {
-  return source.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
-}
 
 const GRADING_RULES = [
   {
@@ -277,6 +345,7 @@ if (problems.length > 0) {
   console.error(
     "packages/core must contain domain logic only — no HTTP, no SQL, no driver, no crypto;\n" +
       "a TeacherId may only be minted where one is read from the teachers table;\n" +
+      "a request body may only be read through readJson, which types it;\n" +
       "and every percentage, letter and rounding decision belongs to packages/core/src/grading.\n" +
       "Declare a port in packages/core/src/ports and implement it in packages/db or apps/server.\n",
   );
@@ -287,6 +356,7 @@ if (problems.length > 0) {
 
 console.log(
   "core-purity check passed: packages/core imports no transport, driver or crypto,\n" +
-    "no app outside session resolution mints a TeacherId,\n" +
+    "nothing outside packages/db and the core test fakes mints a TeacherId,\n" +
+    "no route reads a request body without going through readJson,\n" +
     "and no package outside packages/core/src/grading computes a percentage, a letter or a rounding.",
 );

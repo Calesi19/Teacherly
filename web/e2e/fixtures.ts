@@ -23,12 +23,36 @@ export function newTeacher(label: string): TeacherFixture {
   };
 }
 
+/**
+ * The invite code the server under test was started with.
+ *
+ * Read from the environment rather than defaulted, because a default would
+ * silently become "the suite passes against a server configured differently
+ * from the one it thinks it is testing" — and the failure would look like a
+ * broken sign-up form rather than a missing variable. `web/.env.example`
+ * ships the line commented out, so an unconfigured checkout fails closed, and
+ * this is the matching loud failure on the test side.
+ */
+export function inviteCode(): string {
+  const code = process.env["SIGNUP_INVITE_CODE"]?.trim() ?? "";
+  if (code.length === 0) {
+    throw new Error(
+      "SIGNUP_INVITE_CODE is not set, so the server under test has sign-up disabled. " +
+        "Set it in web/.env or in the environment before running pnpm test:e2e.",
+    );
+  }
+  return code;
+}
+
 export async function signUp(page: Page, teacher: TeacherFixture): Promise<void> {
   await page.goto("/sign-up");
   await page.getByLabel("Your name").fill(teacher.displayName);
   await page.getByLabel("Email").fill(teacher.email);
   await page.getByLabel("Password").fill(teacher.password);
+  await page.getByLabel("Invite code").fill(inviteCode());
   await page.getByRole("button", { name: "Sign up" }).click();
+  // Signing up no longer issues the session itself — the client posts sign-up
+  // and then logs in — so this still ends signed in, via two requests.
   await expectSignedIn(page, teacher);
 }
 
