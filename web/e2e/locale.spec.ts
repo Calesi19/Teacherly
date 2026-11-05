@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-import { fetchMe, newTeacher } from "./fixtures";
+import { fetchMe, inviteCode, newTeacher } from "./fixtures";
 
 /**
  * `packages/i18n` is only worth having if both languages reach the screen, so
@@ -22,6 +22,9 @@ test("the UI renders in Spanish and the choice is stored on the teacher", async 
   await page.getByLabel("Tu nombre").fill(teacher.displayName);
   await page.getByLabel("Correo electrónico").fill(teacher.email);
   await page.getByLabel("Contraseña").fill(teacher.password);
+  // Invite-only sign-up: the field is translated too, which is itself part of
+  // what this test is checking.
+  await page.getByLabel("Código de invitación").fill(inviteCode());
   await page.getByRole("button", { name: "Registrarse" }).click();
 
   // The signed-in screen is Spanish too, from the same dictionary.
