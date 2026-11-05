@@ -48,6 +48,11 @@ jobs:
       # not "production" here — the server refuses this combination outright in
       # production rather than silently dropping Secure.
       COOKIE_SECURE: "false"
+      # Required for the e2e suite: sign-up is invite-only and fails closed
+      # with no code configured, and the suite signs teachers up through the
+      # form. Not a secret — it is the gate for *this* throwaway database, and
+      # the suite reads the same variable so the two cannot drift.
+      SIGNUP_INVITE_CODE: "ci-invite-code"
 
     steps:
       - uses: actions/checkout@v4

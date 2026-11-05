@@ -11,6 +11,11 @@ export interface ServerConfig {
   /** Origin allowed to send credentialed requests in development. */
   devClientOrigin: string;
   isProduction: boolean;
+  /**
+   * The shared signup invite code. `undefined` disables signup entirely —
+   * see `resolveSignupInviteCode`.
+   */
+  signupInviteCode: string | undefined;
 }
 
 function parsePort(raw: string | undefined, fallback: number): number {
@@ -57,6 +62,22 @@ export function resolveDevClientOrigin(env: ConfigEnv): string {
   return env["DEV_CLIENT_ORIGIN"] ?? `http://localhost:${env["DEV_CLIENT_PORT"] ?? "5173"}`;
 }
 
+/**
+ * The signup invite code, or `undefined` when there is none.
+ *
+ * Whitespace-only counts as none: a `SIGNUP_INVITE_CODE=` line left in a
+ * `.env` should disable signup, not configure a code that an empty
+ * `inviteCode` field would match.
+ *
+ * A pure function of the environment, like `resolveCookieSecure`, so the
+ * fail-closed behaviour is testable without a `.env` file on disk deciding the
+ * answer.
+ */
+export function resolveSignupInviteCode(env: ConfigEnv): string | undefined {
+  const code = env["SIGNUP_INVITE_CODE"]?.trim() ?? "";
+  return code.length === 0 ? undefined : code;
+}
+
 export function loadConfig(): ServerConfig {
   loadEnv();
 
@@ -66,5 +87,6 @@ export function loadConfig(): ServerConfig {
     cookieSecure: resolveCookieSecure(process.env),
     devClientOrigin: resolveDevClientOrigin(process.env),
     isProduction: process.env["NODE_ENV"] === "production",
+    signupInviteCode: resolveSignupInviteCode(process.env),
   };
 }

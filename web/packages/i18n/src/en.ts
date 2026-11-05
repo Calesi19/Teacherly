@@ -33,6 +33,8 @@ const en = {
     email: "Email",
     password: "Password",
     displayName: "Your name",
+    inviteCode: "Invite code",
+    inviteCodeHint: "Ask your school for the code. Sign-up is invite-only.",
     signUp: "Sign up",
     signIn: "Sign in",
     signOut: "Sign out",
@@ -45,7 +47,16 @@ const en = {
     // identically, so the client cannot say *why* this failed — and this
     // wording must not imply it knows. It replaces the sign-in copy above,
     // which read as nonsense to someone creating a brand-new account.
-    errorSignUpFailed: "We could not complete that sign-up. If you already have an account, sign in instead.",
+    //
+    // It now covers one more case than it did: a wrong invite code is answered
+    // the same way as an address that was already taken, so this string has to
+    // mention the code without claiming that is what went wrong.
+    errorSignUpFailed:
+      "We could not complete that sign-up. Check your invite code, or sign in if you already have an account.",
+    // The server's 503 when it has no SIGNUP_INVITE_CODE configured. A
+    // deployment fact, not a request failure, and there is nothing the visitor
+    // can do about it — so it says so rather than suggesting they retry.
+    errorSignupDisabled: "Sign-up is closed on this server. Ask your school for an account.",
     errorEmailFormat: "Enter a valid email address.",
     errorEmailRequired: "Email is required.",
     errorEmailTooLong: "That email address is too long.",
