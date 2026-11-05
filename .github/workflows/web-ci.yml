@@ -1,0 +1,99 @@
+name: web-ci
+
+# Scoped to web/ on purpose: this workflow knows nothing about the Tauri
+# desktop app at the repository root and must not start running its builds.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "web/**"
+      - ".github/workflows/web-ci.yml"
+  pull_request:
+    paths:
+      - "web/**"
+      - ".github/workflows/web-ci.yml"
+
+defaults:
+  run:
+    working-directory: web
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: teacherly
+          POSTGRES_PASSWORD: teacherly
+          POSTGRES_DB: teacherly
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U teacherly -d teacherly"
+          --health-interval 2s
+          --health-timeout 3s
+          --health-retries 30
+
+    env:
+      DATABASE_URL: postgres://teacherly:teacherly@127.0.0.1:5432/teacherly
+      PORT: "3000"
+      # The one variable that moves the dev client everywhere (vite, Playwright
+      # and the server's DEV_CLIENT_ORIGIN default), rather than restating the
+      # origin here and having two places to keep in step.
+      DEV_CLIENT_PORT: "5173"
+      # Required: the e2e suite drives the app over plain http on localhost, and
+      # a Secure cookie would not be stored. Honoured only because NODE_ENV is
+      # not "production" here — the server refuses this combination outright in
+      # production rather than silently dropping Secure.
+      COOKIE_SECURE: "false"
+      # Required for the e2e suite: sign-up is invite-only and fails closed
+      # with no code configured, and the suite signs teachers up through the
+      # form. Not a secret — it is the gate for *this* throwaway database, and
+      # the suite reads the same variable so the two cannot drift.
+      SIGNUP_INVITE_CODE: "ci-invite-code"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+
+      - run: pnpm install --frozen-lockfile
+
+      # First, because it is the cheapest and the one whose failure is most
+      # architecturally interesting.
+      - name: Core-purity guardrail
+        run: pnpm check:core-purity
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Unit tests
+        run: pnpm test
+
+      - name: Client build
+        run: pnpm --filter @teacherly/web build
+
+      - name: Apply migrations
+        run: pnpm db:migrate
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: End-to-end tests
+        run: pnpm test:e2e
+
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-report
+          path: web/playwright-report/
+          retention-days: 7

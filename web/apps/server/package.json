@@ -1,0 +1,25 @@
+{
+  "name": "@teacherly/server",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Hono API over @teacherly/core. Owns transport, cookies and argon2id — no domain rules.",
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "dev": "tsx watch src/main.ts",
+    "start": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@hono/node-server": "^2.1.6",
+    "@teacherly/core": "workspace:*",
+    "@teacherly/db": "workspace:*",
+    "argon2": "^0.45.2",
+    "hono": "^4.10.3"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.9",
+    "drizzle-orm": "^0.45.4",
+    "tsx": "^4.20.6",
+    "vitest": "^3.2.4"
+  }
+}

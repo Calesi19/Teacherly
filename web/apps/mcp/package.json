@@ -1,0 +1,21 @@
+{
+  "name": "@teacherly/mcp",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "MCP stdio server over the same core services. Stub in chunk 1 — no tools registered yet.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit",
+    "start": "tsx src/main.ts"
+  },
+  "dependencies": {
+    "@teacherly/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^22.18.9",
+    "tsx": "^4.20.6"
+  }
+}

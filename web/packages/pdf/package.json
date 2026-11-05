@@ -1,0 +1,16 @@
+{
+  "name": "@teacherly/pdf",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Report PDF templates. Stub in chunk 1 — the renderer arrives with the report chunk.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@teacherly/core": "workspace:*"
+  }
+}

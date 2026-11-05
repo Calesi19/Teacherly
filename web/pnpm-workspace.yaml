@@ -1,0 +1,16 @@
+packages:
+  - "apps/*"
+  - "packages/*"
+
+# pnpm 10 blocks postinstall scripts unless a package is listed here. All three
+# of these genuinely need theirs: argon2 and esbuild link a native binary, and
+# @embedded-postgres hydrates the PostgreSQL binaries' symlinks. Without this
+# list, a clean `pnpm install` produces a tree that cannot start.
+onlyBuiltDependencies:
+  - argon2
+  - esbuild
+  - "@embedded-postgres/darwin-arm64"
+  - "@embedded-postgres/darwin-x64"
+  - "@embedded-postgres/linux-arm64"
+  - "@embedded-postgres/linux-x64"
+  - "@embedded-postgres/windows-x64"
