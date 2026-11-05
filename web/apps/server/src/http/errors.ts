@@ -1,4 +1,9 @@
-import { InvalidCredentialsError, SessionOwnershipError, ValidationError } from "@teacherly/core";
+import {
+  InvalidCredentialsError,
+  NotFoundError,
+  SessionOwnershipError,
+  ValidationError,
+} from "@teacherly/core";
 import type { Context } from "hono";
 import type { ContentfulStatusCode } from "hono/utils/http-status";
 
@@ -24,6 +29,13 @@ export function toErrorResponse(c: Context, error: unknown): Response {
   }
   if (error instanceof SessionOwnershipError) {
     return json(c, 403, { error: { code: error.code } });
+  }
+  // 404 and *not* 403, for every miss. A 403 on another teacher's class id
+  // would confirm that the id is real and belongs to someone — an enumeration
+  // oracle over the whole `classes` table. "No such class in your workspace" is
+  // the only thing a caller is told, whichever of the two it was.
+  if (error instanceof NotFoundError) {
+    return json(c, 404, { error: { code: error.code } });
   }
 
   // Anything unmapped is a bug, not a client problem. Log it server-side and

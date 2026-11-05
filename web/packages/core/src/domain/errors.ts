@@ -30,6 +30,30 @@ export class ValidationError extends Error {
   }
 }
 
+/**
+ * The record is not in this teacher's workspace.
+ *
+ * Raised for "no such class" and for "that class belongs to another teacher"
+ * alike, and it must stay that way. Answering 403 for the second would tell a
+ * caller that an id they guessed is real and someone else's, which is a
+ * workspace-enumeration oracle of exactly the kind
+ * `InvalidCredentialsError` exists to deny on the auth surface. The repository
+ * makes this the easy path as well as the right one: a scoped read returns no
+ * row in both cases, so the two are not distinguishable here either.
+ *
+ * `kind` names the table for the API's error code (`class_not_found`), which is
+ * safe — the caller already knows which endpoint they called.
+ */
+export class NotFoundError extends Error {
+  readonly code: string;
+
+  constructor(readonly kind: "class" | "student" | "assessment" | "grade") {
+    super(`No ${kind} with that id in this workspace.`);
+    this.name = "NotFoundError";
+    this.code = `${kind}_not_found`;
+  }
+}
+
 /** Raised when a resolved session does not belong to the teacher the caller named. */
 export class SessionOwnershipError extends Error {
   readonly code = "session_ownership" as const;

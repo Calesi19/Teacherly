@@ -7,19 +7,20 @@ import type { AppEnv } from "./session-middleware";
  * refuse the request outright when it is not one a browser on this origin could
  * have made. Returns a `Response` in that case; callers must return it.
  *
- * Lifted out of `routes/auth-routes.ts`, where it was a *private* helper whose
- * own comment claimed that "every route added later inherits them" — true only
- * of routes added to that one file, and so already false: chunk 2 had to
- * extract its own copy for the routes it adds in four other files. There is one
- * copy, here, and `pnpm check:core-purity` now fails the build on a route that
- * reaches for `c.req.json()` directly instead of coming through it.
+ * Lifted out of `routes/auth-routes.ts`, where it was a private helper whose
+ * own comment claimed that "every route added later inherits them" — which was
+ * only true for routes added to that one file. This chunk adds nineteen routes
+ * in four other files, so the helper had to actually be shared before that
+ * claim became false. There is one copy, here, and `pnpm check:core-purity`
+ * fails the build on a route that reaches for `c.req.json()` directly instead
+ * of coming through it.
  *
  * The attack it closes: `c.req.json()` is `JSON.parse(await text())` with no
  * `Content-Type` check, so a cross-site `<form enctype="text/plain">` POST
  * reaches an API route with no CORS preflight and the browser attaches the
  * victim's cookie. On the auth routes that meant an attacker could install
- * their own session; on a later chunk's routes it would mean writing grades
- * into a teacher's workspace from any page they happened to visit.
+ * their own session; on these routes it would mean writing grades into a
+ * teacher's workspace from any page they happened to visit.
  *
  * The *return type* is the other half of its job, and the reason the guardrail
  * insists on it. `c.req.json()` is typed `any`, and `any` satisfies a branded

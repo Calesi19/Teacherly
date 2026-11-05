@@ -1,10 +1,11 @@
-import { AuthService } from "@teacherly/core";
+import { AuthService, GradebookService, SchoolService } from "@teacherly/core";
 import {
   FakePasswordHasher,
   FakeSessionTokenService,
   InMemorySessionRepository,
   InMemoryTeacherRepository,
   MutableClock,
+  createSchoolFakes,
 } from "@teacherly/core/testing";
 import { beforeEach, describe, expect, it } from "vitest";
 
@@ -25,6 +26,22 @@ const PASSWORD = "correct-horse-battery";
 const DECOY_HASH = "fake$a-value-nobody-knows";
 const INVITE_CODE = "staff-room-2026";
 
+/**
+ * The teacher-owned half of `AppDeps`, over in-memory repositories.
+ *
+ * These tests are about auth and the error contract and never touch a class,
+ * but `createApp` now requires the services, so they are supplied rather than
+ * stubbed — a stub would be a second definition of the dependency to keep in
+ * step. See `./testing/fixtures.ts` for the fixture the school route tests use.
+ */
+function schoolDeps(): Pick<AppDeps, "school" | "gradebook"> {
+  const repositories = createSchoolFakes();
+  return {
+    school: new SchoolService(repositories),
+    gradebook: new GradebookService(repositories),
+  };
+}
+
 function makeApp(overrides: Partial<AppDeps> = {}) {
   const auth = new AuthService({
     teachers: new InMemoryTeacherRepository(),
@@ -36,10 +53,31 @@ function makeApp(overrides: Partial<AppDeps> = {}) {
   });
   return createApp({
     auth,
+    ...schoolDeps(),
     cookie: { secure: false },
     signupInviteCode: INVITE_CODE,
     ...overrides,
   });
+}
+
+/**
+ * Sign a teacher up, then log in, and return the session cookie.
+ *
+ * Two requests because signup deliberately issues none: its response is
+ * identical for a real signup, a taken address and a wrong invite code, and a
+ * `Set-Cookie` on only the first of those was the signal that made it an
+ * account-existence oracle. Login is the only route that establishes a
+ * session.
+ */
+async function sessionCookieFor(
+  app: ReturnType<typeof makeApp>,
+  email: string,
+): Promise<string> {
+  await app.request(signupRequest(email));
+  const response = await app.request(loginRequest(email));
+  const cookie = response.headers.get("set-cookie")?.split(";")[0];
+  if (cookie === undefined) throw new Error(`login for ${email} issued no cookie`);
+  return cookie;
 }
 
 /** A well-formed signup, as the real client sends it. */
@@ -332,7 +370,7 @@ describe("error contract", () => {
       },
     } as unknown as AuthService;
 
-    const app = createApp({ auth, cookie: { secure: true } });
+    const app = createApp({ auth, ...schoolDeps(), cookie: { secure: true } });
     const response = await app.request(
       new Request("http://localhost/api/me", {
         headers: { Cookie: "teacherly_session=whatever" },
@@ -343,10 +381,41 @@ describe("error contract", () => {
     expect(await response.json()).toEqual({ error: { code: "internal_error" } });
   });
 
-  it("answers an unknown route in the JSON error shape", async () => {
-    const response = await makeApp().request("http://localhost/api/nope");
+  it("answers an unknown route in the JSON error shape, once authenticated", async () => {
+    const app = makeApp();
+    const cookie = await sessionCookieFor(app, "explorer@school.test");
+
+    const response = await app.request(
+      new Request("http://localhost/api/nope", { headers: { Cookie: cookie } }),
+    );
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: { code: "not_found" } });
+  });
+
+  it("answers an unknown route to an anonymous caller with 401, not 404", async () => {
+    const response = await makeApp().request("http://localhost/api/nope");
+
+    // This changed when chunk 2 mounted the school routes at `/api` behind a
+    // single `requireTeacher()` gate: the gate now runs before anything decides
+    // whether a path exists, so an anonymous caller is refused rather than told
+    // what is and is not a route.
+    //
+    // Deliberate, and the better of the two: an unauthenticated caller has no
+    // business mapping the API surface, and this is the same reasoning as the
+    // 404-not-403 rule for another teacher's ids. An authenticated caller still
+    // gets the documented 404 contract — see the test above — so the error
+    // shape is unchanged for anyone entitled to it.
+    expect(response.status).toBe(401);
+    expect(await response.json()).toEqual({ error: { code: "unauthenticated" } });
+  });
+
+  it("still serves the public auth routes with no session", async () => {
+    // The guard above is mounted at `/api/*`. The auth routes are registered
+    // before it and return without calling `next()`, so they are unaffected —
+    // asserted here because a reordering in `createApp` would otherwise lock
+    // every new teacher out of signing up, and no other test would say why.
+    const response = await makeApp().request(signupRequest("public@school.test"));
+    expect(response.status).toBe(201);
   });
 });
 

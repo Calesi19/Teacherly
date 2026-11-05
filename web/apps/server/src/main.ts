@@ -10,6 +10,8 @@ const container = await createContainer(config.databaseUrl);
 
 const app = createApp({
   auth: container.auth,
+  school: container.school,
+  gradebook: container.gradebook,
   cookie: { secure: config.cookieSecure },
   ...(config.isProduction ? {} : { devClientOrigin: config.devClientOrigin }),
   // The socket's remote address, never `X-Forwarded-For`: nothing in front of

@@ -5,9 +5,10 @@ import { WEB_ROOT } from "./postgres.mjs";
 
 /**
  * Guardrail for constraint 1: `packages/core` holds domain logic with no
- * transport and no SQL — plus the `TeacherId` minting rule.
+ * transport and no SQL — plus the `TeacherId` minting rule and the rule that
+ * grading happens in exactly one module.
  *
- * Four independent checks, because each alone has a hole:
+ * Five independent checks, because each alone has a hole:
  *   1. The manifest check catches a declared dependency even if no file imports
  *      it yet.
  *   2. The import scan catches an import that reaches a package through a
@@ -17,6 +18,9 @@ import { WEB_ROOT } from "./postgres.mjs";
  *   4. The raw-body scan catches `c.req.json()`, which is typed `any` — and
  *      `any` satisfies a branded type with no cast at all, so check 3 has
  *      nothing to find. This is the hole check 3 cannot see.
+ *   5. The grading scan catches a second percentage, letter or rounding
+ *      decision anywhere in the workspace. A module boundary cannot stop that
+ *      one: `Math.round(x * 100) / 100` needs no import.
  *
  * Deliberately a plain script rather than an ESLint plugin: it needs to be
  * impossible to disable with an inline comment.
@@ -238,6 +242,102 @@ for (const srcDir of scannedSourceDirs()) {
   }
 }
 
+/* 5. one grading module -------------------------------------------------- */
+
+/**
+ * A percentage, a letter and a rounding decision are made in
+ * `packages/core/src/grading` and nowhere else.
+ *
+ * This is the rule the chunk exists to establish, and it is the one the type
+ * system is least able to help with: the desktop app's three contradictory
+ * formulas were not three imports of a shared module that drifted, they were
+ * three independent arithmetic expressions written in three files — a
+ * `reduce` in a hook, a `SUM()/SUM()` in a report query, and a
+ * `(score / max) * 100` in a component. None of them imported anything. So the
+ * check is textual, over every package and app:
+ *
+ *   - ROUNDING. `Math.round`, `Math.floor`, `Math.ceil`, `Math.trunc` and
+ *     `toFixed` are how a second rounding path gets written. The grading
+ *     module rounds exactly once, half-up, on integers; anything else rounding
+ *     a grade is by definition a disagreement with it. The desktop app's
+ *     `formatScorePercentage` is a `Math.floor` and is exactly why the PDF
+ *     printed "89.9" beside a letter decided from 89.995.
+ *   - CUTOFFS. The literals 90, 80, 70 and 60 in a comparison are a hard-coded
+ *     A–F scale. The desktop app has them in six places, which is why a
+ *     per-class scale is not a feature anyone could add there. Cutoffs now come
+ *     from the class, and `DEFAULT_GRADING_SCALE` is the only place those four
+ *     numbers are written down.
+ *   - LETTER BANDS. An `["A", "B", "C", "D", "F"]`-shaped literal outside the
+ *     grading module is a reimplementation of `LETTERS` and almost certainly of
+ *     `letterFor` with it.
+ *
+ * Comments are stripped before matching, so the prose in this repo that
+ * discusses `* 100` or quotes an old formula does not trip it. Test files are
+ * scanned too: a test that computed its own expected percentage would be
+ * asserting the formula against itself.
+ */
+const GRADING_DIR = join("packages", "core", "src", "grading");
+
+/**
+ * Rounding that is not a grading decision, allowed by name with a reason.
+ *
+ * Kept as an explicit list rather than a pattern so that each entry is a
+ * decision somebody made and a reviewer can see. If a screen in a later chunk
+ * needs `Math.floor` for layout, it is added here with its reason — the point
+ * is not that rounding is banned, it is that rounding a *grade* outside the
+ * grading module is.
+ */
+const ROUNDING_ALLOWED = new Map([
+  [
+    join("apps", "server", "src", "http", "rate-limit.ts"),
+    "Retry-After is a whole number of seconds, not a grade",
+  ],
+]);
+
+const GRADING_RULES = [
+  {
+    pattern: /\bMath\.(?:round|floor|ceil|trunc)\s*\(|\.toFixed\s*\(/,
+    what: "rounds a number",
+    allow: ROUNDING_ALLOWED,
+    advice:
+      "a grade is rounded once, in packages/core/src/grading/percentage.ts — " +
+      "call percentageOf or one of the gradeX functions instead",
+  },
+  {
+    pattern: /[<>]=?\s*(?:90|80|70|60)(?![.\d])/,
+    what: "compares against a hard-coded grading cutoff",
+    advice:
+      "cutoffs are per-class — take a GradingScale and call letterFor, " +
+      "or read DEFAULT_GRADING_SCALE if you need the default",
+  },
+  {
+    pattern: /\[\s*"A"\s*,\s*"B"\s*,\s*"C"\s*,\s*"D"\s*,\s*"F"\s*\]/,
+    what: "redefines the letter bands",
+    advice: "import LETTERS and letterFor from the grading module",
+  },
+];
+
+for (const area of ["packages", "apps"]) {
+  const areaDir = join(WEB_ROOT, area);
+  for (const name of existsSync(areaDir) ? readdirSync(areaDir) : []) {
+    const srcDir = join(areaDir, name, "src");
+    if (!existsSync(srcDir)) continue;
+
+    for (const file of sourceFiles(srcDir)) {
+      const where = relative(WEB_ROOT, file);
+      // The grading module is where all of this is supposed to live.
+      if (where.startsWith(GRADING_DIR)) continue;
+
+      const source = stripComments(readFileSync(file, "utf8"));
+      for (const rule of GRADING_RULES) {
+        if (!rule.pattern.test(source)) continue;
+        if (rule.allow?.has(where)) continue;
+        problems.push(`${where}: ${rule.what} outside the grading module — ${rule.advice}`);
+      }
+    }
+  }
+}
+
 /* report ------------------------------------------------------------------ */
 
 if (problems.length > 0) {
@@ -245,7 +345,8 @@ if (problems.length > 0) {
   console.error(
     "packages/core must contain domain logic only — no HTTP, no SQL, no driver, no crypto;\n" +
       "a TeacherId may only be minted where one is read from the teachers table;\n" +
-      "and a request body may only be read through readJson, which types it.\n" +
+      "a request body may only be read through readJson, which types it;\n" +
+      "and every percentage, letter and rounding decision belongs to packages/core/src/grading.\n" +
       "Declare a port in packages/core/src/ports and implement it in packages/db or apps/server.\n",
   );
   for (const problem of problems) console.error(`  ✗ ${problem}`);
@@ -256,5 +357,6 @@ if (problems.length > 0) {
 console.log(
   "core-purity check passed: packages/core imports no transport, driver or crypto,\n" +
     "nothing outside packages/db and the core test fakes mints a TeacherId,\n" +
-    "and no route reads a request body without going through readJson.",
+    "no route reads a request body without going through readJson,\n" +
+    "and no package outside packages/core/src/grading computes a percentage, a letter or a rounding.",
 );

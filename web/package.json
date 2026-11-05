@@ -19,6 +19,7 @@
     "test:watch": "vitest",
     "test:e2e": "playwright test",
     "check:core-purity": "node scripts/check-core-purity.mjs",
+    "verify:isolation": "node scripts/verify-isolation.mjs",
     "check": "pnpm check:core-purity && pnpm typecheck && pnpm test"
   },
   "devDependencies": {

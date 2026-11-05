@@ -1,4 +1,4 @@
-import type { AuthService } from "@teacherly/core";
+import type { AuthService, GradebookService, SchoolService } from "@teacherly/core";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 
@@ -12,9 +12,14 @@ import {
 } from "./http/rate-limit";
 import { sessionMiddleware, type AppEnv } from "./http/session-middleware";
 import { authRoutes, meRoute } from "./routes/auth-routes";
+import { schoolRoutes } from "./routes/school-routes";
 
 export interface AppDeps {
   auth: AuthService;
+  /** CRUD for classes, students, assessments and grades. */
+  school: SchoolService;
+  /** The grading reads. Backed by the one grading module in packages/core. */
+  gradebook: GradebookService;
   cookie: CookieOptions;
   /**
    * Set in development only. The Vite dev server runs on another port, so the
@@ -45,7 +50,11 @@ export function createApp(deps: AppDeps): Hono<AppEnv> {
       cors({
         origin: deps.devClientOrigin,
         credentials: true,
-        allowMethods: ["GET", "POST", "OPTIONS"],
+        // PATCH/PUT/DELETE added for this chunk's CRUD. All three are
+        // non-simple methods, so the browser preflights them — which is
+        // precisely the gate `readJson` relies on, and the reason this list
+        // has to name them rather than being left permissive.
+        allowMethods: ["GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"],
         allowHeaders: ["Content-Type"],
       }),
     );
@@ -73,6 +82,9 @@ export function createApp(deps: AppDeps): Hono<AppEnv> {
     }),
   );
   app.route("/api/me", meRoute());
+  // Mounted at `/api` rather than under a `/school` prefix because the nouns
+  // are the API's top-level nouns: /api/classes, /api/students, /api/assessments.
+  app.route("/api", schoolRoutes({ school: deps.school, gradebook: deps.gradebook }));
 
   app.notFound((c) => c.json({ error: { code: "not_found" } }, 404));
 
